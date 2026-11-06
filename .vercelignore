@@ -1,3 +1,10 @@
 smb_leads.csv
 filtered_leads.csv
 .env*
+kyc_documents/
+reports/
+research_notes/
+.cache/
+.claude/
+.impeccable/
+PRODUCT.md

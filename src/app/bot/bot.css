@@ -1,0 +1,1121 @@
+/* Accel Bot (/bot). Light canvas, ink type, red accent. Tokens in globals.css (see DESIGN.md). */
+
+.bot {
+  --bot-line: #e3e4e6;
+  --bot-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --bot-max: 880px;
+
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--canvas);
+  color: var(--ink);
+  overflow-x: clip;
+}
+.bot svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bot :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ---------- Header ---------- */
+.bot-header {
+  width: 100%;
+  max-width: var(--bot-max);
+  margin: 0 auto;
+  padding: var(--sp-md) var(--sp-xl) 0;
+}
+.bot-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+}
+.bot-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-md);
+  min-height: 44px;
+  text-decoration: none;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 800;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+.bot .bot-orb {
+  width: 36px;
+  height: 36px;
+}
+.bot .bot-orb svg {
+  width: 21px;
+  height: 21px;
+}
+.bot-count {
+  margin-left: auto;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.bot-progress {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  margin-top: var(--sp-md);
+}
+/* The add-on questions are a second, shorter group. */
+.bot-progress .is-group {
+  margin-left: 8px;
+}
+.bot-progress span {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bot-line);
+  transition: background-color 0.5s var(--bot-ease);
+}
+.bot-progress .is-current {
+  background: var(--ink);
+}
+.bot-progress .is-done {
+  background: var(--primary);
+}
+
+.bot-icon-btn {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.bot-icon-btn:hover:not(:disabled) {
+  background: var(--canvas-soft);
+}
+.bot-icon-btn:disabled {
+  color: var(--mute);
+  cursor: default;
+}
+.bot-header-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-pill-lg);
+  font-size: 15px;
+  line-height: 20px;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.bot-header-link:hover {
+  background: var(--ink);
+  color: var(--on-dark);
+}
+.bot-icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---------- Question stage ---------- */
+.bot-main {
+  width: 100%;
+  max-width: var(--bot-max);
+  margin: 0 auto;
+  padding: 0 var(--sp-xl);
+}
+.bot-stage {
+  padding: clamp(20px, 6vh, 80px) 0 var(--sp-3xl);
+}
+.bot-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin: 0 0 var(--sp-lg) -10px;
+  padding: 0 12px 0 6px;
+  border: 0;
+  border-radius: var(--r-pill-lg);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+.bot-back {
+  text-decoration: none;
+}
+.bot-back:hover {
+  color: var(--ink);
+}
+.bot-back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.bot-question {
+  margin: 0;
+  font-weight: 300;
+  font-size: clamp(32px, 5.4vw, 56px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  max-width: 19ch;
+  text-wrap: balance;
+}
+/* Add-on questions carry a product description: a calmer size keeps them to a few lines. */
+.bot-question.is-long {
+  font-size: clamp(26px, 3.8vw, 40px);
+  line-height: 1.18;
+  max-width: 26ch;
+}
+.bot-ack {
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+  margin-bottom: var(--sp-md);
+  max-width: 40ch;
+}
+/* "I couldn't tell…": the owner must read this one, so it is ink, marked with the red dot. */
+.bot-ack.is-unclear {
+  position: relative;
+  padding-left: 20px;
+  color: var(--ink);
+}
+.bot-ack.is-unclear::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: var(--primary);
+}
+
+.bot-stage .bot-question,
+.bot-stage .bot-back,
+.bot-suggestions {
+  transition:
+    opacity 0.24s ease-in,
+    transform 0.24s ease-in,
+    filter 0.24s ease-in;
+}
+.bot-stage.is-leaving .bot-question,
+.bot-stage.is-leaving .bot-back,
+.bot-stage.is-leaving .bot-suggestions {
+  opacity: 0;
+  transform: translateY(-10px);
+  filter: blur(4px);
+}
+
+.bot-suggestions {
+  list-style: none;
+  margin: var(--sp-3xl) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  max-width: 760px;
+}
+.bot-suggestions li {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.45s var(--bot-ease),
+    transform 0.45s var(--bot-ease);
+}
+.bot-suggestions.is-in li {
+  opacity: 1;
+  transform: none;
+}
+.is-voice .bot-suggestions {
+  opacity: 0;
+  pointer-events: none;
+}
+.bot-chip {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid #c9cacc;
+  border-radius: var(--r-pill-lg);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 22px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.bot-chip:hover:not(:disabled),
+.bot-chip.is-picked {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-dark);
+}
+.bot-chip:disabled {
+  cursor: default;
+}
+.bot-chip-more {
+  border-style: dashed;
+  color: var(--ink-soft);
+}
+.bot-stage.is-pending .bot-suggestions li:not(:has(.is-picked)) {
+  opacity: 0.45;
+}
+.bot-loading {
+  margin: 0;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+.bot-state {
+  display: grid;
+  gap: var(--sp-lg);
+  justify-items: start;
+}
+.bot-state-body {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--ink-soft);
+}
+.bot-state .bundle-actions {
+  margin-top: var(--sp-sm);
+}
+
+/* ---------- Dock: composer ---------- */
+.bot-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  width: 100%;
+  max-width: var(--bot-max);
+  margin: 0 auto;
+  padding: var(--sp-2xl) var(--sp-xl) calc(var(--sp-lg) + env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--canvas) 24px);
+}
+.is-voice .bot-dock {
+  background: none;
+}
+.bot-notice,
+.bot-pending {
+  margin: 0 0 10px var(--sp-sm);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.bot-pending {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+}
+.bot-send-spin {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  border: 2px solid rgba(37, 40, 43, 0.25);
+  border-top-color: var(--ink);
+  animation: bot-spin 0.8s linear infinite;
+}
+@keyframes bot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bot-composer input[readonly] {
+  color: var(--ink-soft);
+}
+.bot-composer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 6px 6px 22px;
+  background: var(--canvas-soft);
+  border: 1px solid transparent;
+  border-radius: var(--r-pill-lg);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+  animation: bot-fade-up 0.4s var(--bot-ease) both;
+}
+.bot-composer:focus-within {
+  background: var(--canvas);
+  border-color: var(--ink);
+}
+.bot-composer input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--primary);
+  font: inherit;
+  font-size: 18px;
+}
+.bot-composer input::placeholder {
+  color: var(--ink-soft);
+}
+.bot-composer input:focus-visible {
+  outline: none;
+}
+.bot-send {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: var(--on-primary);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.bot-send:hover:not(:disabled) {
+  background: #c40000;
+}
+.bot-send:disabled {
+  background: #e3e4e6;
+  color: #8d9093;
+  cursor: default;
+}
+.bot-send svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---------- Dock: voice mode ---------- */
+.bot-voice {
+  position: relative;
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  gap: var(--sp-sm);
+}
+/* Fixed, clipped frame; the canvas overhangs it so the blur never shows a soft edge. */
+.bot-aurora {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(50vh, 420px);
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+  animation: bot-fade 0.6s ease-out both;
+}
+.bot-aurora canvas {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  bottom: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 40px);
+  filter: blur(22px) saturate(1.1);
+}
+.bot-voice-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin: 0;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ink);
+  animation: bot-fade-up 0.4s var(--bot-ease) both;
+}
+.bot-voice-status::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--primary);
+  animation: bot-pulse 1.4s ease-in-out infinite;
+}
+.bot-voice-status.is-paused::before {
+  animation: none;
+  background: var(--ink-soft);
+}
+.bot-voice-text {
+  margin: 0;
+  max-width: 32ch;
+  min-height: 56px;
+  font-size: 20px;
+  line-height: 28px;
+  text-wrap: balance;
+  text-shadow:
+    0 0 12px var(--canvas),
+    0 0 24px var(--canvas);
+  animation: bot-fade-up 0.4s 0.05s var(--bot-ease) both;
+}
+.bot-voice-interim {
+  color: var(--ink-soft);
+}
+.bot-voice-actions {
+  display: flex;
+  gap: var(--sp-2xl);
+  margin-top: var(--sp-sm);
+  animation: bot-fade-up 0.4s 0.1s var(--bot-ease) both;
+}
+.bot-round {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--bot-ease),
+    background-color 0.15s ease;
+}
+.bot-round:active {
+  transform: scale(0.94);
+}
+.bot-round svg {
+  width: 24px;
+  height: 24px;
+}
+.bot-round-ghost {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(37, 40, 43, 0.28);
+  color: var(--ink);
+  backdrop-filter: blur(10px);
+}
+.bot-round-ghost:hover {
+  background: var(--canvas);
+}
+.bot-round-solid {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: var(--on-dark);
+}
+.bot-round-solid svg {
+  stroke-width: 2.2;
+}
+.bot-round-solid:disabled {
+  background: #5c5f63;
+  border-color: #5c5f63;
+  cursor: default;
+}
+/* Fills over the silence window, then the answer is sent. */
+.bot .bot-countdown {
+  position: absolute;
+  inset: -7px;
+  width: calc(100% + 14px);
+  height: calc(100% + 14px);
+  transform: rotate(-90deg);
+}
+.bot-countdown circle {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-dasharray: 188.5;
+  stroke-dashoffset: 188.5;
+  animation: bot-countdown linear forwards;
+}
+@keyframes bot-countdown {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bot-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes bot-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes bot-pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+/* ---------- Result ---------- */
+.bot-result {
+  display: grid;
+  gap: var(--sp-3xl);
+  padding: clamp(28px, 7vh, 88px) 0 72px;
+}
+.bot-closing {
+  margin: 0;
+  font-weight: 300;
+  font-size: clamp(28px, 3vw, 36px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+/* Left column: the closing line, then the bot's note on why, in the same voice. */
+.bot-result-lead {
+  display: grid;
+  gap: var(--sp-xl);
+  align-content: start;
+}
+.bot-result-body {
+  display: grid;
+  gap: var(--sp-lg);
+  align-content: start;
+}
+.bot-result-body,
+.bot-result-explain {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--bot-ease),
+    transform 0.7s var(--bot-ease);
+}
+.bot-result-body.is-in,
+.bot-result-explain.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.bundle {
+  background: var(--canvas-soft);
+  color: var(--ink);
+  border-radius: var(--r-card);
+  padding: var(--sp-3xl);
+}
+.bundle-name {
+  margin: 0;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.bundle-summary {
+  margin: var(--sp-sm) 0 0;
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--ink-soft);
+  max-width: 44ch;
+}
+.bundle-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  margin: var(--sp-2xl) 0 0;
+}
+.bundle-price strong {
+  font-size: clamp(44px, 6vw, 60px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+.bundle-price span {
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.bundle-items {
+  list-style: none;
+  margin: var(--sp-2xl) 0 0;
+  padding: 0;
+  border-top: 1px solid #dcdddf;
+}
+.bundle-items li {
+  display: flex;
+  gap: var(--sp-md);
+  padding: 14px 0;
+  border-bottom: 1px solid #dcdddf;
+}
+.bundle-items svg {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  stroke: var(--primary);
+  stroke-width: 2.2;
+}
+.bundle-items strong {
+  display: block;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.bundle-item-text {
+  flex: 1;
+  min-width: 0;
+}
+.bundle-item-text > span {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 21px;
+  color: var(--ink-soft);
+}
+.bundle-qty {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.bundle-item-price {
+  flex-shrink: 0;
+  font-size: 15px;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.bundle-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-sm) var(--sp-md);
+}
+.bundle-head .chip {
+  background: var(--canvas);
+}
+.bundle-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-lg);
+  margin: var(--sp-2xl) 0 0;
+}
+.bundle-facts dt {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.57px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.bundle-facts dd {
+  margin: 4px 0 0;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.bundle-flags {
+  list-style: none;
+  margin: var(--sp-xl) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.bundle-flags li {
+  display: flex;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.bundle-flags svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+
+/* Result body: bundle, add-on picker, accept form. */
+.result {
+  display: grid;
+  gap: var(--sp-3xl);
+}
+.explain:empty {
+  display: none;
+}
+/* The bot still talking: acknowledgement voice, a step below the closing line. */
+.explain-text {
+  margin: 0;
+  max-width: 44ch;
+  font-size: clamp(17px, 1.6vw, 19px);
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.explain-pending {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+
+.addons {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.addons-title,
+.accept-title {
+  padding: 0;
+  margin: 0;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.addons-sub,
+.accept-sub {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.accept-sub strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.addon-list {
+  list-style: none;
+  margin: var(--sp-lg) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-sm);
+}
+.addon {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-md);
+  padding: var(--sp-lg);
+  border: 1px solid #c9cacc;
+  border-radius: var(--r-card);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+.addon:hover {
+  border-color: var(--ink);
+}
+.addon.is-on {
+  border-color: var(--ink);
+  background: var(--canvas-soft);
+}
+.addon input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.addon:has(input:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.addon-box {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  background: var(--canvas);
+  transition: background-color 0.15s ease;
+}
+.bot .addon-box svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--on-primary);
+  stroke-width: 2.6;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.15s ease,
+    transform 0.25s var(--bot-ease);
+}
+.addon.is-on .addon-box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.bot .addon.is-on .addon-box svg {
+  opacity: 1;
+  transform: none;
+}
+.addon-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.addon-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-sm);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.addon-tag {
+  padding: 1px 10px;
+  border-radius: var(--r-pill-md);
+  background: var(--canvas-soft);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 700;
+}
+.addon.is-on .addon-tag {
+  background: var(--canvas);
+}
+.addon-why {
+  font-size: 15px;
+  line-height: 21px;
+  color: var(--ink-soft);
+}
+.addon-price {
+  flex-shrink: 0;
+  display: grid;
+  justify-items: end;
+  font-size: 15px;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.addon-price span {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+.addons .text-btn {
+  margin-top: var(--sp-sm);
+}
+
+.blocked-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--sp-lg);
+  display: grid;
+  gap: var(--sp-md);
+}
+.blocked-list li {
+  display: grid;
+  gap: 2px;
+  font-size: 15px;
+  line-height: 22px;
+}
+.blocked-list span {
+  color: var(--ink-soft);
+}
+
+.accept {
+  display: grid;
+  gap: var(--sp-xl);
+  padding-top: var(--sp-3xl);
+  border-top: 1px solid var(--bot-line);
+}
+.accept-title + .accept-sub {
+  margin-top: calc(-1 * var(--sp-md));
+}
+.accept-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+.accept .bundle-note {
+  margin: 0;
+}
+.bundle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+  margin-top: var(--sp-2xl);
+}
+.bundle-note {
+  margin: var(--sp-xl) 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+
+.bot-recap {
+  border-top: 1px solid var(--bot-line);
+  border-bottom: 1px solid var(--bot-line);
+}
+.bot-recap summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.bot-recap summary::-webkit-details-marker {
+  display: none;
+}
+.bot-recap summary::after {
+  content: '';
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 0.2s var(--bot-ease);
+}
+.bot-recap[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+.bot-recap dl {
+  margin: 0;
+  padding: 0 0 var(--sp-lg);
+  display: grid;
+  gap: var(--sp-md);
+}
+.bot-recap dt {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.57px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.bot-recap dd {
+  margin: 2px 0 0;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+/* The result needs room for two columns: the closing line and the quote. */
+.bot.is-done {
+  --bot-max: 1120px;
+}
+
+@media (min-width: 960px) {
+  .bot-result {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 64px;
+    align-items: start;
+  }
+}
+/* Pin the closing line and its note only where the column fits the viewport. */
+@media (min-width: 960px) and (min-height: 720px) {
+  .bot-result-lead {
+    position: sticky;
+    top: 48px;
+  }
+}
+
+@media (max-width: 599px) {
+  .bot-header,
+  .bot-main {
+    padding-left: var(--sp-lg);
+    padding-right: var(--sp-lg);
+  }
+  .bot-dock {
+    padding-left: var(--sp-md);
+    padding-right: var(--sp-md);
+  }
+  .bundle {
+    padding: var(--sp-2xl) var(--sp-xl);
+  }
+  .bundle-actions .btn,
+  .accept-actions .btn {
+    flex: 1 1 100%;
+  }
+  .bundle-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+  .addon {
+    padding: var(--sp-md);
+  }
+}
+
+@media (max-width: 479px) {
+  .bot-header-row {
+    gap: var(--sp-sm);
+  }
+  .bot-brand > span:not(.orb) {
+    display: none;
+  }
+  .bot-header-link {
+    padding: 0 12px;
+  }
+  .bundle-price strong {
+    font-size: 34px;
+  }
+  .bundle-items li,
+  .addon {
+    flex-wrap: wrap;
+  }
+  .bundle-item-text {
+    flex-basis: calc(100% - 34px);
+  }
+  .bundle-item-price {
+    margin-left: 34px;
+  }
+  .addon-text {
+    flex-basis: calc(100% - 36px);
+  }
+  .addon-price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-sm);
+    margin-left: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bot-composer,
+  .bot-voice-status,
+  .bot-voice-text,
+  .bot-voice-actions,
+  .bot-aurora {
+    animation: none;
+  }
+  .bot-voice-status::before {
+    animation: none;
+  }
+  .bot-send-spin {
+    animation-duration: 2.4s;
+  }
+  .addon-box svg {
+    transition: none;
+  }
+  .bot-stage .bot-question,
+  .bot-stage .bot-back,
+  .bot-suggestions,
+  .bot-suggestions li,
+  .bot-result-body,
+  .bot-result-explain {
+    transition: none;
+  }
+}

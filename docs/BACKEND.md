@@ -1,13 +1,13 @@
 # Backend
 
-A Next.js API on Vercel (Mumbai), with Supabase in India for accounts and data. There's no frontend yet.
+A Next.js API on Vercel (Mumbai), with Supabase in India for accounts and data. Merged into the Accel Business web app: the pages (sign-in, dashboard, Accel Bot, KYC) live alongside these routes, and `src/proxy.ts` refreshes the session and guards pages.
 
 ## Setup
 
 1. Create a Supabase project in the Mumbai region.
 2. In Authentication > Sign In / Providers > Email, turn off **Confirm email**.
-3. Run `supabase/migrations/0001_init.sql` in the SQL editor.
-4. Copy `.env.example` to `.env.local` and fill it in. Add the same values to the Vercel project.
+3. Run `supabase/migrations/0001_init.sql` and then `0002_kyc.sql` in the SQL editor.
+4. Copy `.env.local.example` to `.env.local` and fill it in. Add the same values to the Vercel project.
 5. `npm run dev`. The admin account is created the first time the server starts.
 
 `npm test` needs no services. With the site running, `npm run e2e` checks the whole journey against
@@ -53,6 +53,8 @@ Errors are `{ "error": { "code", "message" } }`. Signing in sets cookies, so req
 | `GET`, `POST /api/leads` | Customer | Tracker list; start a lead |
 | `GET /api/leads/:id` | Owner | Resume a lead, with its stage history |
 | `POST /api/leads/:id/answers`, `quote`, `explanation`, `accept` | Owner | The journey above |
+| `GET`, `POST /api/leads/:id/kyc` | Owner | Latest KYC result; upload documents (multipart) at Quote accepted |
+| `POST /api/kyc/validate` | Admin | Dry-run the KYC engine; stores nothing |
 | `GET /api/admin/leads` | Admin | All leads, with internal flags and close reasons |
 | `PATCH /api/admin/leads/:id` | Admin | `{ stage }` or `{ closeReason }` |
 | `POST /api/admin/users` | Primary admin | Create an admin |
@@ -63,8 +65,14 @@ Needs assessed, Quote accepted, KYC complete, Activated. The first two follow th
 Admins set the others, one step at a time. A closed lead keeps its stage and can't be changed, and
 customers see that it's closed but not why.
 
-**KYC later:** all stage changes go through `setStage` in `src/lib/leads/repository.ts`, with a null
-`changedBy` for automatic changes, so a KYC module can call it directly.
+**KYC:** at Quote accepted the customer uploads documents through `POST /api/leads/:id/kyc`. The
+parts are `gst_certificate`, `udyam_certificate`, `signatory_id` and `address_proof`. The signatory ID
+and address proof are required, plus at least one of GST or Udyam; the engine's completeness rule
+decides this. Images are processed in memory. Only the decision and masked findings (code, severity,
+document, message) are stored in `kyc_checks`.
+- APPROVE calls `setStage(lead, 'KYC complete', null)`.
+- After MANUAL_REVIEW, an admin advances the stage.
+- After REJECT, the customer can upload again.
 
 ## Accounts
 

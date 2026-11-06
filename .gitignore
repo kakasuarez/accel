@@ -1,9 +1,43 @@
-node_modules
-.next
-.env*
-!.env.example
-*.tsbuildinfo
+﻿# Dependencies and build output
+node_modules/
+.next/
+out/
+build/
+coverage/
 next-env.d.ts
-# Customer data: never commit
+*.tsbuildinfo
+.vercel/
+
+# Secrets (keep the example file)
+.env
+.env*
+!.env.local.example
+
+# Generated caches (ElevenLabs voice cache)
+.cache/
+
+# Personal data: KYC scans, raw leads, and results extracted from them
+kyc_documents/
 smb_leads.csv
 filtered_leads.csv
+reports/
+
+# Duplicate copies of data/registry/*.csv (the app reads data/registry/)
+mock_gstin_registry.csv
+mock_udyam_registry.csv
+
+# Internal notes
+research_notes/
+PRODUCT.md
+
+# Local tool state
+.claude/
+.impeccable/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+.vscode/
+.idea/

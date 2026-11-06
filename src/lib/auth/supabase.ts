@@ -14,7 +14,14 @@ export async function supabaseForRequest() {
   return createServerClient(env("SUPABASE_URL"), env("SUPABASE_PUBLISHABLE_KEY"), {
     cookies: {
       getAll: () => store.getAll(),
-      setAll: (list) => list.forEach(({ name, value, options }) => store.set(name, value, options)),
+      setAll: (list) => {
+        try {
+          list.forEach(({ name, value, options }) => store.set(name, value, options));
+        } catch {
+          // Server components can't set cookies. src/proxy.ts refreshes the session before every page render,
+          // so a refresh attempted here can safely be dropped.
+        }
+      },
     },
   });
 }

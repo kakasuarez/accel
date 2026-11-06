@@ -50,7 +50,7 @@ function scripted(...replies: string[]): LlmClient & { sent: string[] } {
 
 describe("training data", () => {
   it("holds only the columns the model reads", () => {
-    expect(trainingCsv.split("\n")[0]!.split(",")).toEqual([...TRAINING_COLUMNS]);
+    expect(trainingCsv.split(/\r?\n/)[0]!.split(",")).toEqual([...TRAINING_COLUMNS]);
     for (const personal of ["business_name", "gstin", "udyam_number", "contact_name", "contact_role"]) {
       expect(TRAINING_COLUMNS as readonly string[]).not.toContain(personal);
     }
@@ -231,7 +231,7 @@ describe("LLM providers", () => {
     const llm = createLlmClient({ OPENROUTER_API_KEY: "key", OPENROUTER_BASE_URL: baseUrl });
     expect(llm.provider).toBe("openrouter");
     expect(await llm.complete([{ role: "user", content: "hi" }], { json: true })).toBe("hello");
-    expect(requests.at(-1)).toMatchObject({ auth: "Bearer key", body: { model: "google/gemini-2.5-flash", response_format: { type: "json_object" } } });
+    expect(requests.at(-1)).toMatchObject({ auth: "Bearer key", body: { model: "google/gemini-2.5-flash-lite", response_format: { type: "json_object" } } });
   });
 
   it("switches to a local model on the env variable, with no key needed", async () => {
