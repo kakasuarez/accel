@@ -1,0 +1,1198 @@
+{
+  "maxAddOnQuestions": 4,
+  "questions": [
+    {
+      "answerMode": "natural_language",
+      "id": "businessType",
+      "phase": "profile",
+      "question": "What kind of business do you run?",
+      "type": "single_select",
+      "required": true,
+      "allowOther": true,
+      "options": [
+        {
+          "value": "Apparel retail chain",
+          "label": "Apparel retail chain"
+        },
+        {
+          "value": "Architecture studio",
+          "label": "Architecture studio"
+        },
+        {
+          "value": "Auto-parts unit",
+          "label": "Auto-parts unit"
+        },
+        {
+          "value": "Bakery",
+          "label": "Bakery"
+        },
+        {
+          "value": "Bakery chain",
+          "label": "Bakery chain"
+        },
+        {
+          "value": "Boutique",
+          "label": "Boutique"
+        },
+        {
+          "value": "Budget hotel group",
+          "label": "Budget hotel group"
+        },
+        {
+          "value": "CA firm",
+          "label": "CA firm"
+        },
+        {
+          "value": "Coaching centre",
+          "label": "Coaching centre"
+        },
+        {
+          "value": "Dental clinic",
+          "label": "Dental clinic"
+        },
+        {
+          "value": "Diagnostic lab",
+          "label": "Diagnostic lab"
+        },
+        {
+          "value": "Electronics retail chain",
+          "label": "Electronics retail chain"
+        },
+        {
+          "value": "Food processing unit",
+          "label": "Food processing unit"
+        },
+        {
+          "value": "Furniture workshop",
+          "label": "Furniture workshop"
+        },
+        {
+          "value": "Gym chain",
+          "label": "Gym chain"
+        },
+        {
+          "value": "Hardware store",
+          "label": "Hardware store"
+        },
+        {
+          "value": "Insurance agency",
+          "label": "Insurance agency"
+        },
+        {
+          "value": "Kirana store",
+          "label": "Kirana store"
+        },
+        {
+          "value": "Law office",
+          "label": "Law office"
+        },
+        {
+          "value": "Mobile repair shop",
+          "label": "Mobile repair shop"
+        },
+        {
+          "value": "Optician",
+          "label": "Optician"
+        },
+        {
+          "value": "Packaging unit",
+          "label": "Packaging unit"
+        },
+        {
+          "value": "Pharmacy",
+          "label": "Pharmacy"
+        },
+        {
+          "value": "Pharmacy chain",
+          "label": "Pharmacy chain"
+        },
+        {
+          "value": "Physiotherapy clinic",
+          "label": "Physiotherapy clinic"
+        },
+        {
+          "value": "Plastic moulding unit",
+          "label": "Plastic moulding unit"
+        },
+        {
+          "value": "Pre-school chain",
+          "label": "Pre-school chain"
+        },
+        {
+          "value": "Printing press",
+          "label": "Printing press"
+        },
+        {
+          "value": "Real estate agency",
+          "label": "Real estate agency"
+        },
+        {
+          "value": "Restaurant chain",
+          "label": "Restaurant chain"
+        },
+        {
+          "value": "Salon",
+          "label": "Salon"
+        },
+        {
+          "value": "Stationery shop",
+          "label": "Stationery shop"
+        },
+        {
+          "value": "Sweet shop",
+          "label": "Sweet shop"
+        },
+        {
+          "value": "Textile unit",
+          "label": "Textile unit"
+        },
+        {
+          "value": "Travel agency",
+          "label": "Travel agency"
+        }
+      ]
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "employees",
+      "phase": "profile",
+      "question": "How many people work in the business?",
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "sites",
+      "phase": "profile",
+      "question": "How many locations do you operate from?",
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "city",
+      "phase": "profile",
+      "question": "Which city is your business in? If you have several, tell us the smallest one.",
+      "type": "single_select",
+      "required": true,
+      "allowOther": true,
+      "options": [
+        {
+          "value": "Ahmedabad",
+          "label": "Ahmedabad"
+        },
+        {
+          "value": "Bengaluru",
+          "label": "Bengaluru"
+        },
+        {
+          "value": "Bhopal",
+          "label": "Bhopal"
+        },
+        {
+          "value": "Chennai",
+          "label": "Chennai"
+        },
+        {
+          "value": "Coimbatore",
+          "label": "Coimbatore"
+        },
+        {
+          "value": "Delhi",
+          "label": "Delhi"
+        },
+        {
+          "value": "Hyderabad",
+          "label": "Hyderabad"
+        },
+        {
+          "value": "Indore",
+          "label": "Indore"
+        },
+        {
+          "value": "Jaipur",
+          "label": "Jaipur"
+        },
+        {
+          "value": "Kochi",
+          "label": "Kochi"
+        },
+        {
+          "value": "Kolkata",
+          "label": "Kolkata"
+        },
+        {
+          "value": "Lucknow",
+          "label": "Lucknow"
+        },
+        {
+          "value": "Ludhiana",
+          "label": "Ludhiana"
+        },
+        {
+          "value": "Mumbai",
+          "label": "Mumbai"
+        },
+        {
+          "value": "Mysuru",
+          "label": "Mysuru"
+        },
+        {
+          "value": "Nagpur",
+          "label": "Nagpur"
+        },
+        {
+          "value": "Nashik",
+          "label": "Nashik"
+        },
+        {
+          "value": "Patna",
+          "label": "Patna"
+        },
+        {
+          "value": "Pune",
+          "label": "Pune"
+        },
+        {
+          "value": "Surat",
+          "label": "Surat"
+        },
+        {
+          "value": "Vadodara",
+          "label": "Vadodara"
+        },
+        {
+          "value": "Visakhapatnam",
+          "label": "Visakhapatnam"
+        }
+      ]
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "hasGstin",
+      "phase": "profile",
+      "question": "Is your business registered for GST?",
+      "type": "boolean",
+      "required": true,
+      "options": [
+        {
+          "value": true,
+          "label": "Yes"
+        },
+        {
+          "value": false,
+          "label": "No"
+        }
+      ]
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "currentInternet",
+      "phase": "profile",
+      "question": "What internet connection do you use today?",
+      "type": "single_select",
+      "required": true,
+      "options": [
+        {
+          "value": "Business broadband",
+          "label": "Business broadband"
+        },
+        {
+          "value": "Home broadband",
+          "label": "Home broadband"
+        },
+        {
+          "value": "Leased line",
+          "label": "Leased line"
+        },
+        {
+          "value": "Mixed per site",
+          "label": "Mixed per site"
+        },
+        {
+          "value": "Mobile hotspot",
+          "label": "Mobile hotspot"
+        },
+        {
+          "value": "None",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "monthlyTelecomSpend",
+      "phase": "profile",
+      "question": "Roughly how much do you spend on phone and internet each month, in rupees?",
+      "type": "number",
+      "required": false,
+      "min": 0,
+      "unit": "INR per month",
+      "skipOption": {
+        "value": null,
+        "label": "Not sure"
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "heavyBandwidth",
+      "phase": "profile",
+      "question": "Does your team regularly move large files or depend on video calls and cloud software?",
+      "type": "boolean",
+      "required": false,
+      "options": [
+        {
+          "value": true,
+          "label": "Yes"
+        },
+        {
+          "value": false,
+          "label": "No"
+        }
+      ],
+      "skipOption": {
+        "value": null,
+        "label": "Not sure"
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P09",
+      "phase": "add_ons",
+      "productId": "P09",
+      "question": "Would you like Backup 4G/5G Failover? Automatic failover router with data SIM for when the main link is down.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "multi",
+          "prof"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03",
+          "P05",
+          "P06"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P10",
+      "phase": "add_ons",
+      "productId": "P10",
+      "question": "Would you like Managed SD-WAN? Central management of links across sites, app-priority routing.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "multi"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 10,
+        "minSites": 3,
+        "requiresGstin": true,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03",
+          "P05",
+          "P06"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P11",
+      "phase": "add_ons",
+      "productId": "P11",
+      "question": "Would you like Static IP? Fixed public IP for CCTV, servers or remote access.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "prof",
+          "mfg"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P12",
+      "phase": "add_ons",
+      "productId": "P12",
+      "question": "Would you like Cloud Telephony / SIP? Business phone lines over internet with IVR, call recording.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "prof",
+          "multi"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 3,
+        "minSites": 1,
+        "requiresGstin": true,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03",
+          "P04",
+          "P05",
+          "P06"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P13",
+      "phase": "add_ons",
+      "productId": "P13",
+      "question": "Would you like Toll-free Number? 1800 number routed to mobile or cloud telephony.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "multi",
+          "prof"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": true,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P14",
+      "phase": "add_ons",
+      "productId": "P14",
+      "question": "Would you like Business SMS 10k? 10,000 SMS per month for alerts and promotions, DLT registration assisted.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "prof",
+          "multi",
+          "micro"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": true,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P15",
+      "phase": "add_ons",
+      "productId": "P15",
+      "question": "Would you like WhatsApp Business API Starter? Verified WhatsApp channel, catalogue, 1,000 conversations a month.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "micro",
+          "prof",
+          "multi"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": true,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P16",
+      "phase": "add_ons",
+      "productId": "P16",
+      "question": "Would you like Cloud Email & Office Suite? Business email on own domain, documents, video meetings.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "prof",
+          "multi",
+          "mfg"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P17",
+      "phase": "add_ons",
+      "productId": "P17",
+      "question": "Would you like Cloud Backup 1 TB? Automatic backup of PCs and phones, 1 TB.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "prof",
+          "mfg"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P18",
+      "phase": "add_ons",
+      "productId": "P18",
+      "question": "Would you like Website + Domain Starter? Domain, 5-page website builder, hosting, SSL.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "micro",
+          "prof"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P19",
+      "phase": "add_ons",
+      "productId": "P19",
+      "question": "Would you like Cloud POS & Billing? GST-ready billing, inventory, UPI/card acceptance on a tablet.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "micro",
+          "multi"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P20",
+      "phase": "add_ons",
+      "productId": "P20",
+      "question": "Would you like Endpoint Security? Antivirus and ransomware protection for PCs and phones.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "prof",
+          "mfg",
+          "multi"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P21",
+      "phase": "add_ons",
+      "productId": "P21",
+      "question": "Would you like Managed Firewall? Next-gen firewall at the site, managed by Accel SOC.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "mfg",
+          "multi",
+          "prof"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 10,
+        "minSites": 1,
+        "requiresGstin": true,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03",
+          "P05",
+          "P06"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P22",
+      "phase": "add_ons",
+      "productId": "P22",
+      "question": "Would you like Secure Wi-Fi with Guest Network? Managed Wi-Fi access point with separate customer Wi-Fi and content filtering.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "micro",
+          "multi",
+          "prof"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03",
+          "P04"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P23",
+      "phase": "add_ons",
+      "productId": "P23",
+      "question": "Would you like Cloud CCTV? HD camera with 30-day cloud recording and mobile app view.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "micro",
+          "multi",
+          "mfg"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": [
+          "P01",
+          "P02",
+          "P03",
+          "P04",
+          "P05",
+          "P06"
+        ]
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P24",
+      "phase": "add_ons",
+      "productId": "P24",
+      "question": "Would you like Machine Monitoring IoT? IoT SIM + sensor kit for machine uptime and energy use.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "mfg"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 10,
+        "minSites": 1,
+        "requiresGstin": true,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "natural_language",
+      "id": "need:P25",
+      "phase": "add_ons",
+      "productId": "P25",
+      "question": "Would you like Fleet Tracker? GPS tracker with IoT SIM and live dashboard.",
+      "type": "single_select",
+      "required": false,
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "sets": true
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "sets": false
+        },
+        {
+          "value": "already_have",
+          "label": "I already have this",
+          "sets": false
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure",
+          "sets": null
+        }
+      ],
+      "eligibility": {
+        "segments": [
+          "multi",
+          "mfg"
+        ],
+        "cityTiers": [
+          1,
+          2
+        ],
+        "minEmployees": 1,
+        "minSites": 1,
+        "requiresGstin": false,
+        "requiresOneOf": []
+      }
+    },
+    {
+      "answerMode": "form",
+      "required": true,
+      "phase": "contact",
+      "id": "businessName",
+      "question": "What is your business called?",
+      "type": "text",
+      "maxLength": 120
+    },
+    {
+      "answerMode": "form",
+      "required": true,
+      "phase": "contact",
+      "id": "contactName",
+      "question": "Who should we speak to?",
+      "type": "text",
+      "maxLength": 120
+    },
+    {
+      "answerMode": "form",
+      "required": true,
+      "phase": "contact",
+      "id": "phone",
+      "question": "What is the best phone number to reach you on?",
+      "type": "phone"
+    }
+  ]
+}

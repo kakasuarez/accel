@@ -1,0 +1,258 @@
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { explainRecommendation } from "../src/lib/leads/explain";
+import { nextQuestion, profileComplete, recommendationFor } from "../src/lib/leads/quote";
+import { canAdvance } from "../src/lib/leads/stages";
+import { LlmConfigError, LlmError, createLlmClient, type LlmClient } from "../src/lib/llm/client";
+import { addOnQuestionId, buildQuestions } from "../src/lib/questions/build";
+import { interpretAnswer, validValue } from "../src/lib/questions/interpret";
+import type { Answers, Question } from "../src/lib/questions/types";
+import { TRAINING_COLUMNS } from "../src/lib/recommender/leads";
+import { createRecommender, customerView, parseCatalogue, parseLeads } from "../src/lib/recommender";
+
+const ROOT = resolve(import.meta.dirname, "..");
+const catalogueCsv = readFileSync(resolve(ROOT, "product_catalogue.csv"), "utf8");
+const trainingCsv = readFileSync(resolve(ROOT, "training_leads.csv"), "utf8");
+const leads = parseLeads(trainingCsv);
+const recommender = createRecommender(parseCatalogue(catalogueCsv), leads, { trees: 12 });
+const questionSet = buildQuestions(recommender);
+const question = (id: string) => questionSet.questions.find((q) => q.id === id)!;
+
+const profile: Answers = {
+  businessType: "Bakery",
+  employees: 3,
+  sites: 1,
+  city: "Ludhiana",
+  hasGstin: true,
+  currentInternet: "Mobile hotspot",
+  monthlyTelecomSpend: null,
+  heavyBandwidth: null,
+};
+
+/** An LLM that replies from a script and records what it was sent. */
+function scripted(...replies: string[]): LlmClient & { sent: string[] } {
+  const sent: string[] = [];
+  return {
+    provider: "test",
+    model: "test",
+    sent,
+    async complete(messages) {
+      sent.push(messages.map((m) => m.content).join("\n"));
+      const reply = replies.shift();
+      if (reply === undefined) throw new Error("No scripted reply left");
+      return reply;
+    },
+  };
+}
+
+describe("training data", () => {
+  it("holds only the columns the model reads", () => {
+    expect(trainingCsv.split("\n")[0]!.split(",")).toEqual([...TRAINING_COLUMNS]);
+    for (const personal of ["business_name", "gstin", "udyam_number", "contact_name", "contact_role"]) {
+      expect(TRAINING_COLUMNS as readonly string[]).not.toContain(personal);
+    }
+  });
+});
+
+describe("questions come from the CSVs", () => {
+  it("has one add-on question per add-on, and none for fibre or language", () => {
+    const addOns = recommender.catalogue.products.filter((p) => p.role === "add_on");
+    expect(questionSet.questions.filter((q) => q.phase === "add_ons").map((q) => q.productId)).toEqual(addOns.map((p) => p.id));
+    expect(questionSet.questions.map((q) => q.id)).not.toContain("fibreAvailable");
+    expect(questionSet.questions.map((q) => q.id)).not.toContain("preferredLanguage");
+  });
+
+  it("follows a catalogue change without any code change", () => {
+    const row = `P99,Security,Test Vault,"Secret storage",per account,100,200,0,12,1;2,1,1,N,,1,micro`;
+    const changed = createRecommender(parseCatalogue(`${catalogueCsv.trimEnd()}\n${row}\n`), leads, { kind: "frequency" });
+    const added = buildQuestions(changed).questions.find((q) => q.productId === "P99");
+    expect(added?.question).toBe("Would you like Test Vault? Secret storage.");
+    expect(added?.eligibility?.segments).toEqual(["micro"]);
+  });
+
+  it("sends contact details straight to the form, never to the LLM", () => {
+    const contact = questionSet.questions.filter((q) => q.phase === "contact");
+    expect(contact.length).toBeGreaterThan(0);
+    expect(contact.every((q) => q.answerMode === "form")).toBe(true);
+    expect(questionSet.questions.filter((q) => q.phase !== "contact").every((q) => q.answerMode === "natural_language")).toBe(true);
+  });
+});
+
+describe("interpreting an answer", () => {
+  it("sends the question, its options and the answer, and returns the chosen option", async () => {
+    const llm = scripted(`{"status":"answered","value":"Bakery"}`);
+    expect(await interpretAnswer(llm, question("businessType"), "we bake bread and cakes")).toEqual({ status: "answered", value: "Bakery" });
+    expect(llm.sent[0]).toContain("we bake bread and cakes");
+    expect(llm.sent[0]).toContain(`"value":"Salon"`);
+  });
+
+  it("passes on the model's reason when the answer is unclear", async () => {
+    const llm = scripted(`{"status":"unclear","reason":"Do you mean home or business broadband?"}`);
+    expect(await interpretAnswer(llm, question("currentInternet"), "broadband")).toEqual({ status: "unclear", reason: "Do you mean home or business broadband?" });
+  });
+
+  it("re-asks instead of storing a value that isn't valid", async () => {
+    for (const reply of [`{"status":"answered","value":"Satellite"}`, `{"status":"answered","value":null}`]) {
+      const result = await interpretAnswer(scripted(reply), question("currentInternet"), "something");
+      expect(result.status).toBe("unclear");
+    }
+    expect((await interpretAnswer(scripted(`{"status":"answered","value":0}`), question("employees"), "none")).status).toBe("unclear");
+    expect((await interpretAnswer(scripted(`{"status":"answered","value":2.5}`), question("sites"), "two and a bit")).status).toBe("unclear");
+  });
+
+  it("reads JSON wrapped in a code fence, and retries once on junk", async () => {
+    const fenced = scripted('```json\n{"status":"answered","value":12}\n```');
+    expect(await interpretAnswer(fenced, question("employees"), "a dozen")).toEqual({ status: "answered", value: 12 });
+    const retried = scripted("no idea", `{"status":"answered","value":4}`);
+    expect(await interpretAnswer(retried, question("employees"), "four")).toEqual({ status: "answered", value: 4 });
+    await expect(interpretAnswer(scripted("junk", "junk"), question("employees"), "four")).rejects.toBeInstanceOf(LlmError);
+  });
+
+  it("stores canonical values, the customer's own value only where allowed, and null only where skippable", () => {
+    expect(validValue(question("city"), "ludhiana")).toBe("Ludhiana");
+    expect(validValue(question("city"), "Shillong")).toBe("Shillong");
+    expect(validValue(question("currentInternet"), "Shillong")).toBeUndefined();
+    expect(validValue(question("hasGstin"), true)).toBe(true);
+    expect(validValue(question("hasGstin"), "yes")).toBeUndefined();
+    expect(validValue(question("hasGstin"), null)).toBeUndefined();
+    expect(validValue(question("monthlyTelecomSpend"), null)).toBeNull();
+    expect(validValue(question("employees"), "12")).toBe(12);
+  });
+});
+
+describe("question flow", () => {
+  it("asks the profile questions in order, then add-ons", () => {
+    expect(nextQuestion(questionSet, {}, null)?.id).toBe("businessType");
+    expect(nextQuestion(questionSet, { businessType: "Bakery" }, null)?.id).toBe("employees");
+    expect(profileComplete(questionSet, profile)).toBe(true);
+    const next = nextQuestion(questionSet, profile, recommendationFor(recommender, questionSet, profile));
+    expect(next?.phase).toBe("add_ons");
+  });
+
+  it("stops after the add-on limit", () => {
+    let answers: Answers = profile;
+    let asked = 0;
+    for (;;) {
+      const next = nextQuestion(questionSet, answers, recommendationFor(recommender, questionSet, answers));
+      if (!next) break;
+      expect(next.phase).toBe("add_ons");
+      answers = { ...answers, [next.id]: asked % 2 ? "no" : "not_sure" };
+      asked += 1;
+      expect(asked).toBeLessThanOrEqual(questionSet.maxAddOnQuestions);
+    }
+    expect(asked).toBeGreaterThan(0);
+  });
+
+  it("applies add-on answers: yes recommends it, and already having it counts as no", () => {
+    const addOn = recommender.recommend({ businessType: "Bakery", employees: 3, sites: 1, cityTier: 2, hasGstin: true }).addOns[0]!;
+    const id = addOnQuestionId(addOn.productId);
+    const wanted = recommendationFor(recommender, questionSet, { ...profile, [id]: "yes" })!;
+    expect(wanted.addOns.find((a) => a.productId === addOn.productId)?.recommendation).toBe("stated_need");
+    const has = recommendationFor(recommender, questionSet, { ...profile, [id]: "already_have" })!;
+    expect(has.addOns.find((a) => a.productId === addOn.productId)?.recommendation).toBeNull();
+  });
+
+  it("quotes an unknown city on the strictest tier and says it's unconfirmed", () => {
+    const quote = recommendationFor(recommender, questionSet, { ...profile, city: "Shillong" })!;
+    const tierTwo = recommendationFor(recommender, questionSet, profile)!;
+    expect(quote.flags.find((f) => f.code === "city_unconfirmed")).toMatchObject({ audience: "customer" });
+    expect(quote.lines.map((l) => l.productId)).toEqual(tierTwo.lines.map((l) => l.productId));
+    expect(tierTwo.flags.some((f) => f.code === "city_unconfirmed")).toBe(false);
+  });
+});
+
+describe("what customers and the LLM can see", () => {
+  const full = recommendationFor(recommender, questionSet, { ...profile, hasGstin: false })!;
+  const view = customerView(full);
+
+  it("removes internal flags, model scores and the fibre question", () => {
+    expect(full.flags.some((f) => f.audience === "internal")).toBe(true);
+    expect(view.flags.every((f) => f.audience === "customer")).toBe(true);
+    const text = JSON.stringify(view);
+    expect(text).not.toContain('"score"');
+    expect(text).not.toContain('"support"');
+    expect(view.openQuestions.some((q) => q.key === "fibreAvailable")).toBe(false);
+  });
+
+  it("never gives the explanation model internal flags or prices", async () => {
+    const llm = scripted("This bundle suits your bakery.");
+    expect(await explainRecommendation(llm, profile, view)).toBe("This bundle suits your bakery.");
+    expect(llm.sent[0]).not.toContain("Sort out documents");
+    expect(llm.sent[0]).not.toContain("monthlyMin");
+  });
+
+  it("falls back to the recommender's reasons if the explanation mentions a price", async () => {
+    const text = await explainRecommendation(scripted("It only costs ₹999 a month."), profile, view);
+    expect(text).not.toContain("999 a month");
+    expect(text).toContain(view.lines[0]!.name);
+  });
+});
+
+describe("lead stages", () => {
+  it("lets admins move a lead one step, only after the quote is accepted", () => {
+    expect(canAdvance("Quote accepted", "KYC complete")).toBe(true);
+    expect(canAdvance("KYC complete", "Activated")).toBe(true);
+    expect(canAdvance("Needs assessed", "Quote accepted")).toBe(false);
+    expect(canAdvance("Quote accepted", "Activated")).toBe(false);
+    expect(canAdvance("Activated", "KYC complete")).toBe(false);
+    expect(canAdvance(null, "KYC complete")).toBe(false);
+  });
+});
+
+describe("LLM providers", () => {
+  let server: Server;
+  let baseUrl: string;
+  const requests: { auth?: string; body: { model: string; response_format?: unknown } }[] = [];
+
+  beforeAll(async () => {
+    server = createServer((request, response) => {
+      let data = "";
+      request.on("data", (chunk) => (data += chunk));
+      request.on("end", () => {
+        requests.push({ auth: request.headers.authorization, body: JSON.parse(data) });
+        if (request.headers.authorization === "Bearer bad") {
+          response.writeHead(401, { "Content-Type": "application/json" });
+          response.end(JSON.stringify({ error: { message: "Invalid key" } }));
+          return;
+        }
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ choices: [{ message: { content: "hello" } }] }));
+      });
+    });
+    await new Promise<void>((done) => server.listen(0, done));
+    baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`;
+  });
+  afterAll(() => server.close());
+
+  it("uses OpenRouter with Gemini 2.5 Flash by default", async () => {
+    const llm = createLlmClient({ OPENROUTER_API_KEY: "key", OPENROUTER_BASE_URL: baseUrl });
+    expect(llm.provider).toBe("openrouter");
+    expect(await llm.complete([{ role: "user", content: "hi" }], { json: true })).toBe("hello");
+    expect(requests.at(-1)).toMatchObject({ auth: "Bearer key", body: { model: "google/gemini-2.5-flash", response_format: { type: "json_object" } } });
+  });
+
+  it("switches to a local model on the env variable, with no key needed", async () => {
+    const llm = createLlmClient({ LLM_PROVIDER: "local", LOCAL_LLM_BASE_URL: baseUrl, LOCAL_LLM_MODEL: "llama3" });
+    expect(llm.provider).toBe("local");
+    await llm.complete([{ role: "user", content: "hi" }]);
+    expect(requests.at(-1)?.auth).toBeUndefined();
+    expect(requests.at(-1)?.body.model).toBe("llama3");
+  });
+
+  it("can turn JSON mode off for local servers that reject it", async () => {
+    const llm = createLlmClient({ LLM_PROVIDER: "local", LOCAL_LLM_BASE_URL: baseUrl, LOCAL_LLM_MODEL: "m", LOCAL_LLM_JSON_MODE: "false" });
+    await llm.complete([{ role: "user", content: "hi" }], { json: true });
+    expect(requests.at(-1)?.body.response_format).toBeUndefined();
+  });
+
+  it("explains what's missing or wrong", async () => {
+    expect(() => createLlmClient({})).toThrow(LlmConfigError);
+    expect(() => createLlmClient({ LLM_PROVIDER: "local" })).toThrow("LOCAL_LLM_MODEL");
+    expect(() => createLlmClient({ LLM_PROVIDER: "other" })).toThrow("must be one of");
+    const bad = createLlmClient({ OPENROUTER_API_KEY: "bad", OPENROUTER_BASE_URL: baseUrl });
+    await expect(bad.complete([{ role: "user", content: "hi" }])).rejects.toThrow("Invalid key");
+  });
+});
