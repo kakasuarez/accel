@@ -8,7 +8,7 @@ import { api, ApiFailure } from '@/components/api';
 import { ACKNOWLEDGEMENTS, CLOSING_MESSAGE, GREETING, WELCOME_BACK, pickAcknowledgement } from '@/lib/bot/script';
 import { BotExplanation } from './BotExplanation';
 import { BotResult } from './BotResult';
-import type { AnswerResult, CustomerLead, IntakeState, LeadState, PublicQuestion } from './types';
+import type { AnswerResult, BundleChoice, CustomerLead, IntakeState, LeadState, PublicQuestion } from './types';
 import { VoiceAurora } from './VoiceAurora';
 import { useBotSpeech } from './useBotSpeech';
 import { SILENCE_MS, useVoice, type VoiceError } from './useVoice';
@@ -65,6 +65,10 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [voiceOn, setVoiceOn] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [bundleTier, setBundleTier] = useState<BundleChoice['tier']>('recommended');
+  // A different lead starts again from its Recommended bundle (BotResult is keyed by lead, so it resets too).
+  const currentLeadId = intake?.leadId;
+  useEffect(() => setBundleTier('recommended'), [currentLeadId]);
   const [showAllChips, setShowAllChips] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -525,13 +529,17 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                 <WordReveal lines={lines} stagger={45} onDone={() => setShowResult(true)} />
               </h1>
               <div className={`bot-result-explain${showResult ? ' is-in' : ''}`}>
-                <BotExplanation leadId={intake.leadId} explanation={intake.explanation} />
+                <BotExplanation key={intake.leadId} leadId={intake.leadId} tier={bundleTier} explanation={intake.explanation} />
               </div>
             </div>
             <div className={`bot-result-body${showResult ? ' is-in' : ''}`}>
               <BotResult
+                key={intake.leadId}
                 leadId={intake.leadId}
-                recommendation={intake.recommendation}
+                bundles={
+                  intake.bundles ?? [{ tier: 'recommended', label: 'Recommended', comparison: null, recommendation: intake.recommendation }]
+                }
+                onTierChange={setBundleTier}
                 onAlreadyAccepted={() => void refetch(intake.leadId)}
               />
             </div>

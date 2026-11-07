@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   turbopack: { root: import.meta.dirname },
   // Vercel only ships files it sees being imported, and these are read at runtime.
   outputFileTracingIncludes: {
-    '/**': ['./product_catalogue.csv', './training_leads.csv', './data/registry/*.csv'],
+    '/**': ['./product_catalogue.csv', './training_leads.csv', './data/registry/*.csv', './data/price_sensitivity.csv'],
   },
 };
 

@@ -7,7 +7,8 @@ const CORE_TAKE_UP = 0.9;
 const CORE_MIN_LEADS = 10;
 /** Used for a new product until there are sales to learn from. */
 const DEFAULT_SEATS = 5;
-const PEOPLE_UNITS = ["per line", "per user", "per device"];
+/** Sold per person, so the customer can change how many they need. */
+export const PEOPLE_UNITS = ["per line", "per user", "per device"];
 const SITE_UNITS = ["per site", "per counter", "per camera"];
 
 /** Customers arriving from these churn far more. Values from `current_internet` in the leads. */

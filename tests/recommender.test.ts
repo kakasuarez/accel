@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   CatalogueError,
+  ChoiceError,
   createRecommender,
   parseCatalogue,
   parseLeads,
@@ -307,6 +308,77 @@ describe("add-on picker", () => {
   });
   it("refuses to price an add-on the customer can't buy", () => {
     expect(() => priceWithAddOns(r.recommend(press), [staticIp])).toThrow(RangeError);
+  });
+});
+
+describe("rebuilding around choices, used for bundle options", () => {
+  let r: Recommender;
+  beforeAll(() => {
+    r = createRecommender(catalogue, leads, FAST);
+  });
+  const mobileIds = () => catalogue.products.filter((p) => p.role === "mobile").map((p) => p.id);
+  const line = (rec: ReturnType<Recommender["recommend"]>, role: string) => rec.lines.find((l) => l.role === role)!;
+
+  it("changes nothing without choices", () => {
+    expect(r.recommend(lawOffice, {})).toEqual(r.recommend(lawOffice));
+  });
+
+  it("lists every other allowed link and mobile plan", () => {
+    const rec = r.recommend(lawOffice);
+    expect(rec.alternatives.length).toBeGreaterThan(0);
+    expect(rec.mobileAlternatives.map((a) => a.productId).sort()).toEqual(mobileIds().filter((id) => id !== line(rec, "mobile").productId).sort());
+  });
+
+  it("swaps the link and re-prices by the difference shown", () => {
+    const rec = r.recommend(lawOffice);
+    const cheaper = rec.alternatives.find((a) => a.monthlyMinDelta < 0)!;
+    const swapped = r.recommend(lawOffice, { link: cheaper.productId });
+    expect(line(swapped, "link").productId).toBe(cheaper.productId);
+    expect(swapped.totals.monthlyMin).toBe(rec.totals.monthlyMin + cheaper.monthlyMinDelta);
+  });
+
+  it("rebuilds the add-ons: wireless internet loses add-ons that need fibre", () => {
+    const fibre = r.recommend({ ...lawOffice, fibreAvailable: true });
+    expect(fibre.addOns.some((a) => a.productId === staticIp)).toBe(true);
+    const wireless = r.recommend({ ...lawOffice, fibreAvailable: true }, { link: airfiber });
+    expect(wireless.addOns.some((a) => a.productId === staticIp)).toBe(false);
+  });
+
+  it("refuses a link or plan the catalogue doesn't allow this business", () => {
+    expect(() => r.recommend(salon, { link: leased100 })).toThrow(ChoiceError);
+    expect(() => r.recommend(lawOffice, { link: "NOPE" })).toThrow(ChoiceError);
+    expect(() => r.recommend(lawOffice, { mobile: fibre100 })).toThrow(ChoiceError);
+  });
+
+  it("swaps the mobile plan and keeps the number of lines", () => {
+    const rec = r.recommend(lawOffice);
+    const other = rec.mobileAlternatives[0]!;
+    const swapped = r.recommend(lawOffice, { mobile: other.productId });
+    expect(line(swapped, "mobile").productId).toBe(other.productId);
+    expect(line(swapped, "mobile").quantity).toBe(line(rec, "mobile").quantity);
+    expect(swapped.totals.monthlyMin).toBe(rec.totals.monthlyMin + other.monthlyMinDelta);
+  });
+
+  it("changes per-person quantities from 1 up to the number of staff, and nothing else", () => {
+    const rec = r.recommend(lawOffice);
+    const mobile = line(rec, "mobile");
+    const one = r.recommend(lawOffice, { quantities: { [mobile.productId]: 1 } });
+    expect(line(one, "mobile").quantity).toBe(1);
+    expect(line(one, "mobile").monthlyMin).toBe(catalogue.byId.get(mobile.productId)!.priceMin);
+    for (const bad of [0, lawOffice.employees + 1, 2.5]) {
+      expect(() => r.recommend(lawOffice, { quantities: { [mobile.productId]: bad } })).toThrow(ChoiceError);
+    }
+    expect(() => r.recommend(lawOffice, { quantities: { [line(rec, "link").productId]: 2 } })).toThrow(/can't be changed/);
+    expect(r.recommend(lawOffice, { quantities: { NOT_IN_BUNDLE: 3 } }).lines).toEqual(rec.lines);
+  });
+
+  it("warns a heavy internet user when a bundle has a slower link, without blocking it", () => {
+    const heavy = { ...lawOffice, heavyBandwidth: true };
+    const rec = r.recommend(heavy);
+    const speed = (id: string) => catalogue.byId.get(id)!.speedMbps ?? 0;
+    const slower = rec.alternatives.find((a) => speed(a.productId) < speed(line(rec, "link").productId))!;
+    expect(r.recommend(heavy, { link: slower.productId }).flags.find((f) => f.code === "slower_link_chosen")).toMatchObject({ audience: "customer" });
+    expect(r.recommend(lawOffice, { link: slower.productId }).flags.some((f) => f.code === "slower_link_chosen")).toBe(false);
   });
 });
 

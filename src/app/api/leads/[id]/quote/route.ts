@@ -3,27 +3,22 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { ApiError, parseBody, route } from "@/lib/http";
 import { ownLead } from "@/lib/leads/access";
-import { recommendationFor } from "@/lib/leads/quote";
+import { BUNDLE_TIERS, chosenBundle, priceSelection } from "@/lib/leads/quote";
 import { getQuestions } from "@/lib/questions";
-import { getRecommender, priceWithAddOns } from "@/lib/recommender";
+import { customerView, getRecommender } from "@/lib/recommender";
 
-const Body = z.object({ selectedAddOns: z.array(z.string()).max(50) });
+const Body = z.object({ selectedAddOns: z.array(z.string()).max(50), bundle: z.enum(BUNDLE_TIERS).default("recommended") });
 
-/** Prices the customer's picker selection. Saves nothing. */
+/**
+ * Prices one of the bundle options with the customer's ticked add-ons. Saves nothing. Add-ons the bundle
+ * doesn't allow are left out and listed, since switching bundle can change which add-ons are available.
+ */
 export const POST = route(async (request, { params }: RouteContext<"/api/leads/[id]/quote">) => {
   const user = await requireUser();
-  const { selectedAddOns } = await parseBody(request, Body);
+  const { selectedAddOns, bundle } = await parseBody(request, Body);
   const lead = await ownLead(user, (await params).id);
-  const recommendation = recommendationFor(getRecommender(), getQuestions(), lead.answers);
-  if (!recommendation) throw new ApiError(409, "not_ready", "Please finish the questions first.");
-  return NextResponse.json({ totals: priced(recommendation, selectedAddOns) });
+  const recommender = getRecommender();
+  const option = chosenBundle(recommender, getQuestions(), lead.answers, bundle);
+  if (!option) throw new ApiError(409, "not_ready", "Please finish the questions first.");
+  return NextResponse.json({ ...priceSelection(option.recommendation, selectedAddOns, recommender.catalogue), recommendation: customerView(option.recommendation) });
 });
-
-function priced(...args: Parameters<typeof priceWithAddOns>) {
-  try {
-    return priceWithAddOns(...args);
-  } catch (error) {
-    if (error instanceof RangeError) throw new ApiError(400, "invalid_add_on", error.message);
-    throw error;
-  }
-}

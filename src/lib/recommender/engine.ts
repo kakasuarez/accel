@@ -1,7 +1,8 @@
 import { eligibilityBlock } from "./eligibility";
-import { FIRST_BUSINESS_LINK, buildInsights, rate, type Insights } from "./insights";
+import { FIRST_BUSINESS_LINK, PEOPLE_UNITS, buildInsights, rate, type Insights } from "./insights";
 import { forestScorer, frequencyScorer, type ModelOptions, type Scorer } from "./model/scorer";
 import { buildSegmentIndex } from "./segments";
+import { DEFAULT_SENSITIVITY, type Sensitivity } from "./sensitivity";
 import type {
   AddOnOption,
   AddOnRecommendation,
@@ -11,6 +12,7 @@ import type {
   BundleTotals,
   BusinessProfile,
   Catalogue,
+  Choices,
   Flag,
   Lead,
   LineRole,
@@ -25,9 +27,23 @@ import type {
 const LONG_INSTALL_DAYS = 21;
 const MAX_OPEN_QUESTIONS = 4;
 
+/** A choice the catalogue rules don't allow, such as a link this customer can't have. */
+export class ChoiceError extends RangeError {
+  override name = "ChoiceError";
+}
+
+/**
+ * Checks by name, not instanceof: Next.js builds the recommender (created once at startup) and the routes
+ * into separate bundles, so a ChoiceError thrown by it isn't an instance of the routes' copy of the class.
+ */
+export const isChoiceError = (error: unknown): error is ChoiceError => error instanceof Error && error.name === "ChoiceError";
+
 export interface Recommender {
-  recommend(profile: BusinessProfile): Recommendation;
+  /** With `choices`, the same rules rebuild the bundle around the customer's changes. */
+  recommend(profile: BusinessProfile, choices?: Choices): Recommendation;
   cityTierOf(city: string): number | undefined;
+  /** From data/price_sensitivity.csv; medium for a segment it doesn't list. */
+  priceSensitivity(segment: Segment): Sensitivity;
   businessTypes: readonly string[];
   /** Cities seen in the leads, the only ones whose tier is known. */
   cities: readonly string[];
@@ -61,12 +77,24 @@ function totalsOf(items: readonly BundleLine[] | readonly (BundleLine | AddOnOpt
  * Builds everything from the two datasets: nothing about any product is known ahead of time.
  * The model scores products; catalogue rules decide what it may choose from.
  */
-export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], model: ModelOptions = {}): Recommender {
+export function createRecommender(
+  catalogue: Catalogue,
+  leads: readonly Lead[],
+  model: ModelOptions = {},
+  sensitivity: ReadonlyMap<Segment, Sensitivity> = new Map(),
+): Recommender {
   const insights = buildInsights(catalogue, leads);
   const segments = buildSegmentIndex(leads);
   const score: Scorer = model.kind === "frequency" ? frequencyScorer(insights) : forestScorer(catalogue, leads, model);
 
-  function recommend(profile: BusinessProfile): Recommendation {
+  function recommend(profile: BusinessProfile, choices: Choices = {}): Recommendation {
+    const recommended = build(profile, {});
+    if (!choices.link && !choices.mobile && !choices.quantities) return recommended;
+    return build(profile, choices, recommended);
+  }
+
+  /** `recommended` is the untouched bundle, given when `choices` change it. */
+  function build(profile: BusinessProfile, choices: Choices, recommended?: Recommendation): Recommendation {
     assertValid(profile);
     const { segment, inferred } = segments.classify(profile.businessType, profile.employees, profile.sites);
     const scoreOf = (product: Product) => score(product.id, profile, segment);
@@ -81,11 +109,21 @@ export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], 
     const lines: BundleLine[] = [];
     const selected = new Set<ProductId>();
     const addLine = (product: Product, role: LineRole) => {
-      lines.push({ ...priced(product, product.description), role });
+      const wanted = choices.quantities?.[product.id];
+      if (wanted !== undefined) {
+        const adjustable = role !== "link" && PEOPLE_UNITS.includes(product.unit);
+        const max = Math.max(profile.employees, insights.quantity(segment, product, profile));
+        if (!adjustable) throw new ChoiceError(`${product.name} quantity can't be changed`);
+        if (!Number.isInteger(wanted) || wanted < 1 || wanted > max) throw new ChoiceError(`${product.name} quantity must be a whole number from 1 to ${max}`);
+      }
+      // A swap keeps the quantity it replaces, so the price difference holds.
+      const before = recommended?.lines.find((l) => l.role === role);
+      const carried = before && before.productId !== product.id && role !== "core" ? before.quantity : undefined;
+      lines.push({ ...priced(product, product.description, wanted ?? carried), role });
       selected.add(product.id);
     };
-    const priced = (product: Product, why: string) => {
-      const quantity = insights.quantity(segment, product, profile);
+    const priced = (product: Product, why: string, quantityChoice?: number) => {
+      const quantity = quantityChoice ?? insights.quantity(segment, product, profile);
       return {
         productId: product.id,
         name: product.name,
@@ -106,8 +144,11 @@ export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], 
     // 1. Link first, because other products depend on it.
     const links = catalogue.products.filter((p) => p.role === "link");
     const allowedLinks = links.filter((p) => allowed(p)).sort(byScore);
-    let link = allowedLinks[0];
-    if (link && profile.heavyBandwidth) {
+    let link: Product | undefined = allowedLinks[0];
+    if (choices.link) {
+      link = allowedLinks.find((p) => p.id === choices.link);
+      if (!link) throw new ChoiceError(`${choices.link} isn't an internet connection this business can have`);
+    } else if (link && profile.heavyBandwidth) {
       const upgrades = links.filter((p) => isFasterAndDearer(p, link!) && p.targetSegments.includes(segment));
       const upgrade = upgrades.filter((p) => allowed(p)).sort((a, b) => a.priceMin - b.priceMin)[0];
       if (upgrade) link = upgrade;
@@ -117,7 +158,12 @@ export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], 
     else links.filter((p) => p.targetSegments.includes(segment)).forEach(noteBlock);
 
     // 2. Mobile: in every real bundle.
-    const mobile = catalogue.products.filter((p) => p.role === "mobile" && allowed(p)).sort(byScore)[0];
+    const allowedMobiles = catalogue.products.filter((p) => p.role === "mobile" && allowed(p)).sort(byScore);
+    let mobile: Product | undefined = allowedMobiles[0];
+    if (choices.mobile) {
+      mobile = allowedMobiles.find((p) => p.id === choices.mobile);
+      if (!mobile) throw new ChoiceError(`${choices.mobile} isn't a mobile plan this business can have`);
+    }
     if (mobile) addLine(mobile, "mobile");
 
     // 3. Add-ons nearly everyone in the segment buys, unless the customer declined.
@@ -156,7 +202,8 @@ export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], 
       segmentLabel: insights.segmentLabel(segment),
       lines,
       totals,
-      alternatives: link ? alternativesFor(allowedLinks, link, insights.quantity(segment, link, profile), segment, insights) : [],
+      alternatives: link ? alternativesFor(allowedLinks, link, lines, segment, insights) : [],
+      mobileAlternatives: mobile ? alternativesFor(allowedMobiles, mobile, lines, segment, insights) : [],
       addOns: [
         ...stated.map((p) => toOption(p, "stated_need")),
         ...modelPicks.map((p) => toOption(p, "model")),
@@ -164,7 +211,7 @@ export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], 
         ...declined.map((p) => toOption(p, null)),
       ],
       blocked,
-      flags: flagsFor(profile, segment, inferred, link, lines, totals.installDays, catalogue, insights),
+      flags: [...flagsFor(profile, segment, inferred, link, lines, totals.installDays, catalogue, insights), ...choiceFlags(profile, link, recommended, catalogue)],
       openQuestions: openQuestions(profile, [...modelPicks, ...unanswered], lines, catalogue),
     };
   }
@@ -173,6 +220,7 @@ export function createRecommender(catalogue: Catalogue, leads: readonly Lead[], 
   return {
     recommend,
     cityTierOf: insights.cityTierOf,
+    priceSensitivity: (segment) => sensitivity.get(segment) ?? DEFAULT_SENSITIVITY,
     businessTypes: segments.businessTypes,
     cities: distinct(leads.map((l) => l.city)),
     currentInternetTypes: distinct(leads.map((l) => l.profile.currentInternet)),
@@ -184,15 +232,31 @@ function isFasterAndDearer(candidate: Product, current: Product): boolean {
   return (candidate.speedMbps ?? 0) > (current.speedMbps ?? 0) && candidate.priceMin > current.priceMin;
 }
 
-function alternativesFor(allowedLinks: Product[], link: Product, quantity: number, segment: Segment, insights: Insights): AlternativeLink[] {
-  return allowedLinks
-    .filter((p) => p.id !== link.id)
+/** The other allowed products for a line, priced at the line's current quantity. */
+function alternativesFor(allowedProducts: Product[], current: Product, lines: readonly BundleLine[], segment: Segment, insights: Insights): AlternativeLink[] {
+  const line = lines.find((l) => l.productId === current.id)!;
+  return allowedProducts
+    .filter((p) => p.id !== current.id)
     .map((p) => ({
       productId: p.id,
       name: p.name,
-      monthlyMinDelta: quantity * (p.priceMin - link.priceMin),
+      monthlyMinDelta: line.quantity * (p.priceMin - current.priceMin),
       support: insights.support(segment, p.id),
     }));
+}
+
+/** Warns, without blocking, when a heavy internet user picks a slower connection than we recommended. */
+function choiceFlags(profile: BusinessProfile, link: Product | undefined, recommended: Recommendation | undefined, catalogue: Catalogue): Flag[] {
+  const recommendedLink = catalogue.byId.get(recommended?.lines.find((l) => l.role === "link")?.productId ?? "");
+  if (!profile.heavyBandwidth || !link || !recommendedLink) return [];
+  if ((link.speedMbps ?? 0) >= (recommendedLink.speedMbps ?? 0)) return [];
+  return [
+    {
+      code: "slower_link_chosen",
+      audience: "customer",
+      message: `You told us you use the internet a lot, so ${link.name} may feel slow at busy times. We recommended ${recommendedLink.name}.`,
+    },
+  ];
 }
 
 function flagsFor(

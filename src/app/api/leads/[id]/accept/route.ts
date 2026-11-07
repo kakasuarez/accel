@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { ApiError, parseBody, route } from "@/lib/http";
 import { ownLead } from "@/lib/leads/access";
-import { nextQuestion, recommendationFor } from "@/lib/leads/quote";
+import { BUNDLE_TIERS, chosenBundle, nextQuestion, recommendationFor } from "@/lib/leads/quote";
 import { acceptQuote, listEvents } from "@/lib/leads/repository";
 import { STAGE_AFTER_QUOTE } from "@/lib/leads/stages";
 import { customerLead } from "@/lib/leads/views";
@@ -12,6 +12,7 @@ import { getRecommender, priceWithAddOns } from "@/lib/recommender";
 
 const Body = z.object({
   selectedAddOns: z.array(z.string()).max(50),
+  bundle: z.enum(BUNDLE_TIERS).default("recommended"),
   businessName: z.string().trim().min(1).max(120),
   contactName: z.string().trim().min(1).max(120),
   phone: z.string().trim().regex(/^\+?[0-9][0-9 ()-]{6,19}$/, "Enter a valid phone number"),
@@ -20,15 +21,18 @@ const Body = z.object({
 /** Prices are recalculated here: nothing about the quote is taken from the browser. */
 export const POST = route(async (request, { params }: RouteContext<"/api/leads/[id]/accept">) => {
   const user = await requireUser();
-  const { selectedAddOns, ...contact } = await parseBody(request, Body);
+  const { selectedAddOns, bundle, ...contact } = await parseBody(request, Body);
   const lead = await ownLead(user, (await params).id);
   if (lead.quote) throw new ApiError(409, "already_accepted", "This quote has already been accepted.");
 
   const questions = getQuestions();
-  const recommendation = recommendationFor(getRecommender(), questions, lead.answers);
-  if (!recommendation || nextQuestion(questions, lead.answers, recommendation)) {
+  const recommender = getRecommender();
+  const recommended = recommendationFor(recommender, questions, lead.answers);
+  if (!recommended || nextQuestion(questions, lead.answers, recommended)) {
     throw new ApiError(409, "not_ready", "Please finish the questions first.");
   }
+  // Strict, unlike the quote screen: every ticked add-on must be available in the chosen bundle.
+  const { recommendation } = chosenBundle(recommender, questions, lead.answers, bundle)!;
 
   let totals;
   try {
@@ -37,6 +41,6 @@ export const POST = route(async (request, { params }: RouteContext<"/api/leads/[
     if (error instanceof RangeError) throw new ApiError(400, "invalid_add_on", error.message);
     throw error;
   }
-  const updated = await acceptQuote(lead.id, STAGE_AFTER_QUOTE, contact, { recommendation, selectedAddOns: [...new Set(selectedAddOns)], totals });
+  const updated = await acceptQuote(lead.id, STAGE_AFTER_QUOTE, contact, { recommendation, bundle, selectedAddOns: [...new Set(selectedAddOns)], totals });
   return NextResponse.json({ lead: customerLead(updated, await listEvents(lead.id)) });
 });

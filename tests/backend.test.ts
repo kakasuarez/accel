@@ -4,14 +4,14 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { explainRecommendation } from "../src/lib/leads/explain";
-import { nextQuestion, profileComplete, recommendationFor } from "../src/lib/leads/quote";
+import { bundleOptions, chosenBundle, nextQuestion, priceSelection, profileComplete, recommendationFor } from "../src/lib/leads/quote";
 import { canAdvance } from "../src/lib/leads/stages";
 import { LlmConfigError, LlmError, createLlmClient, type LlmClient } from "../src/lib/llm/client";
 import { addOnQuestionId, buildQuestions } from "../src/lib/questions/build";
 import { interpretAnswer, parseReply, validValue } from "../src/lib/questions/interpret";
 import type { Answers, Question } from "../src/lib/questions/types";
 import { TRAINING_COLUMNS } from "../src/lib/recommender/leads";
-import { createRecommender, customerView, parseCatalogue, parseLeads } from "../src/lib/recommender";
+import { budgetMobileLines, createRecommender, customerView, parseCatalogue, parseLeads, parseSensitivity, type Recommendation } from "../src/lib/recommender";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const catalogueCsv = readFileSync(resolve(ROOT, "product_catalogue.csv"), "utf8");
@@ -254,6 +254,91 @@ describe("what customers and the LLM can see", () => {
     const text = await explainRecommendation(scripted("It only costs ₹999 a month."), profile, view);
     expect(text).not.toContain("999 a month");
     expect(text).toContain(view.lines[0]!.name);
+  });
+});
+
+describe("bundle options", () => {
+  const sensitive = createRecommender(parseCatalogue(catalogueCsv), leads, { trees: 12 }, parseSensitivity(readFileSync(resolve(ROOT, "data/price_sensitivity.csv"), "utf8")));
+  const set = buildQuestions(sensitive);
+  const answersFor = (businessType: string, employees: number, sites = 1): Answers => ({ ...profile, businessType, employees, sites, city: "Mumbai" });
+  const options = (answers: Answers) => bundleOptions(sensitive, set, answers)!;
+  const mobileLines = (r: Recommendation) => r.lines.find((l) => l.role === "mobile")!.quantity;
+
+  it("reads price sensitivity per segment from the CSV, with medium for anything unlisted", () => {
+    expect(["micro", "prof", "multi", "mfg"].map((s) => sensitive.priceSensitivity(s))).toEqual(["high", "medium", "medium_low", "low"]);
+    expect(sensitive.priceSensitivity("new_segment")).toBe("medium");
+    expect(recommender.priceSensitivity("micro")).toBe("medium");
+    expect(() => parseSensitivity("segment,price_sensitivity\nmicro,very")).toThrow(/must be one of/);
+  });
+
+  it("cuts mobile lines by sensitivity: down to 1, about half, or not at all", () => {
+    expect([10, 3, 1].map((n) => budgetMobileLines("high", n))).toEqual([1, 1, 1]);
+    expect([10, 3, 1].map((n) => budgetMobileLines("medium", n))).toEqual([5, 2, 1]);
+    expect([10, 3].map((n) => budgetMobileLines("medium_low", n))).toEqual([10, 3]);
+    expect([10, 3].map((n) => budgetMobileLines("low", n))).toEqual([10, 3]);
+  });
+
+  it("puts Recommended first, Budget cheaper and Premium dearer, all different", () => {
+    for (const answers of [answersFor("Salon", 6), answersFor("Law office", 12), answersFor("Gym chain", 60, 6), answersFor("Packaging unit", 40)]) {
+      const [first, ...rest] = options(answers);
+      expect(first!.tier).toBe("recommended");
+      expect(first!.comparison).toBeNull();
+      for (const option of rest) {
+        const delta = option.recommendation.totals.monthlyMin - first!.recommendation.totals.monthlyMin;
+        expect(option.tier === "budget" ? delta < 0 : delta > 0).toBe(true);
+        expect(option.comparison).toMatch(option.tier === "budget" ? /^Saves ₹/ : /more a month/);
+      }
+      expect(new Set(rest.map((o) => o.tier)).size).toBe(rest.length);
+    }
+  });
+
+  it("gives the most price-sensitive segment the deepest Budget cut", () => {
+    const micro = options(answersFor("Salon", 6));
+    const budget = micro.find((o) => o.tier === "budget")!;
+    expect(mobileLines(budget.recommendation)).toBe(1);
+    expect(budget.comparison).toContain("1 mobile line instead of");
+    const mfg = options(answersFor("Packaging unit", 40));
+    const mfgBudget = mfg.find((o) => o.tier === "budget");
+    if (mfgBudget) expect(mobileLines(mfgBudget.recommendation)).toBe(mobileLines(mfg[0]!.recommendation));
+  });
+
+  it("only offers products the catalogue allows in every bundle", () => {
+    for (const option of options(answersFor("Law office", 12))) {
+      for (const line of option.recommendation.lines) {
+        const product = sensitive.catalogue.byId.get(line.productId)!;
+        expect(product.targetSegments).toContain(option.recommendation.segment);
+      }
+    }
+  });
+
+  it("keeps the city and GST notes on every bundle", () => {
+    for (const option of options({ ...answersFor("Salon", 6), city: "Shillong", hasGstin: null })) {
+      expect(option.recommendation.flags.map((f) => f.code)).toEqual(expect.arrayContaining(["city_unconfirmed", "gstin_unconfirmed"]));
+    }
+  });
+
+  it("refuses a bundle this customer isn't offered", () => {
+    const answers = answersFor("Salon", 6);
+    const offered = options(answers).map((o) => o.tier);
+    const missing = (["budget", "premium"] as const).find((t) => !offered.includes(t));
+    if (missing) expect(() => chosenBundle(sensitive, set, answers, missing)).toThrow(expect.objectContaining({ status: 400, code: "invalid_bundle" }));
+    expect(chosenBundle(sensitive, set, answers, "recommended")?.tier).toBe("recommended");
+  });
+
+  it("prices a bundle and drops ticked add-ons it doesn't allow", () => {
+    const answers = answersFor("Law office", 12);
+    const [recommended, ...rest] = options(answers);
+    const ticked = recommended!.recommendation.addOns.slice(0, 3).map((a) => a.productId);
+    for (const option of rest) {
+      const priced = priceSelection(option.recommendation, [...ticked, "NOPE"], sensitive.catalogue);
+      expect(priced.removedAddOns.map((a) => a.productId)).toContain("NOPE");
+      expect(priced.selectedAddOns.every((id) => option.recommendation.addOns.some((a) => a.productId === id))).toBe(true);
+    }
+  });
+
+  it("still shows quotes saved before mobile plans had alternatives", () => {
+    const { mobileAlternatives: _dropped, ...saved } = recommendationFor(recommender, questionSet, answersFor("Law office", 12))!;
+    expect(customerView(saved as never).mobileAlternatives).toEqual([]);
   });
 });
 

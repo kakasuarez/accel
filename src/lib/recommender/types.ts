@@ -104,6 +104,23 @@ export interface BundleLine extends Priced {
 }
 
 /**
+ * Changes to the recommended base bundle, used to build the Budget and Premium bundles. Each is checked
+ * against the catalogue rules, so a bundle built from them can't include anything this customer can't have.
+ */
+export interface Choices {
+  /** Another internet connection from `alternatives`. */
+  link?: ProductId;
+  /** Another mobile plan from `mobileAlternatives`. */
+  mobile?: ProductId;
+  /**
+   * New quantities for items sold per person (mobile lines, email users), by product id, from 1 to the
+   * number of staff. Ids not in the bundle are ignored. A swapped line keeps the quantity it replaced
+   * unless one is given under the new product's id.
+   */
+  quantities?: Readonly<Record<ProductId, number>>;
+}
+
+/**
  * stated_need: the customer said they want it.
  * model: the model ranks it highly and the customer hasn't said either way.
  */
@@ -134,6 +151,7 @@ export interface BlockedProduct {
   reason: string;
 }
 
+/** Another product that can take a line's place: an internet connection or a mobile plan. */
 export interface AlternativeLink {
   productId: ProductId;
   name: string;
@@ -152,7 +170,8 @@ export type FlagCode =
   | "retention_risk_first_business_link"
   | "kyc_risk_no_gstin"
   | "tier2_fibre_delivery_risk"
-  | "long_install";
+  | "long_install"
+  | "slower_link_chosen";
 
 export interface Flag {
   code: FlagCode;
@@ -174,7 +193,10 @@ export interface Recommendation {
   lines: BundleLine[];
   /** Base bundle only. Use `priceWithAddOns` once the customer has picked. */
   totals: BundleTotals;
+  /** Other internet connections this customer can have. */
   alternatives: AlternativeLink[];
+  /** Other mobile plans this customer can have. */
+  mobileAlternatives: AlternativeLink[];
   /** Every add-on this customer can buy: recommended first, best match first. */
   addOns: AddOnOption[];
   /** Products the customer wanted, or would have suited them, that they can't have. */

@@ -110,20 +110,39 @@ async function run() {
   step("explanation written");
 
   const addOn = state.recommendation.addOns[0]?.productId;
-  const selected = addOn ? [addOn] : [];
-  const quote = await customer("POST", `/api/leads/${id}/quote`, { selectedAddOns: selected });
+  const ticked = addOn ? [addOn] : [];
+  const quote = await customer("POST", `/api/leads/${id}/quote`, { selectedAddOns: ticked });
   assert.equal(quote.status, 200);
-  assert.equal((await customer("POST", `/api/leads/${id}/quote`, { selectedAddOns: ["NOPE"] })).status, 400);
-  step("picker prices add-ons and refuses invalid ones");
+  const unknown = await customer("POST", `/api/leads/${id}/quote`, { selectedAddOns: ["NOPE"] });
+  assert.deepEqual(unknown.json.removedAddOns.map((a: Json) => a.productId), ["NOPE"]);
+  step("picker prices add-ons and leaves out ones that aren't available");
+
+  const bundles: Json[] = state.bundles;
+  assert.equal(bundles[0].tier, "recommended");
+  for (const b of bundles) console.log(`      ${b.label}: ${b.recommendation.totals.monthlyMin}/month${b.comparison ? ` (${b.comparison})` : ""}`);
+  const budget = bundles.find((b) => b.tier === "budget");
+  assert.ok(budget, "A micro business should be offered a Budget bundle");
+  assert.ok(budget.recommendation.totals.monthlyMin < bundles[0].recommendation.totals.monthlyMin);
+  const priced = await customer("POST", `/api/leads/${id}/quote`, { bundle: "budget", selectedAddOns: ticked });
+  assert.equal(priced.status, 200, JSON.stringify(priced.json));
+  assert.deepEqual(priced.json.recommendation.lines.map((l: Json) => l.productId), budget.recommendation.lines.map((l: Json) => l.productId));
+  const offered = bundles.map((b) => b.tier);
+  const missing = ["budget", "premium"].find((t) => !offered.includes(t));
+  if (missing) assert.equal((await customer("POST", `/api/leads/${id}/quote`, { bundle: missing, selectedAddOns: [] })).json.error.code, "invalid_bundle");
+  const selected: string[] = priced.json.selectedAddOns;
+  step(`${bundles.length} bundles offered, Recommended first; Budget prices correctly`);
 
   assert.equal((await stranger("GET", `/api/leads/${id}`)).status, 404);
   assert.equal((await stranger("GET", "/api/admin/leads")).status, 403);
   step("customers can't reach other leads or admin routes");
 
-  const contact = { selectedAddOns: selected, businessName: "E2E Bakery", contactName: "Test Person", phone: "+91 98765 43210" };
+  assert.equal((await customer("POST", `/api/leads/${id}/accept`, { selectedAddOns: ["NOPE"], bundle: "budget", businessName: "x", contactName: "y", phone: "+91 98765 43210" })).status, 400);
+  const contact = { selectedAddOns: selected, bundle: "budget", businessName: "E2E Bakery", contactName: "Test Person", phone: "+91 98765 43210" };
   const accepted = await customer("POST", `/api/leads/${id}/accept`, contact);
   assert.equal(accepted.status, 200, JSON.stringify(accepted.json));
   assert.equal(accepted.json.lead.stage, "Quote accepted");
+  assert.equal(accepted.json.lead.quote.bundle, "budget");
+  assert.deepEqual(accepted.json.lead.quote.lines.map((l: Json) => l.productId), budget.recommendation.lines.map((l: Json) => l.productId));
   assert.equal((await customer("POST", `/api/leads/${id}/accept`, contact)).status, 409);
   step("quote accepted once");
 

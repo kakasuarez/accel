@@ -2,10 +2,14 @@ import type postgres from "postgres";
 import { db } from "../db";
 import type { Answers, AnswerValue } from "../questions/types";
 import type { Recommendation, ProductId, BundleTotals } from "../recommender";
+import type { BundleTier } from "./quote";
 import type { LeadStage } from "./stages";
 
 export interface AcceptedQuote {
+  /** The bundle the customer accepted. */
   recommendation: Recommendation;
+  /** Which of the bundle options it was. Missing on quotes accepted before there were options. */
+  bundle?: BundleTier;
   selectedAddOns: ProductId[];
   totals: BundleTotals;
 }

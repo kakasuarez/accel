@@ -62,6 +62,12 @@ export function CurrentStep({ current }: { current: Tracker['current'] }) {
   );
 }
 
+const BUNDLE_LABELS: Record<NonNullable<CustomerLead['quote']>['bundle'], string> = {
+  recommended: 'Recommended',
+  budget: 'Budget',
+  premium: 'Premium',
+};
+
 export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quote']> }) {
   const { lines, addOns, totals, flags } = quote;
   return (
@@ -70,7 +76,7 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
         <h2 id="bundle-title" className="dash-h2">
           Your bundle
         </h2>
-        <span className="chip">Accepted</span>
+        <span className="chip">{BUNDLE_LABELS[quote.bundle]} · Accepted</span>
       </div>
 
       <div className="summary">

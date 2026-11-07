@@ -1,12 +1,19 @@
 import { customerView, type Recommender } from "../recommender";
 import type { Question, QuestionSet } from "../questions/types";
-import { nextQuestion, recommendationFor } from "./quote";
+import { bundleOptions, nextQuestion, recommendationFor } from "./quote";
 import type { LeadEventRow, LeadRow } from "./repository";
 import { LEAD_STAGES } from "./stages";
 
 function accepted(quote: NonNullable<LeadRow["quote"]>) {
   const view = customerView(quote.recommendation);
-  return { lines: view.lines, addOns: view.addOns.filter((a) => quote.selectedAddOns.includes(a.productId)), totals: quote.totals, flags: view.flags };
+  return {
+    // Quotes accepted before there were bundle options were all the recommended bundle.
+    bundle: quote.bundle ?? "recommended",
+    lines: view.lines,
+    addOns: view.addOns.filter((a) => quote.selectedAddOns.includes(a.productId)),
+    totals: quote.totals,
+    flags: view.flags,
+  };
 }
 
 const history = (events: readonly LeadEventRow[]) => events.map(({ stage, status, created_at }) => ({ stage, status, at: created_at }));
@@ -53,12 +60,15 @@ const publicQuestion = ({ id, phase, question, type, options, min, unit, skipOpt
 export function intakeState(lead: LeadRow, recommender: Recommender, questionSet: QuestionSet) {
   const recommendation = recommendationFor(recommender, questionSet, lead.answers);
   const next = nextQuestion(questionSet, lead.answers, recommendation);
+  // Built once the questions are done: the customer picks one of these, Recommended first.
+  const bundles = recommendation && !next ? bundleOptions(recommender, questionSet, lead.answers) : null;
   return {
     leadId: lead.id,
     stage: lead.stage,
     answers: lead.answers,
     nextQuestion: next && publicQuestion(next),
     recommendation: recommendation && customerView(recommendation),
+    bundles: bundles?.map(({ tier, label, comparison, recommendation: r }) => ({ tier, label, comparison, recommendation: customerView(r) })) ?? null,
     explanation: lead.explanation,
   };
 }

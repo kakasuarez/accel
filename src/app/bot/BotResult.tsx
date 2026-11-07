@@ -6,7 +6,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { api, ApiFailure } from '@/components/api';
 import { plural, quantityLabel, rupeeRange } from '@/components/format';
 import { formatRupees } from '@/lib/bot/script';
-import type { AddOn, BundleTotals, CustomerLead, CustomerRecommendation } from './types';
+import type { AddOn, BundleChoice, BundleTotals, CustomerLead, CustomerRecommendation } from './types';
 
 const PHONE = /^\+?[0-9][0-9 ()-]{6,19}$/;
 /** Add-ons shown before "Show more": the recommended ones, or at least this many. */
@@ -32,37 +32,49 @@ const RECOMMENDATION_TAG: Record<NonNullable<AddOn['recommendation']>, string> =
 
 interface Props {
   leadId: string;
-  recommendation: CustomerRecommendation;
+  /** Recommended first, then Budget and Premium when they differ from it. */
+  bundles: BundleChoice[];
+  /** Tells the page which bundle is picked, so the explanation can follow it. */
+  onTierChange?: (tier: BundleChoice['tier']) => void;
   /** Called when the server says the quote was already accepted elsewhere. */
   onAlreadyAccepted: () => void;
 }
 
-export function BotResult({ leadId, recommendation: rec, onAlreadyAccepted }: Props) {
+export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: Props) {
   const router = useRouter();
   const id = useId();
   const base = `/api/leads/${encodeURIComponent(leadId)}`;
+
+  const [tier, setTier] = useState(bundles[0]!.tier);
+  const bundle = bundles.find((b) => b.tier === tier) ?? bundles[0]!;
+  const rec: CustomerRecommendation = bundle.recommendation;
 
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(rec.addOns.filter((a) => a.recommendation !== null).map((a) => a.productId)),
   );
   const [serverTotals, setServerTotals] = useState<{ key: string; totals: BundleTotals } | null>(null);
   const [showAllAddOns, setShowAllAddOns] = useState(false);
-  const selectionKey = useMemo(() => [...selected].sort().join(','), [selected]);
-  const totals = serverTotals?.key === selectionKey ? serverTotals.totals : localTotals(rec, selected);
+  // Ticks are kept across bundles, so looking at another bundle and coming back loses nothing. Only the add-ons
+  // the current bundle offers are priced and accepted.
+  const offered = useMemo(() => new Set([...selected].filter((productId) => rec.addOns.some((a) => a.productId === productId))), [selected, rec]);
+  const selectionKey = useMemo(() => [...offered].sort().join(','), [offered]);
+  const priceKey = `${tier}|${selectionKey}`;
+  const totals = serverTotals?.key === priceKey ? serverTotals.totals : localTotals(rec, offered);
 
   // Live price from the server (the source of truth); the local sum covers the gap.
   useEffect(() => {
     let live = true;
     const t = window.setTimeout(() => {
-      api<{ totals: BundleTotals }>(`${base}/quote`, { method: 'POST', json: { selectedAddOns: selectionKey ? selectionKey.split(',') : [] } })
-        .then((r) => live && setServerTotals({ key: selectionKey, totals: r.totals }))
+      const [bundleTier, ids] = priceKey.split('|');
+      api<{ totals: BundleTotals }>(`${base}/quote`, { method: 'POST', json: { bundle: bundleTier, selectedAddOns: ids ? ids.split(',') : [] } })
+        .then((r) => live && setServerTotals({ key: priceKey, totals: r.totals }))
         .catch(() => {});
     }, 200);
     return () => {
       live = false;
       window.clearTimeout(t);
     };
-  }, [base, selectionKey]);
+  }, [base, priceKey]);
 
   const toggle = (productId: string) =>
     setSelected((prev) => {
@@ -103,7 +115,8 @@ export function BotResult({ leadId, recommendation: rec, onAlreadyAccepted }: Pr
       await api<{ lead: CustomerLead }>(`${base}/accept`, {
         method: 'POST',
         json: {
-          selectedAddOns: [...selected],
+          bundle: tier,
+          selectedAddOns: [...offered],
           businessName: form.businessName.trim(),
           contactName: form.contactName.trim(),
           phone: form.phone.trim(),
@@ -165,10 +178,41 @@ export function BotResult({ leadId, recommendation: rec, onAlreadyAccepted }: Pr
 
   return (
     <div className="result">
+      {bundles.length > 1 && (
+        <fieldset className="tiers">
+          <legend className="addons-title">Choose your bundle</legend>
+          <p className="addons-sub">Monthly prices before add-ons. You can switch any time before you accept.</p>
+          <div className="tier-list">
+            {bundles.map((b) => (
+              <label key={b.tier} className={`tier${b.tier === tier ? ' is-on' : ''}`}>
+                <input
+                  type="radio"
+                  name={`${id}-tier`}
+                  value={b.tier}
+                  checked={b.tier === tier}
+                  onChange={() => {
+                    setTier(b.tier);
+                    onTierChange?.(b.tier);
+                  }}
+                />
+                <span className="tier-head">
+                  {b.label}
+                  {b.tier === 'recommended' && <span className="addon-tag">Best fit</span>}
+                </span>
+                <span className="tier-price">
+                  <strong>{rupeeRange(b.recommendation.totals.monthlyMin, b.recommendation.totals.monthlyMax)}</strong> a month
+                </span>
+                <span className="tier-note">{b.comparison ?? 'Our pick for your business, based on your answers.'}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
       <article className="bundle" aria-labelledby={`${id}-bundle`}>
         <div className="bundle-head">
           <h2 id={`${id}-bundle`} className="bundle-name">
-            Your bundle
+            {bundles.length > 1 ? `${bundle.label} bundle` : 'Your bundle'}
           </h2>
           <span className="chip">{rec.segmentLabel}</span>
         </div>

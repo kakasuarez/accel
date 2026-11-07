@@ -30,8 +30,10 @@ sign up ─► POST /api/leads ─► answer each question ─► recommendation
 3. After the profile questions, `recommendation` appears and the stage becomes Needs assessed. Up to 4
    add-on questions follow, and `nextQuestion` is null when they're done.
 4. `POST /api/leads/:id/explanation` writes the plain-language reason once per set of answers.
-5. `POST /api/leads/:id/quote` with `{ selectedAddOns }` re-prices as the customer ticks add-ons.
-6. `POST /api/leads/:id/accept` with `{ selectedAddOns, businessName, contactName, phone }` saves the
+5. The customer picks one of `bundles` (see **Bundle options**). `POST /api/leads/:id/quote` with
+   `{ bundle, selectedAddOns }` re-prices as they switch bundle or tick add-ons. It returns that
+   bundle's `recommendation`, the `totals`, and `removedAddOns`: ticked add-ons it can't have.
+6. `POST /api/leads/:id/accept` with `{ bundle, selectedAddOns, businessName, contactName, phone }` saves the
    quote, at Quote accepted. Contact details go straight to the database, never to the LLM.
 
 Questions and their options are built from the CSVs at startup. `docs/questions.json` is a snapshot
@@ -40,6 +42,30 @@ for reading: refresh it with `npm run questions`.
 The LLM can't affect a quote beyond choosing valid options: every value is checked against the
 question, and products and prices come only from the recommender. The explanation is told not to
 mention prices, and if it does, the recommender's own reasons are used instead.
+
+## Bundle options
+
+When the questions are done, `bundles` lists up to three bundles, Recommended first:
+
+| Tier | How it's built |
+| --- | --- |
+| `recommended` | The model's pick, as before. The explanation is about this one. |
+| `budget` | The cheapest internet connection and mobile plan this customer can have, with fewer mobile lines if the segment's price sensitivity allows. |
+| `premium` | The next dearer connection and mobile plan. |
+
+- **Price sensitivity:** `data/price_sensitivity.csv` maps each segment code to `high`, `medium`,
+  `medium_low` or `low`. It sets how far Budget cuts mobile lines: down to 1 for high, about half for
+  medium, and none otherwise. A segment the file doesn't list counts as medium, and a bad file stops
+  startup. Edit it and redeploy, as with the catalogue.
+- **Every bundle follows the catalogue rules** and keeps the items included by default. A bundle
+  that comes out the same as Recommended is left out, so some customers see only one or two.
+- **`comparison`** is a fixed line built from the two bundles, such as "Saves ₹399–₹499 a month:
+  Biz 5G AirFiber 100 instead of Biz Fibre 100, 1 mobile line instead of 2". It's not written by the
+  LLM.
+- **`quote` and `accept` take `bundle`** (default `recommended`). Switching bundle can change which
+  add-ons are available. `quote` leaves out and lists ones that don't fit, but `accept` refuses them,
+  so send the `selectedAddOns` that `quote` returned. A bundle not offered to this customer returns
+  400 `invalid_bundle`. The accepted quote records `bundle`.
 
 ## API
 
