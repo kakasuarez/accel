@@ -21,6 +21,8 @@ export interface Product {
   requiresOneOf: readonly ProductId[];
   installDays: number;
   targetSegments: readonly Segment[];
+  /** Plain-language question about the need this product meets. Null means none was written. */
+  customerQuestion: string | null;
   /** Derived from the columns above. */
   role: ProductRole;
   needsFibre: boolean;
@@ -144,6 +146,7 @@ export type FlagCode =
   | "segment_inferred"
   | "no_eligible_link"
   | "city_unconfirmed"
+  | "gstin_unconfirmed"
   | "fibre_unconfirmed"
   | "second_site_not_covered"
   | "retention_risk_first_business_link"

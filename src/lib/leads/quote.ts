@@ -1,6 +1,6 @@
 import { addOnQuestionId } from "../questions/build";
 import type { Answers, Question, QuestionSet } from "../questions/types";
-import type { BusinessProfile, Catalogue, Recommendation, Recommender } from "../recommender";
+import type { BusinessProfile, Catalogue, Flag, Recommendation, Recommender } from "../recommender";
 
 /** The next question for this customer, or null once there's nothing left to ask. */
 export function nextQuestion({ questions, maxAddOnQuestions }: QuestionSet, answers: Answers, recommendation: Recommendation | null): Question | null {
@@ -37,7 +37,8 @@ function toProfile(recommender: Recommender, { questions }: QuestionSet, answers
     sites: Number(answers.sites),
     cityTier: recommender.cityTierOf(city) ?? strictestTier(recommender.catalogue),
     hasGstin: answers.hasGstin === true,
-    currentInternet: String(answers.currentInternet),
+    // Either may be null when the customer wasn't sure. Not knowing about GST is treated as not registered.
+    currentInternet: typeof answers.currentInternet === "string" ? answers.currentInternet : undefined,
     monthlyTelecomSpend: typeof answers.monthlyTelecomSpend === "number" ? answers.monthlyTelecomSpend : undefined,
     heavyBandwidth: typeof answers.heavyBandwidth === "boolean" ? answers.heavyBandwidth : undefined,
     needs,
@@ -49,12 +50,16 @@ export function recommendationFor(recommender: Recommender, questionSet: Questio
   if (!profileComplete(questionSet, answers)) return null;
   const recommendation = recommender.recommend(toProfile(recommender, questionSet, answers));
   const city = String(answers.city);
-  if (recommender.cityTierOf(city) !== undefined) return recommendation;
-  return {
-    ...recommendation,
-    flags: [
-      ...recommendation.flags,
-      { code: "city_unconfirmed", audience: "customer", message: `Availability in ${city} is to be confirmed, so this quote may change.` },
-    ],
-  };
+  const flags: Flag[] = [];
+  if (recommender.cityTierOf(city) === undefined) {
+    flags.push({ code: "city_unconfirmed", audience: "customer", message: `Availability in ${city} is to be confirmed, so this quote may change.` });
+  }
+  if (answers.hasGstin === null) {
+    flags.push({
+      code: "gstin_unconfirmed",
+      audience: "customer",
+      message: "You weren't sure about GST registration, so we've left out products that need a GST number. You can confirm it when you upload your documents.",
+    });
+  }
+  return flags.length ? { ...recommendation, flags: [...recommendation.flags, ...flags] } : recommendation;
 }

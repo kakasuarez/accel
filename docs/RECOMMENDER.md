@@ -109,6 +109,10 @@ Files saved from Excel or other tools work, including any line ending and a byte
 - **Fibre:** the name or description mentions fibre, and not "without fibre".
 - **Speed:** read from text like "300 Mbps".
 
+- **Customer question:** the optional last column, `customer_question`, is the plain-language add-on
+  question, written so that "yes" means the customer wants the product. Leave it empty to fall back
+  to "Would you like <name>? <description>." Rows may leave this column off entirely.
+
 So a new product needs to follow those conventions. A new link in another category would be treated
 as an add-on.
 

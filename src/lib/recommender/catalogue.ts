@@ -8,6 +8,9 @@ const COLUMNS = [
   "typical_install_days", "target_segments",
 ];
 
+/** Optional, and last, so a row can leave it off entirely. */
+const CUSTOMER_QUESTION = "customer_question";
+
 export class CatalogueError extends Error {
   override name = "CatalogueError";
 }
@@ -31,7 +34,8 @@ export function parseCatalogue(csv: string): Catalogue {
   let rows: Record<string, string>[];
   try {
     // Spreadsheets and text editors mix line endings, and Excel adds a byte-order mark.
-    rows = parse(csv, { bom: true, columns: true, record_delimiter: ["\r\n", "\n", "\r"], skip_empty_lines: true, trim: true });
+    // Short rows are allowed so the optional last column can be left off; required columns are checked below.
+    rows = parse(csv, { bom: true, columns: true, record_delimiter: ["\r\n", "\n", "\r"], skip_empty_lines: true, trim: true, relax_column_count_less: true });
   } catch (error) {
     throw new CatalogueError(`Product catalogue isn't valid CSV: ${(error as Error).message}`);
   }
@@ -41,6 +45,8 @@ export function parseCatalogue(csv: string): Catalogue {
 
   const products = rows.map((row, index): Product => {
     const where = `${row.product_id || `row ${index + 2}`}`;
+    const short = COLUMNS.filter((column) => row[column] === undefined);
+    if (short.length > 0) throw new CatalogueError(`${where}: row has no value for ${short.join(", ")}`);
     const number = (column: string) => {
       const value = Number(row[column]);
       if (row[column] === "" || !Number.isFinite(value) || value < 0) {
@@ -68,6 +74,7 @@ export function parseCatalogue(csv: string): Catalogue {
       requiresOneOf: list("requires_one_of", "|"),
       installDays: number("typical_install_days"),
       targetSegments: list("target_segments", ";"),
+      customerQuestion: row[CUSTOMER_QUESTION] || null,
       role: roleOf(row),
       // Wireless products are described as being "for sites without fibre".
       needsFibre: /fibre/i.test(`${row.product_name} ${row.description}`) && !/without fibre/i.test(row.description!),

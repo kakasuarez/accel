@@ -20,12 +20,16 @@ export interface Question {
   options?: Option[];
   /** The customer's own value is valid when no option fits. */
   allowOther?: boolean;
+  /** Shown to the LLM so a re-ask can help the customer answer, e.g. "A rough number is fine." */
+  hint?: string;
   /** Present when "I don't know" is a valid answer. Stored as null. */
   skipOption?: { value: null; label: string };
   min?: number;
   unit?: string;
   maxLength?: number;
   productId?: string;
+  /** For add-ons: the product the question is about, for the LLM. */
+  about?: string;
   eligibility?: {
     segments: readonly string[];
     cityTiers: readonly number[];

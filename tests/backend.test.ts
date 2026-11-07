@@ -8,7 +8,7 @@ import { nextQuestion, profileComplete, recommendationFor } from "../src/lib/lea
 import { canAdvance } from "../src/lib/leads/stages";
 import { LlmConfigError, LlmError, createLlmClient, type LlmClient } from "../src/lib/llm/client";
 import { addOnQuestionId, buildQuestions } from "../src/lib/questions/build";
-import { interpretAnswer, validValue } from "../src/lib/questions/interpret";
+import { interpretAnswer, parseReply, validValue } from "../src/lib/questions/interpret";
 import type { Answers, Question } from "../src/lib/questions/types";
 import { TRAINING_COLUMNS } from "../src/lib/recommender/leads";
 import { createRecommender, customerView, parseCatalogue, parseLeads } from "../src/lib/recommender";
@@ -20,6 +20,7 @@ const leads = parseLeads(trainingCsv);
 const recommender = createRecommender(parseCatalogue(catalogueCsv), leads, { trees: 12 });
 const questionSet = buildQuestions(recommender);
 const question = (id: string) => questionSet.questions.find((q) => q.id === id)!;
+const addOns = () => questionSet.questions.filter((q) => q.phase === "add_ons");
 
 const profile: Answers = {
   businessType: "Bakery",
@@ -71,6 +72,26 @@ describe("questions come from the CSVs", () => {
     const added = buildQuestions(changed).questions.find((q) => q.productId === "P99");
     expect(added?.question).toBe("Would you like Test Vault? Secret storage.");
     expect(added?.eligibility?.segments).toEqual(["micro"]);
+    const asked = `P98,Security,Test Safe,"Locked box",per account,100,200,0,12,1;2,1,1,N,,1,micro,"Do you keep valuables at the shop?"`;
+    const withQuestion = createRecommender(parseCatalogue(`${catalogueCsv.trimEnd()}\n${asked}\n`), leads, { kind: "frequency" });
+    expect(buildQuestions(withQuestion).questions.find((q) => q.productId === "P98")?.question).toBe("Do you keep valuables at the shop?");
+  });
+
+  it("asks every current add-on in the catalogue's plain-language words", () => {
+    const addOns = questionSet.questions.filter((q) => q.phase === "add_ons");
+    for (const q of addOns) {
+      const product = recommender.catalogue.byId.get(q.productId!)!;
+      expect(product.customerQuestion).toBeTruthy();
+      expect(q.question).toBe(product.customerQuestion);
+      expect(q.about).toContain(product.name);
+    }
+  });
+
+  it("sends the product to the LLM along with the plain question", async () => {
+    const llm = scripted(`{"status":"answered","value":"already_have"}`);
+    const q = addOns()[0]!;
+    await interpretAnswer(llm, q, "we already have one");
+    expect(llm.sent[0]).toContain(q.about!);
   });
 
   it("sends contact details straight to the form, never to the LLM", () => {
@@ -95,10 +116,8 @@ describe("interpreting an answer", () => {
   });
 
   it("re-asks instead of storing a value that isn't valid", async () => {
-    for (const reply of [`{"status":"answered","value":"Satellite"}`, `{"status":"answered","value":null}`]) {
-      const result = await interpretAnswer(scripted(reply), question("currentInternet"), "something");
-      expect(result.status).toBe("unclear");
-    }
+    expect((await interpretAnswer(scripted(`{"status":"answered","value":"Satellite"}`), question("currentInternet"), "something")).status).toBe("unclear");
+    expect((await interpretAnswer(scripted(`{"status":"answered","value":null}`), question("city"), "no idea")).status).toBe("unclear");
     expect((await interpretAnswer(scripted(`{"status":"answered","value":0}`), question("employees"), "none")).status).toBe("unclear");
     expect((await interpretAnswer(scripted(`{"status":"answered","value":2.5}`), question("sites"), "two and a bit")).status).toBe("unclear");
   });
@@ -117,9 +136,56 @@ describe("interpreting an answer", () => {
     expect(validValue(question("currentInternet"), "Shillong")).toBeUndefined();
     expect(validValue(question("hasGstin"), true)).toBe(true);
     expect(validValue(question("hasGstin"), "yes")).toBeUndefined();
-    expect(validValue(question("hasGstin"), null)).toBeUndefined();
+    expect(validValue(question("hasGstin"), null)).toBeNull();
+    expect(validValue(question("businessType"), null)).toBeUndefined();
     expect(validValue(question("monthlyTelecomSpend"), null)).toBeNull();
     expect(validValue(question("employees"), "12")).toBe(12);
+  });
+});
+
+describe("when the customer doesn't know", () => {
+  it("survives stray text after the JSON, which used to crash", async () => {
+    const llm = scripted('{"status":"answered","value":null}\n":null}');
+    const result = await interpretAnswer(llm, question("businessType"), "I don't know");
+    expect(result).toEqual({ status: "unclear", reason: expect.stringContaining("we do need this one") });
+  });
+
+  it("finds the first complete object, ignoring braces inside strings", () => {
+    expect(parseReply('Sure! {"status":"unclear","reason":"Use {curly} words"} trailing }')).toEqual({ status: "unclear", reason: "Use {curly} words" });
+    expect(parseReply("{not json} then {\"status\":\"answered\",\"value\":3}")).toEqual({ status: "answered", value: 3 });
+    expect(parseReply("no object here")).toBeNull();
+  });
+
+  it("lets GST, current internet, spend and heavy use be skipped, but not the rest", () => {
+    const skippable = questionSet.questions.filter((q) => q.phase === "profile" && q.skipOption).map((q) => q.id);
+    expect(skippable).toEqual(["hasGstin", "currentInternet", "monthlyTelecomSpend", "heavyBandwidth"]);
+  });
+
+  it("accepts the skip chip's own label", () => {
+    expect(validValue(question("hasGstin"), "Not sure")).toBeNull();
+    expect(validValue(question("currentInternet"), "not sure")).toBeNull();
+    expect(validValue(question("city"), "Not sure")).toBe("Not sure");
+  });
+
+  it("gives the model a hint and uses it when the model gives no reason", async () => {
+    const llm = scripted(`{"status":"unclear"}`);
+    const result = await interpretAnswer(llm, question("employees"), "no clue");
+    expect(llm.sent[0]).toContain("A rough estimate is fine");
+    expect(result).toEqual({ status: "unclear", reason: expect.stringContaining("A rough estimate is fine") });
+    expect(result.status === "unclear" && result.reason).not.toContain("options");
+  });
+
+  it("quotes an unsure GST answer as not registered, and says so to the customer", () => {
+    const unsure = recommendationFor(recommender, questionSet, { ...profile, hasGstin: null })!;
+    const notRegistered = recommendationFor(recommender, questionSet, { ...profile, hasGstin: false })!;
+    expect(unsure.lines.map((l) => l.productId)).toEqual(notRegistered.lines.map((l) => l.productId));
+    expect(unsure.flags.find((f) => f.code === "gstin_unconfirmed")).toMatchObject({ audience: "customer" });
+    expect(notRegistered.flags.some((f) => f.code === "gstin_unconfirmed")).toBe(false);
+  });
+
+  it("quotes without the current internet type when it's unknown", () => {
+    const quote = recommendationFor(recommender, questionSet, { ...profile, currentInternet: null })!;
+    expect(quote.lines.length).toBeGreaterThan(0);
   });
 });
 

@@ -132,6 +132,7 @@ describe("catalogue drives everything", () => {
     expect(() => parseCatalogue(editCsv(fibre100, "requires_gstin", "maybe"))).toThrow(/requires_gstin/);
     expect(() => parseCatalogue(withProduct(csv.split(/\r?\n/)[1]!))).toThrow(/duplicate/);
     expect(() => parseCatalogue(csv.split(/\r?\n/)[0]!)).toThrow(/no products/);
+    expect(() => parseCatalogue(withProduct("P96,Security,X,\"Y\",per site,1,2,0,1,1,1,1,N,,1"))).toThrow(/no value for target_segments/);
   });
   it("reads files saved by other tools: LF, CRLF, mixed endings and Excel's byte-order mark", () => {
     const expected = catalogue.products.length;

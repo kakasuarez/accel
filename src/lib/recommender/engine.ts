@@ -274,14 +274,19 @@ function openQuestions(profile: BusinessProfile, addOnsToConfirm: Product[], lin
     questions.push({ key: "fibreAvailable", question: "Is fibre available at your location?" });
   }
   if (profile.heavyBandwidth === undefined) {
-    questions.push({ key: "heavyBandwidth", question: "Does your team regularly move large files or depend on video calls and cloud software?" });
+    questions.push({ key: "heavyBandwidth", question: "Does your business use the internet a lot, for things like video calls, sending big files or working online all day?" });
   }
   // Confirm what the model is guessing first, then core items someone may already have.
   const core = lines.filter((l) => l.role === "core" && profile.needs?.[l.productId] === undefined).map((l) => catalogue.byId.get(l.productId)!);
   for (const product of [...addOnsToConfirm, ...core]) {
-    questions.push({ key: product.id, question: `Would you like ${product.name}? ${product.description}.` });
+    questions.push({ key: product.id, question: productQuestion(product) });
   }
   return questions.slice(0, MAX_OPEN_QUESTIONS);
+}
+
+/** The catalogue's plain-language question, or one made from the product's name and description. */
+export function productQuestion(product: Product): string {
+  return product.customerQuestion ?? `Would you like ${product.name}? ${product.description}.`;
 }
 
 function percent(value: number): string {

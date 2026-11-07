@@ -150,7 +150,8 @@
           "value": "Travel agency",
           "label": "Travel agency"
         }
-      ]
+      ],
+      "hint": "You can just describe what you sell or do, for example \"we run a clinic\" or \"we make furniture\"."
     },
     {
       "answerMode": "natural_language",
@@ -159,7 +160,8 @@
       "question": "How many people work in the business?",
       "type": "integer",
       "required": true,
-      "min": 1
+      "min": 1,
+      "hint": "A rough estimate is fine, including the owner."
     },
     {
       "answerMode": "natural_language",
@@ -168,7 +170,8 @@
       "question": "How many locations do you operate from?",
       "type": "integer",
       "required": true,
-      "min": 1
+      "min": 1,
+      "hint": "Count each shop, office, branch or factory. A rough number is fine."
     },
     {
       "answerMode": "natural_language",
@@ -267,7 +270,8 @@
           "value": "Visakhapatnam",
           "label": "Visakhapatnam"
         }
-      ]
+      ],
+      "hint": "Just the city name is enough, for example Pune. It tells us which services are available there."
     },
     {
       "answerMode": "natural_language",
@@ -275,7 +279,7 @@
       "phase": "profile",
       "question": "Is your business registered for GST?",
       "type": "boolean",
-      "required": true,
+      "required": false,
       "options": [
         {
           "value": true,
@@ -285,7 +289,11 @@
           "value": false,
           "label": "No"
         }
-      ]
+      ],
+      "skipOption": {
+        "value": null,
+        "label": "Not sure"
+      }
     },
     {
       "answerMode": "natural_language",
@@ -293,7 +301,7 @@
       "phase": "profile",
       "question": "What internet connection do you use today?",
       "type": "single_select",
-      "required": true,
+      "required": false,
       "options": [
         {
           "value": "Business broadband",
@@ -319,7 +327,11 @@
           "value": "None",
           "label": "None"
         }
-      ]
+      ],
+      "skipOption": {
+        "value": null,
+        "label": "Not sure"
+      }
     },
     {
       "answerMode": "natural_language",
@@ -333,13 +345,14 @@
       "skipOption": {
         "value": null,
         "label": "Not sure"
-      }
+      },
+      "hint": "A rough figure is fine."
     },
     {
       "answerMode": "natural_language",
       "id": "heavyBandwidth",
       "phase": "profile",
-      "question": "Does your team regularly move large files or depend on video calls and cloud software?",
+      "question": "Does your business use the internet a lot, for things like video calls, sending big files or working online all day?",
       "type": "boolean",
       "required": false,
       "options": [
@@ -362,7 +375,8 @@
       "id": "need:P09",
       "phase": "add_ons",
       "productId": "P09",
-      "question": "Would you like Backup 4G/5G Failover? Automatic failover router with data SIM for when the main link is down.",
+      "question": "Do you need your internet to keep working even if the main connection goes down?",
+      "about": "Backup 4G/5G Failover: Automatic failover router with data SIM for when the main link is down",
       "type": "single_select",
       "required": false,
       "options": [
@@ -413,7 +427,8 @@
       "id": "need:P10",
       "phase": "add_ons",
       "productId": "P10",
-      "question": "Would you like Managed SD-WAN? Central management of links across sites, app-priority routing.",
+      "question": "Would you like to manage the internet at all your locations from one place, with your key apps given priority?",
+      "about": "Managed SD-WAN: Central management of links across sites, app-priority routing",
       "type": "single_select",
       "required": false,
       "options": [
@@ -463,7 +478,8 @@
       "id": "need:P11",
       "phase": "add_ons",
       "productId": "P11",
-      "question": "Would you like Static IP? Fixed public IP for CCTV, servers or remote access.",
+      "question": "Do you need to reach CCTV cameras, a server or office computers from outside the office?",
+      "about": "Static IP: Fixed public IP for CCTV, servers or remote access",
       "type": "single_select",
       "required": false,
       "options": [
@@ -512,7 +528,8 @@
       "id": "need:P12",
       "phase": "add_ons",
       "productId": "P12",
-      "question": "Would you like Cloud Telephony / SIP? Business phone lines over internet with IVR, call recording.",
+      "question": "Would you like business phone lines that work over the internet, with a call menu (\"press 1 for sales\") and call recording?",
+      "about": "Cloud Telephony / SIP: Business phone lines over internet with IVR, call recording",
       "type": "single_select",
       "required": false,
       "options": [
@@ -564,7 +581,8 @@
       "id": "need:P13",
       "phase": "add_ons",
       "productId": "P13",
-      "question": "Would you like Toll-free Number? 1800 number routed to mobile or cloud telephony.",
+      "question": "Would you like a free-to-call 1800 number for your customers?",
+      "about": "Toll-free Number: 1800 number routed to mobile or cloud telephony",
       "type": "single_select",
       "required": false,
       "options": [
@@ -609,7 +627,8 @@
       "id": "need:P14",
       "phase": "add_ons",
       "productId": "P14",
-      "question": "Would you like Business SMS 10k? 10,000 SMS per month for alerts and promotions, DLT registration assisted.",
+      "question": "Do you send customers text messages, like order updates, reminders or offers?",
+      "about": "Business SMS 10k: 10,000 SMS per month for alerts and promotions, DLT registration assisted",
       "type": "single_select",
       "required": false,
       "options": [
@@ -655,7 +674,8 @@
       "id": "need:P15",
       "phase": "add_ons",
       "productId": "P15",
-      "question": "Would you like WhatsApp Business API Starter? Verified WhatsApp channel, catalogue, 1,000 conversations a month.",
+      "question": "Would you like an official, verified WhatsApp account to chat with customers and share your catalogue?",
+      "about": "WhatsApp Business API Starter: Verified WhatsApp channel, catalogue, 1,000 conversations a month",
       "type": "single_select",
       "required": false,
       "options": [
@@ -701,7 +721,8 @@
       "id": "need:P16",
       "phase": "add_ons",
       "productId": "P16",
-      "question": "Would you like Cloud Email & Office Suite? Business email on own domain, documents, video meetings.",
+      "question": "Would you like email addresses with your business name, like name@yourbusiness.com, plus shared documents and video calls?",
+      "about": "Cloud Email & Office Suite: Business email on own domain, documents, video meetings",
       "type": "single_select",
       "required": false,
       "options": [
@@ -747,7 +768,8 @@
       "id": "need:P17",
       "phase": "add_ons",
       "productId": "P17",
-      "question": "Would you like Cloud Backup 1 TB? Automatic backup of PCs and phones, 1 TB.",
+      "question": "Would you like your computers and phones backed up automatically, so files aren't lost if a device breaks?",
+      "about": "Cloud Backup 1 TB: Automatic backup of PCs and phones, 1 TB",
       "type": "single_select",
       "required": false,
       "options": [
@@ -792,7 +814,8 @@
       "id": "need:P18",
       "phase": "add_ons",
       "productId": "P18",
-      "question": "Would you like Website + Domain Starter? Domain, 5-page website builder, hosting, SSL.",
+      "question": "Would you like a simple website for your business, with your own web address?",
+      "about": "Website + Domain Starter: Domain, 5-page website builder, hosting, SSL",
       "type": "single_select",
       "required": false,
       "options": [
@@ -837,7 +860,8 @@
       "id": "need:P19",
       "phase": "add_ons",
       "productId": "P19",
-      "question": "Would you like Cloud POS & Billing? GST-ready billing, inventory, UPI/card acceptance on a tablet.",
+      "question": "Would you like a tablet for billing that makes GST bills, tracks stock and takes UPI and card payments?",
+      "about": "Cloud POS & Billing: GST-ready billing, inventory, UPI/card acceptance on a tablet",
       "type": "single_select",
       "required": false,
       "options": [
@@ -882,7 +906,8 @@
       "id": "need:P20",
       "phase": "add_ons",
       "productId": "P20",
-      "question": "Would you like Endpoint Security? Antivirus and ransomware protection for PCs and phones.",
+      "question": "Would you like protection against viruses and ransomware on your computers and phones?",
+      "about": "Endpoint Security: Antivirus and ransomware protection for PCs and phones",
       "type": "single_select",
       "required": false,
       "options": [
@@ -928,7 +953,8 @@
       "id": "need:P21",
       "phase": "add_ons",
       "productId": "P21",
-      "question": "Would you like Managed Firewall? Next-gen firewall at the site, managed by Accel SOC.",
+      "question": "Would you like a security system for your office network, managed for you by our security team?",
+      "about": "Managed Firewall: Next-gen firewall at the site, managed by Accel SOC",
       "type": "single_select",
       "required": false,
       "options": [
@@ -980,7 +1006,8 @@
       "id": "need:P22",
       "phase": "add_ons",
       "productId": "P22",
-      "question": "Would you like Secure Wi-Fi with Guest Network? Managed Wi-Fi access point with separate customer Wi-Fi and content filtering.",
+      "question": "Would you like Wi-Fi for your customers that's kept separate from your business network?",
+      "about": "Secure Wi-Fi with Guest Network: Managed Wi-Fi access point with separate customer Wi-Fi and content filtering",
       "type": "single_select",
       "required": false,
       "options": [
@@ -1031,7 +1058,8 @@
       "id": "need:P23",
       "phase": "add_ons",
       "productId": "P23",
-      "question": "Would you like Cloud CCTV? HD camera with 30-day cloud recording and mobile app view.",
+      "question": "Would you like security cameras you can watch on your phone, with recordings saved for 30 days?",
+      "about": "Cloud CCTV: HD camera with 30-day cloud recording and mobile app view",
       "type": "single_select",
       "required": false,
       "options": [
@@ -1084,7 +1112,8 @@
       "id": "need:P24",
       "phase": "add_ons",
       "productId": "P24",
-      "question": "Would you like Machine Monitoring IoT? IoT SIM + sensor kit for machine uptime and energy use.",
+      "question": "Would you like sensors that track when your machines are running and how much power they use?",
+      "about": "Machine Monitoring IoT: IoT SIM + sensor kit for machine uptime and energy use",
       "type": "single_select",
       "required": false,
       "options": [
@@ -1128,7 +1157,8 @@
       "id": "need:P25",
       "phase": "add_ons",
       "productId": "P25",
-      "question": "Would you like Fleet Tracker? GPS tracker with IoT SIM and live dashboard.",
+      "question": "Do you have vehicles you'd like to track live on a map?",
+      "about": "Fleet Tracker: GPS tracker with IoT SIM and live dashboard",
       "type": "single_select",
       "required": false,
       "options": [
