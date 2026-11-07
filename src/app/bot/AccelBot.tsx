@@ -24,6 +24,8 @@ interface SpeechConfig {
 const PROFILE_TOTAL = 8;
 const ADD_ON_MAX = 4;
 const LEAVE_MS = 240;
+/** How long the composer glows after the bot finishes reading the question ("your turn"). Matches `bot-turn-glow` in bot.css. */
+const TURN_GLOW_MS = 3500;
 /** Above this many options, chips are filtered by what's typed and the rest sit behind "Show all". */
 const CHIP_LIMIT = 8;
 const SKIP_LABEL = 'Not sure';
@@ -195,6 +197,21 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
       setNotice(VOICE_ERRORS[err]);
     },
   });
+
+  // "Your turn": when the read-out ends on its own in typing mode, the composer glows briefly.
+  // Read-outs cut short (send, mic tap, mute) end in the same update that sets `pending`, `voiceOn`
+  // or `muted`, so they never glow. Muted speech never starts, so it has no end to glow on.
+  const [turnGlow, setTurnGlow] = useState(0);
+  const [wasSpeaking, setWasSpeaking] = useState(speech.speaking);
+  if (wasSpeaking !== speech.speaking) {
+    setWasSpeaking(speech.speaking);
+    if (wasSpeaking && !voiceOn && asking && !pending && !leaving && !speech.muted) setTurnGlow((n) => n + 1);
+  }
+  useEffect(() => {
+    if (!turnGlow) return;
+    const t = window.setTimeout(() => setTurnGlow(0), TURN_GLOW_MS);
+    return () => window.clearTimeout(t);
+  }, [turnGlow]);
 
   const reducedMotion = useRef(false);
   useEffect(() => {
@@ -646,6 +663,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                   void submit(draft);
                 }}
               >
+                {turnGlow > 0 && !pending && <span key={turnGlow} className="bot-turn-glow" aria-hidden="true" />}
                 <label htmlFor="bot-input" className="sr-only">
                   Your answer
                 </label>
