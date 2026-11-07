@@ -36,10 +36,10 @@ describe('dashboard tracker', () => {
     expect(states(t)).toEqual(['done', 'done', 'current', 'todo']);
   });
 
-  it('waits without a button while documents are in manual review', () => {
+  it('links to the review details while documents are in manual review', () => {
     const t = run({ lead: lead({ stage: 'Quote accepted', accepted: true }), latestKyc: { decision: 'MANUAL_REVIEW', findings: [] } });
     expect(t.current.kind).toBe('kyc_review');
-    expect(t.current.cta).toBeUndefined();
+    expect(t.current.cta?.href).toBe('/dashboard/kyc?lead=L1');
   });
 
   it('shows the rejection reasons and lets the customer upload again', () => {

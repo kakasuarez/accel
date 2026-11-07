@@ -728,6 +728,17 @@
 .kyc-result .btn {
   margin-top: var(--sp-md);
 }
+.kyc-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+.kyc-result-actions .btn {
+  margin-top: 0;
+}
+.kyc-result-actions:not(:first-child) {
+  margin-top: var(--sp-md);
+}
 .kyc-result .note-list {
   margin: var(--sp-sm) 0;
 }

@@ -11,6 +11,8 @@ export type Decision = 'APPROVE' | 'MANUAL_REVIEW' | 'REJECT';
 export interface KycInput {
   applicantId?: string;
   files: Partial<Record<DocType, Buffer>>;
+  /** The applicant said they are GST-registered, so the GST certificate is required (Udyam alone is not enough). */
+  requireGst?: boolean;
 }
 
 /** One value read from a document. `value` is the normalized form, `raw` the OCR text. */

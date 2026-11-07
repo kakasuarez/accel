@@ -21,7 +21,8 @@ export const completeness: Rule = {
 
     const gst = submitted(ctx, 'gst_certificate');
     const udyam = submitted(ctx, 'udyam_certificate');
-    if (!gst && !udyam) out.push(finding(ctx, 'NO_BUSINESS_PROOF'));
+    if (!gst && ctx.requireGst) out.push(finding(ctx, 'GST_REQUIRED', { doc: 'gst_certificate' }));
+    else if (!gst && !udyam) out.push(finding(ctx, 'NO_BUSINESS_PROOF'));
     else if (gst && !udyam) out.push(finding(ctx, 'UDYAM_ABSENT', { doc: 'udyam_certificate' }));
     else if (!gst && udyam) out.push(finding(ctx, 'GST_ABSENT_PAN_UNVERIFIABLE', { doc: 'gst_certificate' }));
     return out;

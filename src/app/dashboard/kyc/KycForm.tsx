@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { api, ApiFailure } from '@/components/api';
 import { AlertIcon, ArrowIcon, CheckIcon, ClockIcon, InfoIcon, ShieldIcon, UploadIcon } from '@/components/icons';
@@ -19,11 +18,17 @@ const DOC_LABEL: Record<DocType, string> = {
   address_proof: 'Address proof',
 };
 
-/** Slow steps of the check, shown in turn while it runs. They are the engine's real stages. */
+/**
+ * The engine's stages, in order. Reading (OCR) is nearly all of the wait; the registry and matching checks
+ * run in milliseconds once it finishes, so they are ticked off when the answer arrives, at a pace people can follow.
+ */
 const PROGRESS = ['Reading your documents', 'Checking the GST and Udyam registries', 'Matching names, addresses and dates'];
+const STEP_MS = 650;
+
+const pause = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
 type Files = Partial<Record<DocType, File>>;
-type Phase = { kind: 'form' } | { kind: 'checking' } | { kind: 'approved' } | { kind: 'review'; check: KycCheck | null };
+type Phase = { kind: 'form' } | { kind: 'checking' } | { kind: 'approved' } | { kind: 'review' };
 
 interface Props {
   leadId: string;
@@ -36,19 +41,24 @@ function formatSize(bytes: number) {
 }
 
 export function KycForm({ leadId, hasGstin, previous }: Props) {
-  const router = useRouter();
   const [files, setFiles] = useState<Files>({});
   const [slotErrors, setSlotErrors] = useState<Partial<Record<DocType, string>>>({});
-  const [phase, setPhase] = useState<Phase>({ kind: 'form' });
-  const [rejected, setRejected] = useState<KycCheck | null>(previous);
+  const [phase, setPhase] = useState<Phase>({ kind: previous?.decision === 'MANUAL_REVIEW' ? 'review' : 'form' });
+  const [step, setStep] = useState(0);
+  const [rejected, setRejected] = useState<KycCheck | null>(previous?.decision === 'REJECT' ? previous : null);
+  /** The attempt waiting for manual review, if any. The customer may replace it with a new upload. */
+  const [review, setReview] = useState<KycCheck | null>(previous?.decision === 'MANUAL_REVIEW' ? previous : null);
+  const [shownFresh, setShownFresh] = useState(false);
   const [error, setError] = useState<{ message: string; toDashboard?: boolean } | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
-  const hasRegistration = !!(files.gst_certificate || files.udyam_certificate);
+  // A customer who said they are GST-registered must upload the GST certificate; the server enforces the same.
+  const gstRequired = hasGstin === true;
+  const hasRegistration = gstRequired ? !!files.gst_certificate : !!(files.gst_certificate || files.udyam_certificate);
   const ready = hasRegistration && !!files.signatory_id && !!files.address_proof;
 
   const missing = [
-    !hasRegistration && 'a GST or Udyam certificate',
+    !hasRegistration && (gstRequired ? 'the GST certificate' : 'a GST or Udyam certificate'),
     !files.signatory_id && 'the signatory ID',
     !files.address_proof && 'an address proof',
   ].filter(Boolean) as string[];
@@ -77,6 +87,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
     e.preventDefault();
     if (!ready) return;
     setError(null);
+    setStep(0);
     setPhase({ kind: 'checking' });
     const form = new FormData();
     (Object.keys(files) as DocType[]).forEach((slot) => {
@@ -85,17 +96,28 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
     });
     try {
       const check = await api<KycCheck>(`/api/leads/${encodeURIComponent(leadId)}/kyc`, { method: 'POST', body: form });
+      // Reading is done; tick off the remaining stages before showing the outcome.
+      for (let i = 1; i <= PROGRESS.length; i++) {
+        setStep(i);
+        await pause(STEP_MS);
+      }
+      // No router.refresh() here: this page sends the customer to the dashboard once KYC is approved, and a
+      // refresh would replace the outcome before they could read it. The dashboard is dynamic, so it is fresh.
+      setShownFresh(true);
       if (check.decision === 'APPROVE') setPhase({ kind: 'approved' });
-      else if (check.decision === 'MANUAL_REVIEW') setPhase({ kind: 'review', check });
-      else {
+      else if (check.decision === 'MANUAL_REVIEW') {
+        setRejected(null);
+        setReview(check);
+        setPhase({ kind: 'review' });
+      } else {
         setRejected(check);
+        setReview(null);
         setPhase({ kind: 'form' });
       }
-      router.refresh();
     } catch (err) {
       const failure = err instanceof ApiFailure ? err : null;
-      if (failure?.code === 'under_review') {
-        setPhase({ kind: 'review', check: null });
+      if (failure?.code === 'verified') {
+        setPhase({ kind: 'approved' });
         return;
       }
       setPhase({ kind: 'form' });
@@ -106,12 +128,12 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
     }
   };
 
-  // Move focus to the outcome so keyboard and screen-reader users land on it.
+  // Move focus to a fresh outcome so keyboard and screen-reader users land on it.
   useEffect(() => {
-    if (phase.kind !== 'form' || rejected !== previous) resultRef.current?.focus();
-  }, [phase.kind, rejected, previous]);
+    if (shownFresh) resultRef.current?.focus();
+  }, [phase.kind, rejected, shownFresh]);
 
-  if (phase.kind === 'checking') return <Checking />;
+  if (phase.kind === 'checking') return <Checking step={step} />;
 
   if (phase.kind === 'approved') {
     return (
@@ -130,14 +152,17 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
   }
 
   if (phase.kind === 'review') {
-    const notes = phase.check?.findings.filter((f) => f.severity === 'REVIEW') ?? [];
+    const notes = review?.findings.filter((f) => f.severity === 'REVIEW') ?? [];
     return (
       <div className="kyc-result is-review" ref={resultRef} tabIndex={-1} role="status">
         <span className="kyc-result-mark" aria-hidden="true">
           <ClockIcon />
         </span>
         <h2 className="kyc-result-title">Your documents are under review</h2>
-        <p>A few details need a person to check them. We’ll update your dashboard when it’s done; there’s nothing more to upload.</p>
+        <p>
+          A few details need a person to check them. We’ll update your dashboard when it’s done. You don’t need to do
+          anything, but if a clearer photo or a different document would answer the points below, you can upload it now.
+        </p>
         {notes.length > 0 && (
           <ul className="note-list" aria-label="What we’re checking">
             {notes.map((f, i) => (
@@ -151,23 +176,47 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
             ))}
           </ul>
         )}
-        <Link href="/dashboard" className="btn btn-primary">
-          Back to dashboard
-          <ArrowIcon />
-        </Link>
+        <div className="kyc-result-actions">
+          <Link href="/dashboard" className="btn btn-primary">
+            Back to dashboard
+            <ArrowIcon />
+          </Link>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => {
+              setShownFresh(false);
+              setPhase({ kind: 'form' });
+            }}
+          >
+            Upload new documents
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      {rejected && <Rejected check={rejected} fresh={rejected !== previous} innerRef={resultRef} />}
+      {rejected && <Rejected check={rejected} fresh={shownFresh} innerRef={resultRef} />}
+      {review && !rejected && (
+        <p className="kyc-hint">
+          <InfoIcon /> Your current documents stay under review unless you upload new ones. A new upload is checked from
+          the start and replaces them.
+        </p>
+      )}
 
       <form className="kyc-form" onSubmit={submit} noValidate aria-describedby="kyc-privacy">
         <fieldset className="kyc-group">
           <legend>
-            Business registration <span className="kyc-need">GST or Udyam, at least one</span>
+            Business registration{' '}
+            <span className="kyc-need">{gstRequired ? 'GST required, Udyam optional' : 'GST or Udyam, at least one'}</span>
           </legend>
+          {gstRequired && (
+            <p className="kyc-hint">
+              <InfoIcon /> You told us your business is registered for GST, so we need your GST certificate.
+            </p>
+          )}
           {hasGstin === false && (
             <p className="kyc-hint">
               <InfoIcon /> Not registered for GST? Upload your Udyam certificate.
@@ -176,7 +225,8 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
           <Slot
             slot="gst_certificate"
             label="GST certificate"
-            hint="Or upload your Udyam certificate below."
+            hint={gstRequired ? 'The certificate for your GSTIN, form REG-06.' : 'Or upload your Udyam certificate below.'}
+            required={gstRequired}
             file={files.gst_certificate}
             error={slotErrors.gst_certificate}
             onPick={pick}
@@ -184,7 +234,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
           <Slot
             slot="udyam_certificate"
             label="Udyam certificate"
-            hint="Or upload your GST certificate above."
+            hint={gstRequired ? 'Optional. Add it if you have one.' : 'Or upload your GST certificate above.'}
             file={files.udyam_certificate}
             error={slotErrors.udyam_certificate}
             onPick={pick}
@@ -244,6 +294,11 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
           <p className="kyc-missing" aria-live="polite">
             {ready ? 'Ready. The check can take up to a minute.' : `Still needed: ${missing.join(', ')}.`}
           </p>
+          {review && !rejected && (
+            <button type="button" className="btn btn-outline" onClick={() => setPhase({ kind: 'review' })}>
+              Keep the current review
+            </button>
+          )}
         </div>
       </form>
     </>
@@ -397,16 +452,11 @@ function Slot({ slot, label, hint, required, file, error, onPick }: SlotProps) {
   );
 }
 
-function Checking() {
-  const [step, setStep] = useState(0);
+function Checking({ step }: { step: number }) {
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
     const started = Date.now();
-    const id = window.setInterval(() => {
-      const s = Math.floor((Date.now() - started) / 1000);
-      setElapsed(s);
-      setStep(Math.min(PROGRESS.length - 1, Math.floor(s / 9)));
-    }, 1000);
+    const id = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
     return () => window.clearInterval(id);
   }, []);
   return (

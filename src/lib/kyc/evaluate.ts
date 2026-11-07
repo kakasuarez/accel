@@ -10,6 +10,8 @@ export interface EvaluateOptions {
   gstRegistry: GstRegistry;
   udyamRegistry: UdyamRegistry;
   applicantId?: string;
+  /** See KycInput.requireGst. */
+  requireGst?: boolean;
 }
 
 /**
@@ -18,7 +20,7 @@ export interface EvaluateOptions {
  */
 export function evaluateBundle(bundle: ExtractedBundle, opts: EvaluateOptions): KycResult {
   const config = resolveConfig(opts.config);
-  const ctx: RuleCtx = { bundle, config, today: config.today, gstRegistry: opts.gstRegistry, udyamRegistry: opts.udyamRegistry };
+  const ctx: RuleCtx = { bundle, config, today: config.today, gstRegistry: opts.gstRegistry, udyamRegistry: opts.udyamRegistry, requireGst: opts.requireGst };
 
   const findings: Finding[] = [];
   const checks: CheckResult[] = [];

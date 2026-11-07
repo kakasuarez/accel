@@ -39,5 +39,8 @@ export async function latestKycCheck(leadId: string): Promise<KycCheck | null> {
   return row ? toCheck(row) : null;
 }
 
-/** A new attempt is allowed only before the first one or after a rejection; a manual review must finish first. */
-export const canSubmitKyc = (latest: KycCheck | null): boolean => !latest || latest.decision === 'REJECT';
+/**
+ * A new attempt is allowed until one is approved. During a manual review the customer may upload better
+ * documents; the newest attempt is the one that counts, so it replaces the one waiting for review.
+ */
+export const canSubmitKyc = (latest: KycCheck | null): boolean => latest?.decision !== 'APPROVE';

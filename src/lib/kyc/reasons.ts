@@ -12,6 +12,10 @@ export const REASONS = {
   DOC_MISSING_SIGNATORY_ID: { severity: 'REJECT', message: 'Authorised signatory ID is missing.' },
   DOC_MISSING_ADDRESS_PROOF: { severity: 'REJECT', message: 'Address proof is missing.' },
   NO_BUSINESS_PROOF: { severity: 'REJECT', message: 'Neither a GST certificate nor a Udyam certificate was provided.' },
+  GST_REQUIRED: {
+    severity: 'REJECT',
+    message: 'You told us your business is registered for GST, so we need your GST certificate. Upload it to continue.',
+  },
   DOC_UNREADABLE: { severity: 'REJECT', message: 'Nothing could be read from this document.' },
   DOC_TYPE_MISMATCH: { severity: 'REVIEW', message: 'The uploaded image is not the expected document type.' },
   UDYAM_ABSENT: { severity: 'INFO', message: 'No Udyam certificate provided; Udyam checks skipped.' },

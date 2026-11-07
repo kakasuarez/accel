@@ -23,6 +23,8 @@ export interface RuleCtx {
   today: IsoDate;
   gstRegistry: GstRegistry;
   udyamRegistry: UdyamRegistry;
+  /** The applicant said they are GST-registered: a missing GST certificate rejects. */
+  requireGst?: boolean;
   /** Well-formed GSTIN that passed the checksum (after any OCR correction). Set by format.gstin. */
   gstin?: string;
   /** Well-formed Udyam number. Set by format.udyam. */

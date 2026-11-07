@@ -37,6 +37,27 @@ describe('completeness (rules §2)', () => {
     expect(r.decision).toBe('APPROVE');
   });
 
+  it('rejects Udyam without GST when the applicant said they are GST-registered', () => {
+    const regs = registries();
+    const r = evaluateBundle({ udyam: udyamDoc(), signatory: signatoryDoc(), addressProof: addressDoc() }, { ...regs, requireGst: true });
+    expect(codes(r)).toContain('GST_REQUIRED');
+    expect(codes(r)).not.toContain('GST_ABSENT_PAN_UNVERIFIABLE');
+    expect(r.decision).toBe('REJECT');
+  });
+
+  it('rejects with GST_REQUIRED, not NO_BUSINESS_PROOF, when GST is required and nothing was uploaded', () => {
+    const regs = registries();
+    const r = evaluateBundle({ signatory: signatoryDoc(), addressProof: addressDoc() }, { ...regs, requireGst: true });
+    expect(codes(r)).toContain('GST_REQUIRED');
+    expect(codes(r)).not.toContain('NO_BUSINESS_PROOF');
+  });
+
+  it('approves GST without Udyam when GST is required', () => {
+    const regs = registries();
+    const r = evaluateBundle({ gst: gstDoc(), signatory: signatoryDoc(), addressProof: addressDoc() }, { ...regs, requireGst: true });
+    expect(r.decision).toBe('APPROVE');
+  });
+
   it('rejects when the signatory ID or address proof is missing', () => {
     const b = goodBundle();
     delete b.signatory;

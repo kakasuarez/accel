@@ -153,6 +153,7 @@ export function buildTracker({ lead, hasNextQuestion, latestKyc }: TrackerInput)
             step: at,
             title: 'Your documents are being reviewed',
             body: 'Our team is checking a few details by hand. We’ll update this page when it’s done.',
+            cta: { label: 'See what we’re checking', href: kycHref(lead.id) },
           },
         };
       }

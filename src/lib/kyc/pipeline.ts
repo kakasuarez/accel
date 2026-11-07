@@ -35,5 +35,6 @@ export async function validateKyc(input: KycInput, opts: KycOptions = {}): Promi
     gstRegistry: opts.gstRegistry ?? regs!.gst,
     udyamRegistry: opts.udyamRegistry ?? regs!.udyam,
     applicantId: input.applicantId,
+    requireGst: input.requireGst,
   });
 }

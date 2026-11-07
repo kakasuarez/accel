@@ -26,7 +26,7 @@ export default async function KycPage({ searchParams }: PageProps<'/dashboard/ky
   } catch {
     lead = null;
   }
-  if (!lead || lead.stage !== 'Quote accepted' || lead.status === 'closed' || latest?.decision === 'MANUAL_REVIEW') {
+  if (!lead || lead.stage !== 'Quote accepted' || lead.status === 'closed' || latest?.decision === 'APPROVE') {
     redirect('/dashboard');
   }
 
@@ -47,7 +47,7 @@ export default async function KycPage({ searchParams }: PageProps<'/dashboard/ky
           Upload clear photos or scans of your documents. We read them and check them against the GST and Udyam registries, so
           there’s no paperwork or visit.
         </p>
-        <KycForm leadId={lead.id} hasGstin={hasGstin} previous={latest?.decision === 'REJECT' ? latest : null} />
+        <KycForm leadId={lead.id} hasGstin={hasGstin} previous={latest} />
       </main>
     </>
   );

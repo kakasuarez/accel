@@ -28,7 +28,8 @@ export const GET = route(async (_request, { params }: RouteContext<'/api/leads/[
  * Parts: gst_certificate, udyam_certificate, signatory_id, address_proof. Signatory ID and address proof are
  * required and at least one of GST / Udyam, but that is decided by the engine's completeness rule (it rejects
  * with a reason code), not here. Files stay in memory; only the decision and masked findings are stored.
- * APPROVE moves the lead to "KYC complete"; MANUAL_REVIEW waits for staff; REJECT allows a new attempt.
+ * APPROVE moves the lead to "KYC complete"; MANUAL_REVIEW waits for staff; REJECT and MANUAL_REVIEW allow a new
+ * attempt (the newest one counts).
  */
 export const POST = route(async (request, { params }: RouteContext<'/api/leads/[id]/kyc'>) => {
   const user = await requireUser();
@@ -40,7 +41,7 @@ export const POST = route(async (request, { params }: RouteContext<'/api/leads/[
   });
   if (lead.status !== 'open') throw new ApiError(409, 'closed', 'This request is closed.');
   if (lead.stage !== STAGE_AFTER_QUOTE) throw new ApiError(409, 'not_ready', 'KYC opens once you have accepted your quote.');
-  if (!canSubmitKyc(await latestKycCheck(lead.id))) throw new ApiError(409, 'under_review', 'Your documents are already being reviewed.');
+  if (!canSubmitKyc(await latestKycCheck(lead.id))) throw new ApiError(409, 'verified', 'Your business is already verified.');
 
   let files;
   try {
@@ -53,7 +54,9 @@ export const POST = route(async (request, { params }: RouteContext<'/api/leads/[
   let result;
   try {
     // Always the default config: its fixed "today" and thresholds are part of the rules.
-    result = await validateKyc({ applicantId: lead.id, files }, { config: DEFAULT_CONFIG });
+    // A customer who said they are GST-registered may have GST-only products in their bundle, so Udyam alone won't do.
+    const requireGst = lead.answers.hasGstin === true;
+    result = await validateKyc({ applicantId: lead.id, files, requireGst }, { config: DEFAULT_CONFIG });
   } catch (err) {
     if (err instanceof KycConfigError) throw new ApiError(500, 'kyc_unavailable', 'Business verification is unavailable right now.');
     throw err;
