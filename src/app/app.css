@@ -943,6 +943,17 @@
 .kyc-result .note-list {
   margin: var(--sp-sm) 0;
 }
+/* Information notes: a heading that hugs its list, kept apart from the review points above it. */
+.kyc-info {
+  display: grid;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-sm);
+  max-width: 60ch;
+}
+.kyc-info .kyc-also,
+.kyc-result .kyc-info .note-list {
+  margin: 0;
+}
 .kyc-result-mark {
   display: inline-grid;
   place-items: center;

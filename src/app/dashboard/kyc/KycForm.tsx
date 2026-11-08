@@ -27,8 +27,30 @@ const STEP_MS = 650;
 
 const pause = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
+/**
+ * Information-only findings worth telling the customer about, in their words. The engine's own messages are written
+ * for reviewers. This is an allowlist: a new INFO code stays hidden from customers until it is added here.
+ */
+const CUSTOMER_INFO: Partial<Record<string, string>> = {
+  UDYAM_REG_DATE_DIFFERS:
+    'Your Udyam certificate shows a different date of registration from the Udyam portal. We’ve used the date on the portal, so you don’t need to do anything.',
+  UDYAM_ACTIVITY_UPDATED:
+    'Your Udyam certificate shows a different major activity from the Udyam portal. This happens when it’s updated on the portal after the certificate is printed. We’ve used the portal’s details, so you don’t need to do anything.',
+};
+
+/** The customer-facing information notes in a check, one per code. */
+function infoNotes(check: KycCheck | null) {
+  const codes = new Set(check?.findings.filter((f) => f.severity === 'INFO' && CUSTOMER_INFO[f.code]).map((f) => f.code));
+  return [...codes].map((code) => ({ code, text: CUSTOMER_INFO[code] as string }));
+}
+
 type Files = Partial<Record<DocType, File>>;
-type Phase = { kind: 'form' } | { kind: 'checking' } | { kind: 'approved' } | { kind: 'review' };
+type Phase =
+  | { kind: 'form' }
+  | { kind: 'checking' }
+  /** `check` is null when the business was already verified and no new check ran. */
+  | { kind: 'approved'; check: KycCheck | null }
+  | { kind: 'review' };
 
 interface Props {
   leadId: string;
@@ -129,7 +151,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
       // No router.refresh() here: this page sends the customer to the dashboard once KYC is approved, and a
       // refresh would replace the outcome before they could read it. The dashboard is dynamic, so it is fresh.
       setShownFresh(true);
-      if (check.decision === 'APPROVE') setPhase({ kind: 'approved' });
+      if (check.decision === 'APPROVE') setPhase({ kind: 'approved', check });
       else if (check.decision === 'MANUAL_REVIEW') {
         setRejected(null);
         setReview(check);
@@ -142,7 +164,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
     } catch (err) {
       const failure = err instanceof ApiFailure ? err : null;
       if (failure?.code === 'verified') {
-        setPhase({ kind: 'approved' });
+        setPhase({ kind: 'approved', check: null });
         return;
       }
       setPhase({ kind: 'form' });
@@ -183,6 +205,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
         </span>
         <h2 className="kyc-result-title">Your business is verified</h2>
         <p>Thank you. Our team will contact you to schedule installation.</p>
+        <InfoNotes check={phase.check} />
         <Link href="/dashboard" className="btn btn-primary">
           Back to dashboard
           <ArrowIcon />
@@ -216,6 +239,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
             ))}
           </ul>
         )}
+        <InfoNotes check={review} />
         <div className="kyc-result-actions">
           <Link href="/dashboard" className="btn btn-primary">
             Back to dashboard
@@ -460,6 +484,28 @@ function DigiLocker() {
       <p className="kyc-or">
         <span>Or upload your documents</span>
       </p>
+    </div>
+  );
+}
+
+/** Findings that changed nothing but that the customer may notice on their own documents. Renders nothing if none. */
+function InfoNotes({ check }: { check: KycCheck | null }) {
+  const id = useId();
+  const notes = infoNotes(check);
+  if (notes.length === 0) return null;
+  return (
+    <div className="kyc-info">
+      <h3 id={id} className="kyc-also">
+        For your information
+      </h3>
+      <ul className="note-list" aria-labelledby={id}>
+        {notes.map((n) => (
+          <li key={n.code}>
+            <InfoIcon />
+            <span>{n.text}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
