@@ -1,0 +1,630 @@
+{
+  "flag.segment_inferred": {
+    "en": "We treated this business as \"{segment}\" based on its size and type. Please confirm.",
+    "text": "हमने आपके व्यवसाय को उसके आकार और प्रकार के आधार पर \"{segment}\" माना है। कृपया पुष्टि करें।"
+  },
+  "flag.no_eligible_link": {
+    "en": "None of our internet connections fit this business yet. Our team can look at the options with you.",
+    "text": "अभी कोई भी इंटरनेट कनेक्शन आपके व्यवसाय के लिए उपयुक्त नहीं है। हमारी टीम आपके साथ विकल्पों पर चर्चा कर सकती है।"
+  },
+  "flag.fibre_unconfirmed": {
+    "en": "{product} depends on fibre at the site.",
+    "text": "{product} साइट पर फाइबर की उपलब्धता पर निर्भर करता है।"
+  },
+  "flag.fibre_unconfirmed.fallback": {
+    "en": "{product} depends on fibre at the site. If it isn't available, {fallback} is the alternative.",
+    "text": "{product} साइट पर फाइबर की उपलब्धता पर निर्भर करता है। यदि यह उपलब्ध नहीं है, तो {fallback} एक विकल्प है।"
+  },
+  "flag.second_site_not_covered": {
+    "en": "This quote covers {covered} of your {sites} locations. If the others need their own connection, add another {product}.",
+    "text": "यह कोट आपके {sites} स्थानों में से {covered} को कवर करता है। यदि अन्य स्थानों को अपने कनेक्शन की आवश्यकता है, तो एक और {product} जोड़ें।"
+  },
+  "flag.long_install": {
+    "en": "Full setup may take up to {days} days. Other items can go live sooner.",
+    "text": "पूरा सेटअप होने में {days} दिन तक लग सकते हैं। अन्य चीजें जल्दी शुरू हो सकती हैं।"
+  },
+  "flag.slower_link_chosen": {
+    "en": "You told us you use the internet a lot, so {chosen} may feel slow at busy times. We recommended {recommended}.",
+    "text": "आपने बताया कि आप इंटरनेट का बहुत उपयोग करते हैं, इसलिए व्यस्त समय में {chosen} धीमा लग सकता है। हमने {recommended} की सिफारिश की थी।"
+  },
+  "flag.city_unconfirmed": {
+    "en": "Availability in {city} is to be confirmed, so this quote may change.",
+    "text": "{city} में उपलब्धता की पुष्टि की जानी है, इसलिए यह कोट बदल सकता है।"
+  },
+  "flag.gstin_unconfirmed": {
+    "en": "You weren't sure about GST registration, so we've left out products that need a GST number. You can confirm it when you upload your documents.",
+    "text": "आप GST पंजीकरण के बारे में निश्चित नहीं थे, इसलिए हमने उन उत्पादों को छोड़ दिया है जिनके लिए GST नंबर की आवश्यकता होती है। आप अपने दस्तावेज़ अपलोड करते समय इसकी पुष्टि कर सकते हैं।"
+  },
+  "block.segment": {
+    "en": "{product} isn't offered to this type of business.",
+    "text": "{product} इस प्रकार के व्यवसाय के लिए पेश नहीं किया जाता है।"
+  },
+  "block.city_tier": {
+    "en": "{product} isn't available in tier {tier} cities yet.",
+    "text": "{product} अभी टियर {tier} शहरों में उपलब्ध नहीं है।"
+  },
+  "block.no_fibre": {
+    "en": "{product} needs fibre, which isn't available at your location.",
+    "text": "{product} के लिए फाइबर की आवश्यकता होती है, जो आपके स्थान पर उपलब्ध नहीं है।"
+  },
+  "block.min_employees": {
+    "en": "{product} is for businesses with {min}+ employees.",
+    "text": "{product} उन व्यवसायों के लिए है जिनमें {min}+ कर्मचारी हैं।"
+  },
+  "block.min_sites": {
+    "en": "{product} is for businesses with {min}+ sites.",
+    "text": "{product} उन व्यवसायों के लिए है जिनमें {min}+ साइटें हैं।"
+  },
+  "block.gstin": {
+    "en": "{product} requires a GSTIN.",
+    "text": "{product} के लिए GSTIN की आवश्यकता होती है।"
+  },
+  "block.dependency": {
+    "en": "{product} doesn't work with the internet connection in this bundle.",
+    "text": "{product} इस बंडल में इंटरनेट कनेक्शन के साथ काम नहीं करता है।"
+  },
+  "addOn.share": {
+    "en": "{description}. {percent} of similar customers added this.",
+    "text": "{description}। {percent} समान ग्राहकों ने इसे जोड़ा है।"
+  },
+  "tier.recommended": {
+    "en": "Recommended",
+    "text": "अनुशंसित"
+  },
+  "tier.budget": {
+    "en": "Budget",
+    "text": "बजट"
+  },
+  "tier.premium": {
+    "en": "Premium",
+    "text": "प्रीमियम"
+  },
+  "compare.saves": {
+    "en": "Saves {amount} a month",
+    "text": "हर महीने {amount} की बचत करें"
+  },
+  "compare.more": {
+    "en": "{amount} more a month",
+    "text": "हर महीने {amount} अधिक"
+  },
+  "compare.swap": {
+    "en": "{now} instead of {before}",
+    "text": "{before} के बजाय अब {now}"
+  },
+  "compare.lines.one": {
+    "en": "{now} mobile line instead of {before}",
+    "text": "{before} के बजाय अब {now} मोबाइल लाइन"
+  },
+  "compare.lines.other": {
+    "en": "{now} mobile lines instead of {before}",
+    "text": "{before} के बजाय अब {now} मोबाइल लाइनें"
+  },
+  "compare.withChanges": {
+    "en": "{lead}: {changes}.",
+    "text": "{lead}: {changes}।"
+  },
+  "compare.only": {
+    "en": "{lead}.",
+    "text": "{lead}।"
+  },
+  "interpret.unclear": {
+    "en": "Sorry, we didn't quite catch that. Could you answer a little differently?",
+    "text": "माफ़ करें, हम ठीक से समझ नहीं पाए। क्या आप थोड़ा अलग तरीके से उत्तर दे सकते हैं?"
+  },
+  "interpret.needed": {
+    "en": "No problem, but we do need this one to suggest the right bundle.",
+    "text": "कोई बात नहीं, लेकिन सही बंडल सुझाने के लिए हमें यह जानकारी चाहिए।"
+  },
+  "explain.compared": {
+    "en": "Compared with the Recommended bundle: {changes}.",
+    "text": "अनुशंसित बंडल की तुलना में: {changes}।"
+  },
+  "explain.alternativeFallback": {
+    "en": "{label} bundle. {comparison}",
+    "text": "{label} बंडल। {comparison}"
+  },
+  "question.businessType": {
+    "en": "What kind of business do you run?",
+    "text": "आप किस तरह का व्यवसाय चलाते हैं?"
+  },
+  "hint.businessType": {
+    "en": "You can just describe what you sell or do, for example \"we run a clinic\" or \"we make furniture\".",
+    "text": "आप बस यह बता सकते हैं कि आप क्या बेचते हैं या करते हैं, उदाहरण के लिए \"हम एक क्लिनिक चलाते हैं\" या \"हम फर्नीचर बनाते हैं\"।"
+  },
+  "label.Apparel retail chain": {
+    "en": "Apparel retail chain",
+    "text": "कपड़ों की खुदरा श्रृंखला"
+  },
+  "label.Architecture studio": {
+    "en": "Architecture studio",
+    "text": "आर्किटेक्चर स्टूडियो"
+  },
+  "label.Auto-parts unit": {
+    "en": "Auto-parts unit",
+    "text": "ऑटो-पार्ट्स यूनिट"
+  },
+  "label.Bakery": {
+    "en": "Bakery",
+    "text": "बेकरी"
+  },
+  "label.Bakery chain": {
+    "en": "Bakery chain",
+    "text": "बेकरी श्रृंखला"
+  },
+  "label.Boutique": {
+    "en": "Boutique",
+    "text": "बुटीक"
+  },
+  "label.Budget hotel group": {
+    "en": "Budget hotel group",
+    "text": "बजट होटल समूह"
+  },
+  "label.CA firm": {
+    "en": "CA firm",
+    "text": "सीए फर्म"
+  },
+  "label.Coaching centre": {
+    "en": "Coaching centre",
+    "text": "कोचिंग सेंटर"
+  },
+  "label.Dental clinic": {
+    "en": "Dental clinic",
+    "text": "डेंटल क्लिनिक"
+  },
+  "label.Diagnostic lab": {
+    "en": "Diagnostic lab",
+    "text": "डायग्नोस्टिक लैब"
+  },
+  "label.Electronics retail chain": {
+    "en": "Electronics retail chain",
+    "text": "इलेक्ट्रॉनिक्स रिटेल चेन"
+  },
+  "label.Food processing unit": {
+    "en": "Food processing unit",
+    "text": "फूड प्रोसेसिंग यूनिट"
+  },
+  "label.Furniture workshop": {
+    "en": "Furniture workshop",
+    "text": "फर्नीचर वर्कशॉप"
+  },
+  "label.Gym chain": {
+    "en": "Gym chain",
+    "text": "जिम चेन"
+  },
+  "label.Hardware store": {
+    "en": "Hardware store",
+    "text": "हार्डवेयर स्टोर"
+  },
+  "label.Insurance agency": {
+    "en": "Insurance agency",
+    "text": "बीमा एजेंसी"
+  },
+  "label.Kirana store": {
+    "en": "Kirana store",
+    "text": "किराना स्टोर"
+  },
+  "label.Law office": {
+    "en": "Law office",
+    "text": "लॉ ऑफिस"
+  },
+  "label.Mobile repair shop": {
+    "en": "Mobile repair shop",
+    "text": "मोबाइल रिपेयर शॉप"
+  },
+  "label.Optician": {
+    "en": "Optician",
+    "text": "ऑप्टिशियन"
+  },
+  "label.Packaging unit": {
+    "en": "Packaging unit",
+    "text": "पैकेजिंग यूनिट"
+  },
+  "label.Pharmacy": {
+    "en": "Pharmacy",
+    "text": "फार्मेसी"
+  },
+  "label.Pharmacy chain": {
+    "en": "Pharmacy chain",
+    "text": "फार्मेसी चेन"
+  },
+  "label.Physiotherapy clinic": {
+    "en": "Physiotherapy clinic",
+    "text": "फिजियोथेरेपी क्लिनिक"
+  },
+  "label.Plastic moulding unit": {
+    "en": "Plastic moulding unit",
+    "text": "प्लास्टिक मोल्डिंग यूनिट"
+  },
+  "label.Pre-school chain": {
+    "en": "Pre-school chain",
+    "text": "प्री-स्कूल चेन"
+  },
+  "label.Printing press": {
+    "en": "Printing press",
+    "text": "प्रिंटिंग प्रेस"
+  },
+  "label.Real estate agency": {
+    "en": "Real estate agency",
+    "text": "रियल एस्टेट एजेंसी"
+  },
+  "label.Restaurant chain": {
+    "en": "Restaurant chain",
+    "text": "रेस्टोरेंट चेन"
+  },
+  "label.Salon": {
+    "en": "Salon",
+    "text": "सैलून"
+  },
+  "label.Stationery shop": {
+    "en": "Stationery shop",
+    "text": "स्टेशनरी शॉप"
+  },
+  "label.Sweet shop": {
+    "en": "Sweet shop",
+    "text": "स्वीट शॉप"
+  },
+  "label.Textile unit": {
+    "en": "Textile unit",
+    "text": "टेक्सटाइल यूनिट"
+  },
+  "label.Travel agency": {
+    "en": "Travel agency",
+    "text": "ट्रैवल एजेंसी"
+  },
+  "question.employees": {
+    "en": "How many people work in the business?",
+    "text": "आपके बिज़नेस में कितने लोग काम करते हैं?"
+  },
+  "hint.employees": {
+    "en": "A rough estimate is fine, including the owner.",
+    "text": "लगभग अंदाज़ा बता सकते हैं, मालिक सहित।"
+  },
+  "question.sites": {
+    "en": "How many locations do you operate from?",
+    "text": "आप कितने स्थानों से काम करते हैं?"
+  },
+  "hint.sites": {
+    "en": "Count each shop, office, branch or factory. A rough number is fine.",
+    "text": "हर दुकान, ऑफिस, ब्रांच या फैक्ट्री गिनें। अंदाज़ा बता सकते हैं।"
+  },
+  "question.city": {
+    "en": "Which city is your business in? If you have several, tell us the smallest one.",
+    "text": "आपका बिज़नेस किस शहर में है? अगर कई हैं, तो सबसे छोटा शहर बताएं।"
+  },
+  "hint.city": {
+    "en": "Just the city name is enough, for example Pune. It tells us which services are available there.",
+    "text": "सिर्फ शहर का नाम काफी है, जैसे पुणे। इससे हमें पता चलता है कि वहां कौन सी सेवाएं उपलब्ध हैं।"
+  },
+  "label.Ahmedabad": {
+    "en": "Ahmedabad",
+    "text": "अहमदाबाद"
+  },
+  "label.Bengaluru": {
+    "en": "Bengaluru",
+    "text": "बेंगलुरु"
+  },
+  "label.Bhopal": {
+    "en": "Bhopal",
+    "text": "भोपाल"
+  },
+  "label.Chennai": {
+    "en": "Chennai",
+    "text": "चेन्नई"
+  },
+  "label.Coimbatore": {
+    "en": "Coimbatore",
+    "text": "कोयंबटूर"
+  },
+  "label.Delhi": {
+    "en": "Delhi",
+    "text": "दिल्ली"
+  },
+  "label.Hyderabad": {
+    "en": "Hyderabad",
+    "text": "हैदराबाद"
+  },
+  "label.Indore": {
+    "en": "Indore",
+    "text": "इंदौर"
+  },
+  "label.Jaipur": {
+    "en": "Jaipur",
+    "text": "जयपुर"
+  },
+  "label.Kochi": {
+    "en": "Kochi",
+    "text": "कोच्चि"
+  },
+  "label.Kolkata": {
+    "en": "Kolkata",
+    "text": "कोलकाता"
+  },
+  "label.Lucknow": {
+    "en": "Lucknow",
+    "text": "लखनऊ"
+  },
+  "label.Ludhiana": {
+    "en": "Ludhiana",
+    "text": "लुधियाना"
+  },
+  "label.Mumbai": {
+    "en": "Mumbai",
+    "text": "मुंबई"
+  },
+  "label.Mysuru": {
+    "en": "Mysuru",
+    "text": "मैसूर"
+  },
+  "label.Nagpur": {
+    "en": "Nagpur",
+    "text": "नागपुर"
+  },
+  "label.Nashik": {
+    "en": "Nashik",
+    "text": "नाशिक"
+  },
+  "label.Patna": {
+    "en": "Patna",
+    "text": "पटना"
+  },
+  "label.Pune": {
+    "en": "Pune",
+    "text": "पुणे"
+  },
+  "label.Surat": {
+    "en": "Surat",
+    "text": "सूरत"
+  },
+  "label.Vadodara": {
+    "en": "Vadodara",
+    "text": "वडोदरा"
+  },
+  "label.Visakhapatnam": {
+    "en": "Visakhapatnam",
+    "text": "विशाखापत्तनम"
+  },
+  "question.hasGstin": {
+    "en": "Is your business registered for GST?",
+    "text": "क्या आपका बिज़नेस GST के लिए रजिस्टर्ड है?"
+  },
+  "label.Yes": {
+    "en": "Yes",
+    "text": "हाँ"
+  },
+  "label.No": {
+    "en": "No",
+    "text": "नहीं"
+  },
+  "label.Not sure": {
+    "en": "Not sure",
+    "text": "पक्का नहीं"
+  },
+  "question.currentInternet": {
+    "en": "What internet connection do you use today?",
+    "text": "आप आज कौन सा इंटरनेट कनेक्शन इस्तेमाल करते हैं?"
+  },
+  "label.Business broadband": {
+    "en": "Business broadband",
+    "text": "बिज़नेस ब्रॉडबैंड"
+  },
+  "label.Home broadband": {
+    "en": "Home broadband",
+    "text": "होम ब्रॉडबैंड"
+  },
+  "label.Leased line": {
+    "en": "Leased line",
+    "text": "लीज्ड लाइन"
+  },
+  "label.Mixed per site": {
+    "en": "Mixed per site",
+    "text": "मिक्सड पर साइट"
+  },
+  "label.Mobile hotspot": {
+    "en": "Mobile hotspot",
+    "text": "मोबाइल हॉटस्पॉट"
+  },
+  "label.None": {
+    "en": "None",
+    "text": "कोई नहीं"
+  },
+  "question.monthlyTelecomSpend": {
+    "en": "Roughly how much do you spend on phone and internet each month, in rupees?",
+    "text": "आप हर महीने फ़ोन और इंटरनेट पर लगभग कितना खर्च करते हैं, रुपयों में?"
+  },
+  "hint.monthlyTelecomSpend": {
+    "en": "A rough figure is fine.",
+    "text": "एक अंदाज़ा भी ठीक है।"
+  },
+  "question.heavyBandwidth": {
+    "en": "Does your business use the internet a lot, for things like video calls, sending big files or working online all day?",
+    "text": "क्या आपका बिज़नेस इंटरनेट का बहुत ज़्यादा इस्तेमाल करता है, जैसे वीडियो कॉल, बड़ी फाइलें भेजना या पूरे दिन ऑनलाइन काम करना?"
+  },
+  "question.need:P09": {
+    "en": "Do you need your internet to keep working even if the main connection goes down?",
+    "text": "क्या आपको ज़रूरत है कि मुख्य कनेक्शन बंद होने पर भी आपका इंटरनेट चलता रहे?"
+  },
+  "label.I already have this": {
+    "en": "I already have this",
+    "text": "मेरे पास यह पहले से है"
+  },
+  "question.need:P10": {
+    "en": "Would you like to manage the internet at all your locations from one place, with your key apps given priority?",
+    "text": "क्या आप एक ही जगह से अपने सभी लोकेशन्स का इंटरनेट मैनेज करना चाहेंगे, जिसमें आपके ज़रूरी ऐप्स को प्राथमिकता मिले?"
+  },
+  "question.need:P11": {
+    "en": "Do you need to reach CCTV cameras, a server or office computers from outside the office?",
+    "text": "क्या आपको ऑफिस के बाहर से CCTV कैमरे, सर्वर या ऑफिस कंप्यूटर तक पहुंचने की ज़रूरत है?"
+  },
+  "question.need:P12": {
+    "en": "Would you like business phone lines that work over the internet, with a call menu (\"press 1 for sales\") and call recording?",
+    "text": "क्या आप इंटरनेट पर चलने वाली बिज़नेस फ़ोन लाइनें चाहेंगे, जिसमें कॉल मेन्यू (\"सेल्स के लिए 1 दबाएं\") और कॉल रिकॉर्डिंग की सुविधा हो?"
+  },
+  "question.need:P13": {
+    "en": "Would you like a free-to-call 1800 number for your customers?",
+    "text": "क्या आप अपने ग्राहकों के लिए एक फ्री-टू-कॉल 1800 नंबर चाहेंगे?"
+  },
+  "question.need:P14": {
+    "en": "Do you send customers text messages, like order updates, reminders or offers?",
+    "text": "क्या आप ग्राहकों को टेक्स्ट मैसेज भेजते हैं, जैसे ऑर्डर अपडेट, रिमाइंडर या ऑफर?"
+  },
+  "question.need:P15": {
+    "en": "Would you like an official, verified WhatsApp account to chat with customers and share your catalogue?",
+    "text": "क्या आप ग्राहकों के साथ चैट करने और अपना कैटलॉग शेयर करने के लिए एक आधिकारिक, वेरिफाइड WhatsApp अकाउंट चाहेंगे?"
+  },
+  "question.need:P16": {
+    "en": "Would you like email addresses with your business name, like name@yourbusiness.com, plus shared documents and video calls?",
+    "text": "क्या आप अपने बिज़नेस के नाम वाले ईमेल एड्रेस चाहेंगे, जैसे name@yourbusiness.com, साथ ही डॉक्यूमेंट शेयरिंग और वीडियो कॉल की सुविधा?"
+  },
+  "question.need:P17": {
+    "en": "Would you like your computers and phones backed up automatically, so files aren't lost if a device breaks?",
+    "text": "क्या आप चाहते हैं कि आपके कंप्यूटर और फ़ोन का ऑटोमैटिक बैकअप हो जाए, ताकि कोई डिवाइस खराब होने पर फाइलें खो न जाएं?"
+  },
+  "question.need:P18": {
+    "en": "Would you like a simple website for your business, with your own web address?",
+    "text": "क्या आप अपने बिज़नेस के लिए एक आसान सी वेबसाइट चाहते हैं, जिसके साथ आपका अपना वेब एड्रेस भी हो?"
+  },
+  "question.need:P19": {
+    "en": "Would you like a tablet for billing that makes GST bills, tracks stock and takes UPI and card payments?",
+    "text": "क्या आप बिलिंग के लिए एक टैबलेट चाहते हैं जो GST बिल बनाए, स्टॉक का हिसाब रखे और UPI और कार्ड पेमेंट ले सके?"
+  },
+  "question.need:P20": {
+    "en": "Would you like protection against viruses and ransomware on your computers and phones?",
+    "text": "क्या आप अपने कंप्यूटर और फ़ोन को वायरस और रैंसमवेयर से बचाना चाहते हैं?"
+  },
+  "question.need:P21": {
+    "en": "Would you like a security system for your office network, managed for you by our security team?",
+    "text": "क्या आप अपने ऑफिस नेटवर्क के लिए एक सुरक्षा सिस्टम चाहते हैं, जिसे हमारी सुरक्षा टीम मैनेज करे?"
+  },
+  "question.need:P22": {
+    "en": "Would you like Wi-Fi for your customers that's kept separate from your business network?",
+    "text": "क्या आप अपने ग्राहकों के लिए वाई-फाई (Wi-Fi) चाहते हैं, जो आपके बिज़नेस नेटवर्क से अलग हो?"
+  },
+  "question.need:P23": {
+    "en": "Would you like security cameras you can watch on your phone, with recordings saved for 30 days?",
+    "text": "क्या आप ऐसे सुरक्षा कैमरे चाहते हैं जिन्हें आप अपने फ़ोन पर देख सकें, और जिनकी रिकॉर्डिंग 30 दिनों तक सेव रहे?"
+  },
+  "question.need:P24": {
+    "en": "Would you like sensors that track when your machines are running and how much power they use?",
+    "text": "क्या आप ऐसे सेंसर चाहते हैं जो आपकी मशीनों के चलने और उनकी बिजली की खपत को ट्रैक करें?"
+  },
+  "question.need:P25": {
+    "en": "Do you have vehicles you'd like to track live on a map?",
+    "text": "क्या आपके पास ऐसे वाहन हैं जिन्हें आप मैप पर लाइव ट्रैक करना चाहते हैं?"
+  },
+  "label.Micro retail & services": {
+    "en": "Micro retail & services",
+    "text": "छोटे रिटेल और सर्विस बिज़नेस"
+  },
+  "label.Professional offices": {
+    "en": "Professional offices",
+    "text": "प्रोफेशनल ऑफिस"
+  },
+  "label.Small manufacturers": {
+    "en": "Small manufacturers",
+    "text": "छोटे निर्माता"
+  },
+  "label.Small multi-site businesses": {
+    "en": "Small multi-site businesses",
+    "text": "छोटे मल्टी-साइट बिज़नेस"
+  },
+  "description.P01": {
+    "en": "Business fibre broadband, 100 Mbps, unlimited data",
+    "text": "बिज़नेस फ़ाइबर ब्रॉडबैंड, 100 Mbps, अनलिमिटेड डेटा"
+  },
+  "description.P02": {
+    "en": "Business fibre broadband, 300 Mbps, unlimited data, static IP optional",
+    "text": "बिज़नेस फ़ाइबर ब्रॉडबैंड, 300 Mbps, अनलिमिटेड डेटा, स्टैटिक IP (Static IP) का विकल्प"
+  },
+  "description.P03": {
+    "en": "Business fibre broadband, 1 Gbps, priority support",
+    "text": "बिज़नेस फ़ाइबर ब्रॉडबैंड, 1 Gbps, प्रायोरिटी सपोर्ट"
+  },
+  "description.P04": {
+    "en": "Wireless (5G FWA) broadband, 100 Mbps, plug-and-play, for sites without fibre",
+    "text": "वायरलेस (5G FWA) ब्रॉडबैंड, 100 Mbps, प्लग-एंड-प्ले (plug-and-play), बिना फ़ाइबर वाले स्थानों के लिए"
+  },
+  "description.P05": {
+    "en": "Dedicated 1:1 internet, 20 Mbps, 99.5% SLA",
+    "text": "डेडिकेटेड 1:1 इंटरनेट, 20 Mbps, 99.5% SLA"
+  },
+  "description.P06": {
+    "en": "Dedicated 1:1 internet, 100 Mbps, 99.9% SLA",
+    "text": "डेडिकेटेड 1:1 इंटरनेट, 100 Mbps, 99.9% SLA"
+  },
+  "description.P07": {
+    "en": "Business mobile line, 50 GB data, unlimited calls",
+    "text": "बिज़नेस मोबाइल लाइन, 50 GB डेटा, अनलिमिटेड कॉल्स"
+  },
+  "description.P08": {
+    "en": "Business mobile line, 150 GB data, roaming, priority care",
+    "text": "बिज़नेस मोबाइल लाइन, 150 GB डेटा, रोमिंग, प्रायोरिटी केयर"
+  },
+  "description.P09": {
+    "en": "Automatic failover router with data SIM for when the main link is down",
+    "text": "ऑटोमैटिक फेलओवर राउटर (router) डेटा सिम के साथ, मुख्य लिंक डाउन होने पर इस्तेमाल के लिए"
+  },
+  "description.P10": {
+    "en": "Central management of links across sites, app-priority routing",
+    "text": "सभी साइट्स पर लिंक्स का सेंट्रल मैनेजमेंट, ऐप-प्रायोरिटी रूटिंग"
+  },
+  "description.P11": {
+    "en": "Fixed public IP for CCTV, servers or remote access",
+    "text": "CCTV, सर्वर या रिमोट एक्सेस के लिए फिक्स्ड पब्लिक IP"
+  },
+  "description.P12": {
+    "en": "Business phone lines over internet with IVR, call recording",
+    "text": "IVR, कॉल रिकॉर्डिंग के साथ इंटरनेट पर बिज़नेस फ़ोन लाइनें"
+  },
+  "description.P13": {
+    "en": "1800 number routed to mobile or cloud telephony",
+    "text": "1800 नंबर मोबाइल या क्लाउड टेलीफोनी पर रूट किया गया"
+  },
+  "description.P14": {
+    "en": "10,000 SMS per month for alerts and promotions, DLT registration assisted",
+    "text": "10,000 SMS प्रति माह अलर्ट और प्रमोशन के लिए, DLT रजिस्ट्रेशन में सहायता"
+  },
+  "description.P15": {
+    "en": "Verified WhatsApp channel, catalogue, 1,000 conversations a month",
+    "text": "वेरिफाइड व्हाट्सएप (WhatsApp) चैनल, कैटलॉग, 1,000 बातचीत प्रति माह"
+  },
+  "description.P16": {
+    "en": "Business email on own domain, documents, video meetings",
+    "text": "अपने डोमेन पर बिज़नेस ईमेल, डॉक्यूमेंट्स, वीडियो मीटिंग्स"
+  },
+  "description.P17": {
+    "en": "Automatic backup of PCs and phones, 1 TB",
+    "text": "PCs और फ़ोन का ऑटोमैटिक बैकअप, 1 TB"
+  },
+  "description.P18": {
+    "en": "Domain, 5-page website builder, hosting, SSL",
+    "text": "डोमेन, 5-पेज वेबसाइट बिल्डर, होस्टिंग, SSL"
+  },
+  "description.P19": {
+    "en": "GST-ready billing, inventory, UPI/card acceptance on a tablet",
+    "text": "GST-रेडी बिलिंग, इन्वेंटरी, टैबलेट पर UPI/कार्ड पेमेंट की सुविधा"
+  },
+  "description.P20": {
+    "en": "Antivirus and ransomware protection for PCs and phones",
+    "text": "PCs और फ़ोन के लिए एंटीवायरस और रैंसमवेयर प्रोटेक्शन"
+  },
+  "description.P21": {
+    "en": "Next-gen firewall at the site, managed by Accel SOC",
+    "text": "साइट पर नेक्स्ट-जेन फ़ायरवॉल (firewall), Accel SOC द्वारा मैनेज किया गया"
+  },
+  "description.P22": {
+    "en": "Managed Wi-Fi access point with separate customer Wi-Fi and content filtering",
+    "text": "मैनेज्ड वाई-फाई (Wi-Fi) एक्सेस पॉइंट, अलग कस्टमर वाई-फाई और कंटेंट फ़िल्टरिंग के साथ"
+  },
+  "description.P23": {
+    "en": "HD camera with 30-day cloud recording and mobile app view",
+    "text": "HD कैमरा, 30-दिन की क्लाउड रिकॉर्डिंग और मोबाइल ऐप व्यू के साथ"
+  },
+  "description.P24": {
+    "en": "IoT SIM + sensor kit for machine uptime and energy use",
+    "text": "मशीन अपटाइम और ऊर्जा उपयोग के लिए IoT सिम + सेंसर किट"
+  },
+  "description.P25": {
+    "en": "GPS tracker with IoT SIM and live dashboard",
+    "text": "GPS ट्रैकर, IoT सिम और लाइव डैशबोर्ड के साथ"
+  }
+}

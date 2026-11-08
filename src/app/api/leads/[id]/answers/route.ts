@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth/session";
 import { ApiError, parseBody, route } from "@/lib/http";
 import { ownLead } from "@/lib/leads/access";
 import { nextQuestion, profileComplete, recommendationFor } from "@/lib/leads/quote";
-import { saveAnswer, setStage } from "@/lib/leads/repository";
+import { leadLanguage, saveAnswer, setStage } from "@/lib/leads/repository";
 import { STAGE_AFTER_PROFILE } from "@/lib/leads/stages";
 import { intakeState } from "@/lib/leads/views";
 import { createLlmClient } from "@/lib/llm/client";
@@ -28,7 +28,7 @@ export const POST = route(async (request, { params }: RouteContext<"/api/leads/[
   const question = nextQuestion(questions, lead.answers, recommendationFor(recommender, questions, lead.answers));
   if (question?.id !== questionId) throw new ApiError(409, "wrong_question", "That isn't the current question.");
 
-  const result = await interpretAnswer(createLlmClient(), question, answer);
+  const result = await interpretAnswer(createLlmClient(), question, answer, leadLanguage(lead));
   if (result.status === "unclear") {
     return NextResponse.json({ status: "unclear", reason: result.reason, ...intakeState(lead, recommender, questions) });
   }

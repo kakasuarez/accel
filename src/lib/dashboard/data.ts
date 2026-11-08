@@ -26,7 +26,8 @@ export async function dashboardData(user: SessionUser): Promise<DashboardData> {
   if (!row) return { user: { email: user.email }, tracker: buildTracker({ lead: null, hasNextQuestion: false, latestKyc: null }), lead: null, intake: null, latestKyc: null };
 
   const [events, latestKyc] = await Promise.all([listEvents(row.id), latestKycCheck(row.id)]);
-  const intake = intakeState(row, getRecommender(), getQuestions());
+  // The dashboard is in English, whatever language the bot ran in.
+  const intake = intakeState(row, getRecommender(), getQuestions(), 'en');
   const tracker = buildTracker({
     lead: { id: row.id, stage: row.stage, status: row.status, accepted: row.quote != null },
     hasNextQuestion: intake.nextQuestion != null,

@@ -6,7 +6,7 @@ A Next.js API on Vercel (Mumbai), with Supabase in India for accounts and data. 
 
 1. Create a Supabase project in the Mumbai region.
 2. In Authentication > Sign In / Providers > Email, turn off **Confirm email**.
-3. Run `supabase/migrations/0001_init.sql` and then `0002_kyc.sql` in the SQL editor.
+3. Run `supabase/migrations/0001_init.sql`, `0002_kyc.sql` and `0003_lead_language.sql`, in that order, in the SQL editor.
 4. Copy `.env.local.example` to `.env.local` and fill it in. Add the same values to the Vercel project.
 5. `npm run dev`. The admin account is created the first time the server starts.
 
@@ -21,7 +21,8 @@ sign up ─► POST /api/leads ─► answer each question ─► recommendation
           tracker ◄─ POST /api/leads/:id/accept ◄─ pick add-ons, re-priced ◄┘
 ```
 
-1. `POST /api/leads` starts a lead and returns the first question in `nextQuestion`.
+1. `POST /api/leads` with `{ language }` (`en`, `hi` or `ta`; English if left out) starts a lead and returns the
+   first question in `nextQuestion`. Until the first answer, `PATCH /api/leads/:id` with `{ language }` changes it.
 2. `POST /api/leads/:id/answers` with `{ questionId, answer }`, where `answer` is the customer's own
    words. The LLM gets one question, its valid options and the answer, and nothing else.
    - `status: "answered"`: the chosen `value` is validated and saved. Show the new `nextQuestion`.
@@ -69,6 +70,27 @@ When the questions are done, `bundles` lists up to three bundles, Recommended fi
   so send the `selectedAddOns` that `quote` returned. A bundle not offered to this customer returns
   400 `invalid_bundle`. The accepted quote records `bundle`.
 
+## Languages
+
+Accel Bot runs in English, Hindi and Tamil (`src/lib/i18n/languages.ts`). Bengali, Marathi, Telugu and Kannada
+are listed in the picker as coming soon. The language is stored on the lead and applies to everything the
+customer sees: questions, chips, the LLM's replies and explanation, the result screen and the voice.
+
+- **Values stay English.** Answers are stored as the same English values whatever the language, so the
+  recommender, the admin views and saved quotes don't change. The LLM maps a Hindi or Tamil answer to an
+  English value, and a tapped chip is matched directly without the LLM.
+- **Translations are files.** English is the source, in the code. `npm run translate` translates new or
+  changed strings with the configured LLM into `data/locales/content/<lang>.json` (questions, options,
+  catalogue, the server's sentences) and `data/locales/ui/<lang>.json` (the bot's lines and screens). Each
+  entry keeps the English it was made from: a translation of older English is never shown, and
+  `npm test` fails until it is redone. Have a native speaker review the diff.
+- **After changing customer-facing English** (the bot's copy, the questions or the CSVs): run
+  `npm run translate`, then `npm run bot:voice` for the new spoken lines.
+- **Voice.** Speech recognition is told the language: the browser via `lang`, ElevenLabs Scribe via
+  `language_code`. The ElevenLabs voice speaks only the bot's own lines in each language. The default
+  model, Multilingual v2, covers Hindi and Tamil. A browser with no voice for the language stays silent.
+- **Adding a language:** see the comment at the top of `src/lib/i18n/languages.ts`.
+
 ## API
 
 Errors are `{ "error": { "code", "message" } }`. Signing in sets cookies, so requests need no token.
@@ -80,6 +102,7 @@ Errors are `{ "error": { "code", "message" } }`. Signing in sets cookies, so req
 | `GET /api/questions` | Anyone | All questions and options |
 | `GET`, `POST /api/leads` | Customer | Tracker list; start a lead |
 | `GET /api/leads/:id` | Owner | Resume a lead, with its stage history |
+| `PATCH /api/leads/:id` | Owner | `{ language }`, before the first answer |
 | `POST /api/leads/:id/answers`, `quote`, `explanation`, `accept` | Owner | The journey above |
 | `GET`, `POST /api/leads/:id/kyc` | Owner | Latest KYC result; upload documents (multipart) at Quote accepted |
 | `POST /api/kyc/validate` | Admin | Dry-run the KYC engine; stores nothing |
@@ -118,7 +141,7 @@ document, message) are stored in `kyc_checks`.
 
 ## Data updates
 
-- **Catalogue:** edit `product_catalogue.csv` and commit. The deploy restarts everything.
+- **Catalogue:** edit `product_catalogue.csv`, run `npm run translate`, and commit. The deploy restarts everything.
 - **Leads:** update `smb_leads.csv`, run `npm run clean-leads`, and commit `training_leads.csv`.
 - **Moving away from Supabase Postgres:** SQL is only in `src/lib/leads/repository.ts` and `src/lib/db.ts`.
 

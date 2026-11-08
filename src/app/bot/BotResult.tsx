@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { api, ApiFailure } from '@/components/api';
-import { plural, quantityLabel } from '@/components/format';
 import { formatRupees } from '@/lib/bot/script';
+import { useBotText } from './i18n';
 import type { AddOn, BundleChoice, BundleTotals, CustomerLead, CustomerRecommendation } from './types';
 
 const PHONE = /^\+?[0-9][0-9 ()-]{6,19}$/;
@@ -24,10 +24,7 @@ function localTotals(rec: CustomerRecommendation, selected: ReadonlySet<string>)
   };
 }
 
-const RECOMMENDATION_TAG: Record<NonNullable<AddOn['recommendation']>, string> = {
-  stated_need: 'You asked for this',
-  model: 'Suggested for you',
-};
+const RECOMMENDATION_TAG = { stated_need: 'tag.stated_need', model: 'tag.model' } as const satisfies Record<NonNullable<AddOn['recommendation']>, string>;
 
 interface Props {
   leadId: string;
@@ -42,6 +39,7 @@ interface Props {
 export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: Props) {
   const router = useRouter();
   const id = useId();
+  const { lang, t, count, quantity } = useBotText();
   const base = `/api/leads/${encodeURIComponent(leadId)}`;
 
   const [tier, setTier] = useState(bundles[0]!.tier);
@@ -98,9 +96,9 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
 
   const validate = () => {
     const e: typeof errors = {};
-    if (!form.businessName.trim()) e.businessName = 'Enter your business’s name.';
-    if (!form.contactName.trim()) e.contactName = 'Enter the name of the person we should speak to.';
-    if (!PHONE.test(form.phone.trim())) e.phone = 'Enter a phone number, like +91 98765 43210.';
+    if (!form.businessName.trim()) e.businessName = t('accept.businessNameError');
+    if (!form.contactName.trim()) e.contactName = t('accept.contactNameError');
+    if (!PHONE.test(form.phone.trim())) e.phone = t('accept.phoneError');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -126,7 +124,8 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
     } catch (err) {
       setAccepting(false);
       if (err instanceof ApiFailure && err.code === 'already_accepted') return onAlreadyAccepted();
-      setSubmitError(err instanceof ApiFailure ? err.message : 'We couldn’t accept the quote. Please try again.');
+      // Server messages are English; other languages get our own.
+      setSubmitError(lang === 'en' && err instanceof ApiFailure ? err.message : t(err instanceof ApiFailure && err.code === 'network' ? 'error.network' : 'accept.failed'));
     }
   };
 
@@ -163,13 +162,13 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
         <span className="addon-text">
           <span className="addon-name">
             {a.name}
-            {a.recommendation && <span className="addon-tag">{RECOMMENDATION_TAG[a.recommendation]}</span>}
+            {a.recommendation && <span className="addon-tag">{t(RECOMMENDATION_TAG[a.recommendation])}</span>}
           </span>
           <span className="addon-why">{a.why}</span>
         </span>
         <span className="addon-price">
           +{formatRupees(a.monthly)}
-          <span>{quantityLabel(a.quantity, a.unit)}</span>
+          <span>{quantity(a.quantity, a.unit)}</span>
         </span>
       </label>
     </li>
@@ -179,8 +178,8 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
     <div className="result">
       {bundles.length > 1 && (
         <fieldset className="tiers">
-          <legend className="addons-title">Choose your bundle</legend>
-          <p className="addons-sub">Monthly prices before add-ons. You can switch any time before you accept.</p>
+          <legend className="addons-title">{t('tiers.title')}</legend>
+          <p className="addons-sub">{t('tiers.sub')}</p>
           <div className="tier-list">
             {bundles.map((b) => (
               <label key={b.tier} className={`tier${b.tier === tier ? ' is-on' : ''}`}>
@@ -196,12 +195,12 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
                 />
                 <span className="tier-head">
                   {b.label}
-                  {b.tier === 'recommended' && <span className="addon-tag">Best fit</span>}
+                  {b.tier === 'recommended' && <span className="addon-tag">{t('tiers.bestFit')}</span>}
                 </span>
                 <span className="tier-price">
-                  <strong>{formatRupees(b.recommendation.totals.monthly)}</strong> a month
+                  <strong>{formatRupees(b.recommendation.totals.monthly)}</strong> {t('perMonth')}
                 </span>
-                <span className="tier-note">{b.comparison ?? 'Our pick for your business, based on your answers.'}</span>
+                <span className="tier-note">{b.comparison ?? t('tiers.ourPick')}</span>
               </label>
             ))}
           </div>
@@ -211,31 +210,31 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
       <article className="bundle" aria-labelledby={`${id}-bundle`}>
         <div className="bundle-head">
           <h2 id={`${id}-bundle`} className="bundle-name">
-            {bundles.length > 1 ? `${bundle.label} bundle` : 'Your bundle'}
+            {bundles.length > 1 ? t('bundle.named', { label: bundle.label }) : t('bundle.yours')}
           </h2>
           <span className="chip">{rec.segmentLabel}</span>
         </div>
 
         <p className="bundle-price" aria-live="polite">
           <strong>{formatRupees(totals.monthly)}</strong>
-          <span>a month</span>
+          <span>{t('perMonth')}</span>
         </p>
         <dl className="bundle-facts">
           <div>
-            <dt>One-time setup</dt>
-            <dd>{totals.setupFee > 0 ? formatRupees(totals.setupFee) : 'None'}</dd>
+            <dt>{t('bundle.setup')}</dt>
+            <dd>{totals.setupFee > 0 ? formatRupees(totals.setupFee) : t('bundle.setupNone')}</dd>
           </div>
           <div>
-            <dt>Minimum contract</dt>
-            <dd>{plural(totals.contractMonths, 'month')}</dd>
+            <dt>{t('bundle.contract')}</dt>
+            <dd>{count('months', totals.contractMonths)}</dd>
           </div>
           <div>
-            <dt>Installation</dt>
-            <dd>Up to {plural(totals.installDays, 'day')}</dd>
+            <dt>{t('bundle.installation')}</dt>
+            <dd>{t('bundle.installUpTo', { days: count('days', totals.installDays) })}</dd>
           </div>
         </dl>
 
-        <ul className="bundle-items" aria-label="Included in your bundle">
+        <ul className="bundle-items" aria-label={t('bundle.included')}>
           {rec.lines.map((line) => (
             <li key={line.productId}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -243,7 +242,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
               </svg>
               <span className="bundle-item-text">
                 <strong>
-                  {line.name} <span className="bundle-qty">· {quantityLabel(line.quantity, line.unit)}</span>
+                  {line.name} <span className="bundle-qty">· {quantity(line.quantity, line.unit)}</span>
                 </strong>
                 <span>{line.why}</span>
               </span>
@@ -253,7 +252,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
         </ul>
 
         {rec.flags.length > 0 && (
-          <ul className="bundle-flags" aria-label="Good to know">
+          <ul className="bundle-flags" aria-label={t('bundle.goodToKnow')}>
             {rec.flags.map((flag) => (
               <li key={flag.code}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -269,15 +268,15 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
 
       {rec.addOns.length > 0 && (
         <fieldset className="addons">
-          <legend className="addons-title">Add to your bundle</legend>
-          <p className="addons-sub">Optional. Tick anything you’d like and the monthly price updates.</p>
+          <legend className="addons-title">{t('addOns.title')}</legend>
+          <p className="addons-sub">{t('addOns.sub')}</p>
           <ul className="addon-list">
             {visibleAddOns.map(addOnRow)}
             {extraSelected.map(addOnRow)}
           </ul>
           {hiddenCount > 0 && (
             <button type="button" className="text-btn" onClick={() => setShowAllAddOns(true)} aria-expanded={false}>
-              Show {plural(hiddenCount - extraSelected.length, 'more add-on')}
+              {count('addOns.more', hiddenCount - extraSelected.length)}
             </button>
           )}
         </fieldset>
@@ -285,7 +284,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
 
       {rec.blocked.length > 0 && (
         <details className="bot-recap">
-          <summary>Why some services aren’t included</summary>
+          <summary>{t('blocked.title')}</summary>
           <ul className="blocked-list">
             {rec.blocked.map((b) => (
               <li key={b.productId}>
@@ -299,15 +298,23 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
 
       <form className="accept" onSubmit={accept} noValidate aria-labelledby={`${id}-accept`}>
         <h2 id={`${id}-accept`} className="accept-title">
-          Accept this quote
+          {t('accept.title')}
         </h2>
         <p className="accept-sub">
-          At <strong>{formatRupees(totals.monthly)}</strong> a month. Next, you’ll verify your business
-          with a few documents.
+          {(() => {
+            const [before, after = ''] = t('accept.sub').split('{price}');
+            return (
+              <>
+                {before}
+                <strong>{formatRupees(totals.monthly)}</strong>
+                {after}
+              </>
+            );
+          })()}
         </p>
-        {field('businessName', 'Business name', { autoComplete: 'organization', maxLength: 120 })}
-        {field('contactName', 'Your name', { autoComplete: 'name', maxLength: 120 })}
-        {field('phone', 'Phone number', { type: 'tel', autoComplete: 'tel', inputMode: 'tel', maxLength: 21 })}
+        {field('businessName', t('accept.businessName'), { autoComplete: 'organization', maxLength: 120 })}
+        {field('contactName', t('accept.contactName'), { autoComplete: 'name', maxLength: 120 })}
+        {field('phone', t('accept.phone'), { type: 'tel', autoComplete: 'tel', inputMode: 'tel', maxLength: 21 })}
         {submitError && (
           <p className="form-alert" role="alert">
             <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -319,13 +326,13 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
         )}
         <div className="accept-actions">
           <button type="submit" className="btn btn-primary" disabled={accepting}>
-            {accepting ? 'Accepting…' : 'Accept quote'}
+            {t(accepting ? 'accept.accepting' : 'accept.submit')}
           </button>
           <Link href="/bot?new=1" className="btn btn-outline-dark">
-            Start over
+            {t('startOver')}
           </Link>
         </div>
-        <p className="bundle-note">Accel is a fictional operator. Prices are synthetic and shown per month.</p>
+        <p className="bundle-note">{t('accept.note')}</p>
       </form>
     </div>
   );

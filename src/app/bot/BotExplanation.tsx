@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { api } from '@/components/api';
+import { useBotText } from './i18n';
 import type { BundleChoice } from './types';
 
 interface Props {
@@ -30,6 +31,7 @@ export function BotExplanation({ leadId, tier, explanation: initialExplanation }
       .catch(() => setFailed((prev) => ({ ...prev, [tier]: true })));
   }, [leadId, tier, notes]);
 
+  const { t } = useBotText();
   const explanation = notes[tier];
   const explaining = !explanation && !failed[tier];
   return (
@@ -43,7 +45,7 @@ export function BotExplanation({ leadId, tier, explanation: initialExplanation }
             <span />
             <span />
           </span>
-          {tier === 'recommended' ? 'Writing a short note on why this fits your business' : 'Writing a short note on this bundle'}
+          {t(tier === 'recommended' ? 'explain.recommended' : 'explain.other')}
         </p>
       ) : null}
     </section>

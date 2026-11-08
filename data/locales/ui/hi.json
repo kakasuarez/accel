@@ -1,0 +1,546 @@
+{
+  "script.greeting": {
+    "en": "Hi, I’m Accel Bot. I’ll ask a few quick questions about your business, then suggest a bundle that fits.",
+    "text": "नमस्ते, मैं Accel Bot हूँ। मैं आपके व्यवसाय के बारे में कुछ त्वरित प्रश्न पूछूंगा, फिर एक ऐसा बंडल सुझाऊंगा जो उपयुक्त हो।"
+  },
+  "script.welcomeBack": {
+    "en": "Welcome back. Let’s pick up where we left off.",
+    "text": "वापस स्वागत है। चलिए वहीं से शुरू करते हैं जहाँ हमने छोड़ा था।"
+  },
+  "script.closing": {
+    "en": "Thank you, that’s everything I need. Based on what you’ve told me, here’s the bundle I’d start your business with.",
+    "text": "धन्यवाद, मुझे सब मिल गया। जो आपने बताया है, उसके आधार पर, मैं आपके व्यवसाय के लिए यह बंडल सुझाता हूँ।"
+  },
+  "script.ack.0": {
+    "en": "Got it.",
+    "text": "ठीक है।"
+  },
+  "script.ack.1": {
+    "en": "Thank you.",
+    "text": "धन्यवाद।"
+  },
+  "script.ack.2": {
+    "en": "Understood.",
+    "text": "समझ गया।"
+  },
+  "script.ack.3": {
+    "en": "Noted, thank you.",
+    "text": "नोट कर लिया, धन्यवाद।"
+  },
+  "script.ack.4": {
+    "en": "That helps.",
+    "text": "यह मददगार है।"
+  },
+  "script.ack.5": {
+    "en": "Thanks, that’s useful.",
+    "text": "धन्यवाद, यह उपयोगी है।"
+  },
+  "script.ack.6": {
+    "en": "Perfect.",
+    "text": "बहुत बढ़िया।"
+  },
+  "script.ack.7": {
+    "en": "Clear, thank you.",
+    "text": "स्पष्ट है, धन्यवाद।"
+  },
+  "placeholder.answer": {
+    "en": "Type your answer",
+    "text": "अपना जवाब टाइप करें"
+  },
+  "placeholder.number": {
+    "en": "Type a number",
+    "text": "एक नंबर टाइप करें"
+  },
+  "placeholder.numberUnit": {
+    "en": "Type a number ({unit})",
+    "text": "एक नंबर टाइप करें ({unit})"
+  },
+  "placeholder.pick": {
+    "en": "Type or pick an answer",
+    "text": "टाइप करें या जवाब चुनें"
+  },
+  "chips.label": {
+    "en": "Suggested answers",
+    "text": "सुझाए गए जवाब"
+  },
+  "chips.showAll": {
+    "en": "Show all {n}",
+    "text": "सभी {n} दिखाएं"
+  },
+  "skip": {
+    "en": "Not sure",
+    "text": "पक्का नहीं"
+  },
+  "checking": {
+    "en": "Checking your answer",
+    "text": "आपका जवाब जांच रहा हूँ"
+  },
+  "answer.label": {
+    "en": "Your answer",
+    "text": "आपका जवाब"
+  },
+  "answer.voice": {
+    "en": "Answer by voice",
+    "text": "आवाज़ से जवाब दें"
+  },
+  "answer.send": {
+    "en": "Send answer",
+    "text": "जवाब भेजें"
+  },
+  "startOver": {
+    "en": "Start over",
+    "text": "फिर से शुरू करें"
+  },
+  "loading": {
+    "en": "Loading your conversation",
+    "text": "आपकी बातचीत लोड हो रही है"
+  },
+  "header.home": {
+    "en": "Accel Business dashboard",
+    "text": "Accel Business डैशबोर्ड"
+  },
+  "header.dashboard": {
+    "en": "Dashboard",
+    "text": "डैशबोर्ड"
+  },
+  "header.mute": {
+    "en": "Mute Accel Bot’s voice",
+    "text": "Accel Bot की आवाज़ म्यूट करें"
+  },
+  "header.unmute": {
+    "en": "Unmute Accel Bot’s voice",
+    "text": "Accel Bot की आवाज़ अनम्यूट करें"
+  },
+  "header.muteTitle": {
+    "en": "Mute voice",
+    "text": "आवाज़ म्यूट करें"
+  },
+  "header.unmuteTitle": {
+    "en": "Unmute voice",
+    "text": "आवाज़ अनम्यूट करें"
+  },
+  "header.progress": {
+    "en": "Questions answered",
+    "text": "प्रश्नों के उत्तर दिए गए"
+  },
+  "count.profile": {
+    "en": "{n} of {total}",
+    "text": "{n} में से {total}"
+  },
+  "count.addOns": {
+    "en": "Add-ons {n} of {total}",
+    "text": "ऐड-ऑन {n} में से {total}"
+  },
+  "count.bundle": {
+    "en": "Your bundle",
+    "text": "आपका बंडल"
+  },
+  "count.accepted": {
+    "en": "Quote accepted",
+    "text": "कोट स्वीकार किया गया"
+  },
+  "language.title": {
+    "en": "Choose your language",
+    "text": "अपनी भाषा चुनें"
+  },
+  "language.comingSoon": {
+    "en": "{language} is coming soon. Please pick another language for now.",
+    "text": "{language} जल्द ही आ रहा है। कृपया अभी के लिए कोई दूसरी भाषा चुनें।"
+  },
+  "language.change": {
+    "en": "Change language",
+    "text": "भाषा बदलें"
+  },
+  "consent.title": {
+    "en": "Before we start",
+    "text": "शुरू करने से पहले"
+  },
+  "consent.body": {
+    "en": "Your answers are used to recommend a bundle and prepare your quote. If you answer by voice, your speech is turned into text by our speech provider or by your browser.",
+    "text": "आपके जवाबों का उपयोग बंडल की सिफारिश करने और आपका कोट तैयार करने के लिए किया जाता है। यदि आप आवाज़ से जवाब देते हैं, तो आपकी बोली को हमारे स्पीच प्रोवाइडर या आपके ब्राउज़र द्वारा टेक्स्ट में बदला जाता है।"
+  },
+  "consent.agree": {
+    "en": "By continuing, you agree to our {link}.",
+    "text": "जारी रखकर, आप हमारी {link} से सहमत होते हैं।"
+  },
+  "consent.privacy": {
+    "en": "Privacy Policy",
+    "text": "गोपनीयता नीति"
+  },
+  "consent.newTab": {
+    "en": "(opens in a new tab)",
+    "text": "(नई टैब में खुलता है)"
+  },
+  "consent.start": {
+    "en": "Let’s start",
+    "text": "चलिए शुरू करते हैं"
+  },
+  "voice.group": {
+    "en": "Voice answer",
+    "text": "वॉयस उत्तर"
+  },
+  "voice.exit": {
+    "en": "Exit voice mode",
+    "text": "वॉयस मोड से बाहर निकलें"
+  },
+  "voice.exitTitle": {
+    "en": "Exit voice mode and type",
+    "text": "वॉयस मोड से बाहर निकलें और टाइप करें"
+  },
+  "voice.tapToSpeak": {
+    "en": "Tap to speak",
+    "text": "बोलने के लिए टैप करें"
+  },
+  "voice.sendNow": {
+    "en": "Send answer now",
+    "text": "अभी उत्तर भेजें"
+  },
+  "voice.unsupported": {
+    "en": "This browser can’t turn speech into text yet",
+    "text": "यह ब्राउज़र अभी तक आपकी आवाज़ को टेक्स्ट में नहीं बदल सकता है"
+  },
+  "voice.checking": {
+    "en": "Checking",
+    "text": "जाँच हो रही है"
+  },
+  "voice.paused": {
+    "en": "Paused",
+    "text": "रुका हुआ"
+  },
+  "voice.listening": {
+    "en": "Listening",
+    "text": "सुन रहा है"
+  },
+  "voice.transcribing": {
+    "en": "Transcribing",
+    "text": "ट्रांसक्राइब हो रहा है"
+  },
+  "voice.starting": {
+    "en": "Starting the microphone…",
+    "text": "माइक्रोफ़ोन शुरू हो रहा है…"
+  },
+  "voice.speaking": {
+    "en": "Speaking",
+    "text": "बोल रहा है"
+  },
+  "voice.next": {
+    "en": "Next question",
+    "text": "अगला प्रश्न"
+  },
+  "voice.nothingHeard": {
+    "en": "I didn’t hear anything, so I’ve paused the microphone.",
+    "text": "मुझे कुछ सुनाई नहीं दिया, इसलिए मैंने माइक्रोफ़ोन रोक दिया है।"
+  },
+  "voice.stopped": {
+    "en": "The microphone stopped. Tap to speak again.",
+    "text": "माइक्रोफ़ोन बंद हो गया। फिर से बोलने के लिए टैप करें।"
+  },
+  "voiceError.blocked": {
+    "en": "Microphone access is blocked. Allow it in your browser settings, or type your answer.",
+    "text": "माइक्रोफ़ोन एक्सेस ब्लॉक है। इसे अपनी ब्राउज़र सेटिंग्स में अनुमति दें, या अपना उत्तर टाइप करें।"
+  },
+  "voiceError.no-mic": {
+    "en": "No microphone was found on this device. Type your answer instead.",
+    "text": "इस डिवाइस पर कोई माइक्रोफ़ोन नहीं मिला। इसके बजाय अपना उत्तर टाइप करें।"
+  },
+  "voiceError.failed": {
+    "en": "Voice input stopped unexpectedly. Try again, or type your answer.",
+    "text": "वॉयस इनपुट अप्रत्याशित रूप से बंद हो गया। पुनः प्रयास करें, या अपना उत्तर टाइप करें।"
+  },
+  "error.notFound": {
+    "en": "We couldn’t find that conversation.",
+    "text": "हमें वह बातचीत नहीं मिल सकी।"
+  },
+  "error.generic": {
+    "en": "Something went wrong. Please try again.",
+    "text": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
+  },
+  "error.network": {
+    "en": "We couldn’t reach Accel. Check your connection and try again.",
+    "text": "हम Accel तक नहीं पहुँच सके। अपना कनेक्शन जांचें और पुनः प्रयास करें।"
+  },
+  "error.newConversation": {
+    "en": "Start a new conversation",
+    "text": "नई बातचीत शुरू करें"
+  },
+  "goDashboard": {
+    "en": "Go to your dashboard",
+    "text": "अपने डैशबोर्ड पर जाएं"
+  },
+  "accepted.title": {
+    "en": "You’ve already accepted this bundle.",
+    "text": "आपने यह बंडल पहले ही स्वीकार कर लिया है।"
+  },
+  "accepted.body": {
+    "en": "Your quote is saved. Next, verify your business from your dashboard.",
+    "text": "आपका कोट सहेजा गया है। अगला, अपने डैशबोर्ड से अपना व्यवसाय सत्यापित करें।"
+  },
+  "accepted.newRequest": {
+    "en": "Start a new request",
+    "text": "नया अनुरोध शुरू करें"
+  },
+  "noBundle": {
+    "en": "We couldn’t put a bundle together from these answers.",
+    "text": "हम इन उत्तरों से एक बंडल नहीं बना सके।"
+  },
+  "explain.recommended": {
+    "en": "Writing a short note on why this fits your business",
+    "text": "यह आपके व्यवसाय के लिए क्यों उपयुक्त है, इस पर एक संक्षिप्त नोट लिखना"
+  },
+  "explain.other": {
+    "en": "Writing a short note on this bundle",
+    "text": "इस बंडल पर एक संक्षिप्त नोट लिखना"
+  },
+  "tag.stated_need": {
+    "en": "You asked for this",
+    "text": "आपने इसके लिए पूछा था"
+  },
+  "tag.model": {
+    "en": "Suggested for you",
+    "text": "आपके लिए सुझाया गया"
+  },
+  "tiers.title": {
+    "en": "Choose your bundle",
+    "text": "अपना बंडल चुनें"
+  },
+  "tiers.sub": {
+    "en": "Monthly prices before add-ons. You can switch any time before you accept.",
+    "text": "ऐड-ऑन से पहले मासिक कीमतें। स्वीकार करने से पहले आप कभी भी बदल सकते हैं।"
+  },
+  "tiers.bestFit": {
+    "en": "Best fit",
+    "text": "सबसे उपयुक्त"
+  },
+  "tiers.ourPick": {
+    "en": "Our pick for your business, based on your answers.",
+    "text": "आपके उत्तरों के आधार पर, आपके व्यवसाय के लिए हमारा चयन।"
+  },
+  "tiers.recommended": {
+    "en": "Recommended",
+    "text": "अनुशंसित"
+  },
+  "perMonth": {
+    "en": "a month",
+    "text": "प्रति माह"
+  },
+  "bundle.named": {
+    "en": "{label} bundle",
+    "text": "{label} बंडल"
+  },
+  "bundle.yours": {
+    "en": "Your bundle",
+    "text": "आपका बंडल"
+  },
+  "bundle.setup": {
+    "en": "One-time setup",
+    "text": "एक बार का सेटअप"
+  },
+  "bundle.setupNone": {
+    "en": "None",
+    "text": "कुछ नहीं"
+  },
+  "bundle.contract": {
+    "en": "Minimum contract",
+    "text": "न्यूनतम अनुबंध"
+  },
+  "bundle.installation": {
+    "en": "Installation",
+    "text": "इंस्टॉलेशन"
+  },
+  "bundle.installUpTo": {
+    "en": "Up to {days}",
+    "text": "{days} तक"
+  },
+  "bundle.included": {
+    "en": "Included in your bundle",
+    "text": "आपके बंडल में शामिल"
+  },
+  "bundle.goodToKnow": {
+    "en": "Good to know",
+    "text": "जानना ज़रूरी है"
+  },
+  "months.one": {
+    "en": "{n} month",
+    "text": "{n} महीना"
+  },
+  "months.other": {
+    "en": "{n} months",
+    "text": "{n} महीने"
+  },
+  "days.one": {
+    "en": "{n} day",
+    "text": "{n} दिन"
+  },
+  "days.other": {
+    "en": "{n} days",
+    "text": "{n} दिन"
+  },
+  "addOns.title": {
+    "en": "Add to your bundle",
+    "text": "अपने बंडल में जोड़ें"
+  },
+  "addOns.sub": {
+    "en": "Optional. Tick anything you’d like and the monthly price updates.",
+    "text": "वैकल्पिक। जो भी आप चाहें उसे चुनें और मासिक कीमत अपडेट हो जाएगी।"
+  },
+  "addOns.more.one": {
+    "en": "Show {n} more add-on",
+    "text": "{n} और ऐड-ऑन दिखाएं"
+  },
+  "addOns.more.other": {
+    "en": "Show {n} more add-ons",
+    "text": "{n} और ऐड-ऑन दिखाएं"
+  },
+  "blocked.title": {
+    "en": "Why some services aren’t included",
+    "text": "कुछ सेवाएं क्यों शामिल नहीं हैं"
+  },
+  "accept.title": {
+    "en": "Accept this quote",
+    "text": "यह कोट स्वीकार करें"
+  },
+  "accept.sub": {
+    "en": "At {price} a month. Next, you’ll verify your business with a few documents.",
+    "text": "{price} प्रति माह की दर से। आगे, आप कुछ दस्तावेज़ों के साथ अपने व्यवसाय का सत्यापन करेंगे।"
+  },
+  "accept.businessName": {
+    "en": "Business name",
+    "text": "व्यवसाय का नाम"
+  },
+  "accept.contactName": {
+    "en": "Your name",
+    "text": "आपका नाम"
+  },
+  "accept.phone": {
+    "en": "Phone number",
+    "text": "फ़ोन नंबर"
+  },
+  "accept.businessNameError": {
+    "en": "Enter your business’s name.",
+    "text": "अपने व्यवसाय का नाम दर्ज करें।"
+  },
+  "accept.contactNameError": {
+    "en": "Enter the name of the person we should speak to.",
+    "text": "उस व्यक्ति का नाम दर्ज करें जिससे हमें बात करनी है।"
+  },
+  "accept.phoneError": {
+    "en": "Enter a phone number, like +91 98765 43210.",
+    "text": "एक फ़ोन नंबर दर्ज करें, जैसे +91 98765 43210।"
+  },
+  "accept.failed": {
+    "en": "We couldn’t accept the quote. Please try again.",
+    "text": "हम कोट स्वीकार नहीं कर सके। कृपया पुनः प्रयास करें।"
+  },
+  "accept.accepting": {
+    "en": "Accepting…",
+    "text": "स्वीकार कर रहे हैं..."
+  },
+  "accept.submit": {
+    "en": "Accept quote",
+    "text": "कोट स्वीकार करें"
+  },
+  "accept.note": {
+    "en": "Accel is a fictional operator. Prices are synthetic and shown per month.",
+    "text": "Accel एक काल्पनिक ऑपरेटर है। कीमतें सिंथेटिक हैं और प्रति माह दिखाई गई हैं।"
+  },
+  "quantity.per site.one": {
+    "en": "{n} site",
+    "text": "{n} साइट"
+  },
+  "quantity.per site.other": {
+    "en": "{n} sites",
+    "text": "{n} साइटें"
+  },
+  "quantity.per line.one": {
+    "en": "{n} line",
+    "text": "{n} लाइन"
+  },
+  "quantity.per line.other": {
+    "en": "{n} lines",
+    "text": "{n} लाइनें"
+  },
+  "quantity.per IP.one": {
+    "en": "{n} IP",
+    "text": "{n} IP"
+  },
+  "quantity.per IP.other": {
+    "en": "{n} IPs",
+    "text": "{n} IP"
+  },
+  "quantity.per channel.one": {
+    "en": "{n} channel",
+    "text": "{n} चैनल"
+  },
+  "quantity.per channel.other": {
+    "en": "{n} channels",
+    "text": "{n} चैनल"
+  },
+  "quantity.per number.one": {
+    "en": "{n} number",
+    "text": "{n} नंबर"
+  },
+  "quantity.per number.other": {
+    "en": "{n} numbers",
+    "text": "{n} नंबर"
+  },
+  "quantity.per pack.one": {
+    "en": "{n} pack",
+    "text": "{n} पैक"
+  },
+  "quantity.per pack.other": {
+    "en": "{n} packs",
+    "text": "{n} पैक"
+  },
+  "quantity.per account.one": {
+    "en": "{n} account",
+    "text": "{n} खाता"
+  },
+  "quantity.per account.other": {
+    "en": "{n} accounts",
+    "text": "{n} खाते"
+  },
+  "quantity.per user.one": {
+    "en": "{n} user",
+    "text": "{n} उपयोगकर्ता"
+  },
+  "quantity.per user.other": {
+    "en": "{n} users",
+    "text": "{n} उपयोगकर्ता"
+  },
+  "quantity.per counter.one": {
+    "en": "{n} counter",
+    "text": "{n} काउंटर"
+  },
+  "quantity.per counter.other": {
+    "en": "{n} counters",
+    "text": "{n} काउंटर"
+  },
+  "quantity.per device.one": {
+    "en": "{n} device",
+    "text": "{n} डिवाइस"
+  },
+  "quantity.per device.other": {
+    "en": "{n} devices",
+    "text": "{n} डिवाइस"
+  },
+  "quantity.per camera.one": {
+    "en": "{n} camera",
+    "text": "{n} कैमरा"
+  },
+  "quantity.per camera.other": {
+    "en": "{n} cameras",
+    "text": "{n} कैमरे"
+  },
+  "quantity.per vehicle.one": {
+    "en": "{n} vehicle",
+    "text": "{n} वाहन"
+  },
+  "quantity.per vehicle.other": {
+    "en": "{n} vehicles",
+    "text": "{n} वाहन"
+  },
+  "unit.INR per month": {
+    "en": "INR per month",
+    "text": "महीने के INR"
+  }
+}

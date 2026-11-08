@@ -8,16 +8,17 @@
  *
  * Reads ELEVENLABS_API_KEY / ELEVENLABS_VOICE_ID / ELEVENLABS_TTS_MODEL from .env.local.
  * Re-run after changing the fixed lines in src/lib/bot/script.ts, the product catalogue or training CSVs
- * (the backend's questions are built from them), or the voice.
+ * (the backend's questions are built from them), the translations (npm run translate), or the voice.
+ * Every language's lines are generated; a language with its own `ttsModel` (src/lib/i18n/languages.ts) uses it.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import nextEnv from '@next/env';
 import { ElevenLabsError, clipName, requestSpeech, voiceSettingsFromEnv } from '../src/lib/bot/elevenlabsApi';
 import type { VoiceManifest } from '../src/lib/bot/script';
-import { speakableLines } from '../src/lib/bot/speakable';
+import { speakableEntries, ttsModelFor } from '../src/lib/bot/speakable';
 
-const SPEAKABLE_LINES = speakableLines();
+const SPEAKABLE_LINES = speakableEntries();
 
 const OUT_DIR = path.join(process.cwd(), 'public', 'bot-voice');
 const MANIFEST = path.join(OUT_DIR, 'manifest.json');
@@ -34,7 +35,10 @@ async function main() {
     process.exit(1);
   }
 
-  const plan = SPEAKABLE_LINES.map((text) => ({ text, file: clipName({ voice, model }, text) }));
+  const plan = SPEAKABLE_LINES.map(({ text, lang }) => {
+    const lineModel = ttsModelFor(lang, model);
+    return { text, model: lineModel, file: clipName({ voice, model: lineModel }, text) };
+  });
   const todo = plan.filter((p) => force || !fs.existsSync(path.join(OUT_DIR, p.file)));
   const chars = todo.reduce((n, p) => n + p.text.length, 0);
 
@@ -58,7 +62,7 @@ async function main() {
       console.log('copied from .cache/tts');
       continue;
     }
-    const audio = await requestSpeech({ key: key!, voice, model }, p.text);
+    const audio = await requestSpeech({ key: key!, voice, model: p.model }, p.text);
     fs.writeFileSync(path.join(OUT_DIR, p.file), audio);
     console.log(`${Math.round(audio.length / 1024)} KB`);
   }

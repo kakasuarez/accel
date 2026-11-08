@@ -1,4 +1,5 @@
 import { ElevenLabsError, isConfigured, transcribe } from '@/lib/bot/elevenlabs';
+import { isLang, languageInfo } from '@/lib/i18n/languages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -7,7 +8,7 @@ export const dynamic = 'force-dynamic';
 const MAX_BYTES = 5 * 1024 * 1024;
 
 /**
- * POST /api/bot/stt (multipart/form-data, part "audio") → { text }
+ * POST /api/bot/stt (multipart/form-data, part "audio", optional part "lang", e.g. "hi") → { text }
  * Audio is forwarded to the provider and never stored.
  */
 export async function POST(req: Request) {
@@ -19,7 +20,8 @@ export async function POST(req: Request) {
   if (audio.size > MAX_BYTES) return Response.json({ error: 'Recording is too long.' }, { status: 413 });
 
   try {
-    return Response.json({ text: await transcribe(audio) });
+    const lang = form?.get('lang');
+    return Response.json({ text: await transcribe(audio, isLang(lang) ? languageInfo(lang).sttCode : undefined) });
   } catch (err) {
     if (err instanceof ElevenLabsError) {
       console.error(err.message);

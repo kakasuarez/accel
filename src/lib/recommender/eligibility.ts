@@ -1,8 +1,14 @@
+import { message } from "./messages";
 import type { BlockCode, BusinessProfile, Product, ProductId, Segment } from "./types";
 
 export interface Block {
   code: BlockCode;
   reason: string;
+  params: Readonly<Record<string, string | number>>;
+}
+
+function block(code: BlockCode, params: Readonly<Record<string, string | number>>): Block {
+  return { code, reason: message(`block.${code}`, params), params };
 }
 
 /**
@@ -17,25 +23,25 @@ export function eligibilityBlock(
   selected?: ReadonlySet<ProductId>,
 ): Block | null {
   if (!product.targetSegments.includes(segment)) {
-    return { code: "segment", reason: `${product.name} isn't offered to this type of business.` };
+    return block("segment", { product: product.name });
   }
   if (!product.cityTiers.includes(profile.cityTier)) {
-    return { code: "city_tier", reason: `${product.name} isn't available in tier ${profile.cityTier} cities yet.` };
+    return block("city_tier", { product: product.name, tier: profile.cityTier });
   }
   if (product.needsFibre && profile.fibreAvailable === false) {
-    return { code: "no_fibre", reason: `${product.name} needs fibre, which isn't available at your location.` };
+    return block("no_fibre", { product: product.name });
   }
   if (profile.employees < product.minEmployees) {
-    return { code: "min_employees", reason: `${product.name} is for businesses with ${product.minEmployees}+ employees.` };
+    return block("min_employees", { product: product.name, min: product.minEmployees });
   }
   if (profile.sites < product.minSites) {
-    return { code: "min_sites", reason: `${product.name} is for businesses with ${product.minSites}+ sites.` };
+    return block("min_sites", { product: product.name, min: product.minSites });
   }
   if (product.requiresGstin && !profile.hasGstin) {
-    return { code: "gstin", reason: `${product.name} requires a GSTIN.` };
+    return block("gstin", { product: product.name });
   }
   if (selected && product.requiresOneOf.length > 0 && !product.requiresOneOf.some((id) => selected.has(id))) {
-    return { code: "dependency", reason: `${product.name} doesn't work with the internet connection in this bundle.` };
+    return block("dependency", { product: product.name });
   }
   return null;
 }

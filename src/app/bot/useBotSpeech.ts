@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { VOICE_MANIFEST_PATH, type VoiceManifest } from '@/lib/bot/script';
+import { languageInfo, type Lang } from '@/lib/i18n/languages';
 
 /** Pre-generated clips (npm run bot:voice). Loaded once per page; an empty map when none were generated. */
 let manifestPromise: Promise<Record<string, string>> | null = null;
@@ -19,27 +20,33 @@ const LINE_GAP_MS = 180;
 /** Upper bound for one line, so a speech engine that never reports "ended" can't block the mic forever. */
 const maxLineMs = (text: string) => 3000 + text.split(/\s+/).length * 600;
 
-/** Best browser voice for Indian English, used when the server voice isn't available. */
-function pickBrowserVoice(): SpeechSynthesisVoice | null {
+/**
+ * Best browser voice for the language (Indian English for English), used when the server voice isn't available.
+ * Null when the device has no voice for it: an English voice reading Hindi or Tamil would be worse than silence.
+ */
+function pickBrowserVoice(lang: Lang): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis?.getVoices() ?? [];
-  const en = voices.filter((v) => v.lang.toLowerCase().startsWith('en'));
+  const code = lang.toLowerCase();
+  const matching = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').split('-')[0] === code);
   const natural = (v: SpeechSynthesisVoice) => /natural|online|neural|premium|enhanced/i.test(v.name);
-  const india = (v: SpeechSynthesisVoice) => /-in$/i.test(v.lang);
+  const india = (v: SpeechSynthesisVoice) => /-in$/i.test(v.lang.replace('_', '-'));
   return (
-    en.find((v) => india(v) && natural(v)) ??
-    en.find(natural) ??
-    en.find(india) ??
-    en.find((v) => /google/i.test(v.name)) ??
-    en[0] ??
+    matching.find((v) => india(v) && natural(v)) ??
+    matching.find(natural) ??
+    matching.find(india) ??
+    matching.find((v) => /google/i.test(v.name)) ??
+    matching[0] ??
     null
   );
 }
 
 /**
- * Speaks the bot's lines. Uses server audio (ElevenLabs) when `serverVoice` is true, otherwise the browser's
- * speech synthesis. `speak` resolves when the lines have finished, been stopped, or been muted.
+ * Speaks the bot's lines in `lang`. Uses server audio (ElevenLabs) when `serverVoice` is true, otherwise the
+ * browser's speech synthesis. `speak` resolves when the lines have finished, been stopped, or been muted.
  */
-export function useBotSpeech(serverVoice: boolean) {
+export function useBotSpeech(serverVoice: boolean, lang: Lang) {
+  const langRef = useRef(lang);
+  langRef.current = lang;
   const [muted, setMuted] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const mutedRef = useRef(false);
@@ -123,10 +130,11 @@ export function useBotSpeech(serverVoice: boolean) {
     new Promise<void>((resolve) => {
       const synth = window.speechSynthesis;
       if (!synth) return resolve();
+      const voice = pickBrowserVoice(langRef.current);
+      if (!voice && langRef.current !== 'en') return resolve();
       const u = new SpeechSynthesisUtterance(text);
-      const voice = pickBrowserVoice();
       if (voice) u.voice = voice;
-      u.lang = voice?.lang ?? 'en-IN';
+      u.lang = voice?.lang ?? languageInfo(langRef.current).bcp47;
       u.rate = 1;
       const guard = window.setTimeout(() => finishLine.current?.(), maxLineMs(text));
       const done = () => {

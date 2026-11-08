@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { languageInfo, type Lang } from '@/lib/i18n/languages';
 
 // Minimal Web Speech API typings (not in lib.dom for every TS target).
 interface SpeechAlternative {
@@ -60,6 +61,8 @@ const STT_TIMEOUT_MS = 8000;
 interface Options {
   /** Send recordings to /api/bot/stt for an accurate transcript (the browser text becomes a live preview). */
   serverStt: boolean;
+  /** The language the customer speaks in. */
+  lang: Lang;
   /** The speaker talked and then went quiet. */
   onHeard: (text: string) => void;
   /** The session ended without hearing anything. */
@@ -67,7 +70,9 @@ interface Options {
   onError: (error: VoiceError) => void;
 }
 
-export function useVoice({ serverStt, onHeard, onNothingHeard, onError }: Options) {
+export function useVoice({ serverStt, lang, onHeard, onNothingHeard, onError }: Options) {
+  const langRef = useRef(lang);
+  langRef.current = lang;
   const [status, setStatus] = useState<VoiceStatus>('off');
   const [finalText, setFinalText] = useState('');
   const [interimText, setInterimText] = useState('');
@@ -190,6 +195,7 @@ export function useVoice({ serverStt, onHeard, onNothingHeard, onError }: Option
         try {
           const form = new FormData();
           form.append('audio', audio);
+          form.append('lang', langRef.current);
           const res = await fetch('/api/bot/stt', {
             method: 'POST',
             body: form,
@@ -236,7 +242,7 @@ export function useVoice({ serverStt, onHeard, onNothingHeard, onError }: Option
     const Ctor = getRecognitionCtor();
     if (!Ctor) return;
     const rec = new Ctor();
-    rec.lang = 'en-IN';
+    rec.lang = languageInfo(langRef.current).bcp47;
     rec.continuous = true;
     rec.interimResults = true;
 

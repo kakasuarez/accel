@@ -1,5 +1,6 @@
 import type postgres from "postgres";
 import { db } from "../db";
+import { DEFAULT_LANG, isLang, type Lang } from "../i18n/languages";
 import type { Answers, AnswerValue } from "../questions/types";
 import type { Recommendation, ProductId, BundleTotals } from "../recommender";
 import type { BundleTier } from "./quote";
@@ -26,6 +27,8 @@ export interface LeadRow {
   contact_name: string | null;
   phone: string | null;
   quote: AcceptedQuote | null;
+  /** The language the customer chose for the bot. */
+  language: Lang;
   created_at: string;
   updated_at: string;
 }
@@ -42,8 +45,17 @@ async function recordEvent(sql: postgres.Sql | postgres.TransactionSql, lead: Le
   await sql`insert into lead_events (lead_id, stage, status, changed_by) values (${lead.id}, ${lead.stage}, ${lead.status}, ${changedBy})`;
 }
 
-export async function createLead(userId: string): Promise<LeadRow> {
-  const [lead] = await db()<LeadRow[]>`insert into leads (user_id) values (${userId}) returning *`;
+export async function createLead(userId: string, language: Lang = DEFAULT_LANG): Promise<LeadRow> {
+  const [lead] = await db()<LeadRow[]>`insert into leads (user_id, language) values (${userId}, ${language}) returning *`;
+  return lead!;
+}
+
+/** The lead's language, or English for a row read before the column existed. */
+export const leadLanguage = (lead: Pick<LeadRow, "language">): Lang => (isLang(lead.language) ? lead.language : DEFAULT_LANG);
+
+/** Only before the first answer: the explanation and every reply after that are in the language already chosen. */
+export async function setLanguage(leadId: string, language: Lang): Promise<LeadRow> {
+  const [lead] = await db()<LeadRow[]>`update leads set language = ${language}, explanation = null, updated_at = now() where id = ${leadId} returning *`;
   return lead!;
 }
 
