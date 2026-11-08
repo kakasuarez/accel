@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { api, ApiFailure } from '@/components/api';
 import { formatRupees } from '@/lib/bot/script';
+import { GST_RATE, gstOn, withGst } from '@/lib/gst';
 import { useBotText } from './i18n';
 import type { AddOn, BundleChoice, BundleTotals, CustomerLead, CustomerRecommendation } from './types';
 
 const PHONE = /^\+?[0-9][0-9 ()-]{6,19}$/;
+const GST_PERCENT = Math.round(GST_RATE * 100);
 /** Add-ons shown before "Show more": the recommended ones, or at least this many. */
 const MIN_VISIBLE_ADD_ONS = 3;
 
@@ -217,8 +219,25 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
 
         <p className="bundle-price" aria-live="polite">
           <strong>{formatRupees(totals.monthly)}</strong>
-          <span>{t('perMonth')}</span>
+          <span>{t('bundle.perMonthPlusGst')}</span>
         </p>
+        {/* Derived from `totals`, so GST follows the add-ons as they're ticked. */}
+        <dl className="tax-lines bundle-tax">
+          <div>
+            <dt>{t('bundle.gst', { rate: GST_PERCENT })}</dt>
+            <dd>{t('bundle.amountMonthly', { amount: `+${formatRupees(gstOn(totals.monthly))}` })}</dd>
+          </div>
+          <div className="is-total">
+            <dt>{t('bundle.totalWithGst')}</dt>
+            <dd>{t('bundle.amountMonthly', { amount: formatRupees(withGst(totals.monthly)) })}</dd>
+          </div>
+          {totals.setupFee > 0 && (
+            <div className="is-once">
+              <dt>{t('bundle.setupGst', { rate: GST_PERCENT })}</dt>
+              <dd>{t('bundle.amountOnce', { amount: `+${formatRupees(gstOn(totals.setupFee))}` })}</dd>
+            </div>
+          )}
+        </dl>
         <dl className="bundle-facts">
           <div>
             <dt>{t('bundle.setup')}</dt>

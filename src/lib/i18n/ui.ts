@@ -38,6 +38,12 @@ export const UI = {
   'count.bundle': 'Your bundle',
   'count.accepted': 'Quote accepted',
 
+  // ---- Talk to a person ----
+  'talk.label': 'Talk to a person',
+  /** {phone} is the support line's number. */
+  'talk.call': 'Call {phone}, 24×7',
+  'talk.quote': 'Questions about this quote?',
+
   // ---- Language and privacy ----
   'language.title': 'Choose your language',
   'language.comingSoon': '{language} is coming soon. Please pick another language for now.',
@@ -88,13 +94,22 @@ export const UI = {
   'tag.stated_need': 'You asked for this',
   'tag.model': 'Suggested for you',
   'tiers.title': 'Choose your bundle',
-  'tiers.sub': 'Monthly prices before add-ons. You can switch any time before you accept.',
+  'tiers.sub': 'Monthly prices before add-ons and GST. You can switch any time before you accept.',
   'tiers.bestFit': 'Best fit',
   'tiers.ourPick': 'Our pick for your business, based on your answers.',
   'tiers.recommended': 'Recommended',
   'perMonth': 'a month',
   'bundle.named': '{label} bundle',
   'bundle.yours': 'Your bundle',
+  'bundle.perMonthPlusGst': 'a month + GST',
+  /** {rate} is the GST rate, such as 18. */
+  'bundle.gst': 'GST at {rate}%',
+  'bundle.setupGst': 'GST on the setup fee at {rate}%',
+  'bundle.totalWithGst': 'You pay, with GST',
+  /** {amount} is a rupee amount, such as +₹450 or ₹2,949. */
+  'bundle.amountMonthly': '{amount} a month',
+  /** {amount} is a rupee amount, such as +₹180. */
+  'bundle.amountOnce': '{amount} once',
   'bundle.setup': 'One-time setup',
   'bundle.setupNone': 'None',
   'bundle.contract': 'Minimum contract',
@@ -113,7 +128,7 @@ export const UI = {
   'blocked.title': 'Why some services aren’t included',
   'accept.title': 'Accept this quote',
   /** {price} is the monthly price, shown in bold. */
-  'accept.sub': 'At {price} a month. Next, you’ll verify your business with a few documents.',
+  'accept.sub': 'At {price} a month plus GST. Next, you’ll verify your business with a few documents.',
   'accept.businessName': 'Business name',
   'accept.contactName': 'Your name',
   'accept.phone': 'Phone number',

@@ -4,25 +4,24 @@ import type { LeadSummary } from "./metrics";
  * The five numbers the digital journey is judged on:
  *
  *   quotedToActivated  of the businesses shown a quote (needs assessed), how many end up activated
- *   timeToActivate     quote in 3–5 days, then installation and activation in 10–14
+ *   timeToActivate     days from lead to activation
  *   costPerActivation  what it costs to win one activated customer
  *   kycFirstPass       KYC "collected physically or over email": every failed check is a staff follow-up
  *   churn6Months       activated customers lost within 6 months
  *
- * Baselines come from training_leads.csv (the old sales-led process, 5,000 leads), except time to
- * activate, which those leads don't record: it's the brief's 3–5 days to quote plus 10–14 to activate,
- * about 16 days at the midpoint. KYC was paper, so it has no first-pass baseline.
+ * Baselines are the case's figures for the old sales-led process: 17.6 days from lead to activation and
+ * ₹15,050 to win a customer. Quoted to activated and churn come from training_leads.csv (5,000 leads). KYC was
+ * paper, so it has no first-pass baseline. Targets are the month-12 targets in the submission deck (slide 2).
  *
- * Cost per activation is placeholder data: the app doesn't record acquisition spend, so it assumes a fixed
- * spend per business quoted (SPEND_PER_QUOTE). The baseline and target are made up to match. Replace them
- * once real spend is recorded.
+ * The measured cost per activation is placeholder data: the app doesn't record acquisition spend, so it assumes
+ * a fixed spend per business quoted (SPEND_PER_QUOTE). Replace it once real spend is recorded.
  *
  * 6-month churn isn't measured: there isn't enough history after activation yet.
  */
 export const KPI_DEFINITIONS = {
   quotedToActivated: { label: "Quoted to activated", unit: "percent", better: "higher", target: 0.3, baseline: 0.186 },
-  timeToActivate: { label: "Time to activation", unit: "days", better: "lower", target: 7, baseline: 16 },
-  costPerActivation: { label: "Cost per activation", unit: "rupees", better: "lower", target: 2500, baseline: 8200 },
+  timeToActivate: { label: "Time to activation", unit: "days", better: "lower", target: 7, baseline: 17.6 },
+  costPerActivation: { label: "Cost per activation", unit: "rupees", better: "lower", target: 4850, baseline: 15050 },
   kycFirstPass: { label: "KYC approved first time", unit: "percent", better: "higher", target: 0.8, baseline: null },
   churn6Months: { label: "6-month churn", unit: "percent", better: "lower", target: 0.1, baseline: 0.152 },
 } as const satisfies Record<string, KpiDefinition>;
@@ -85,9 +84,8 @@ function measure(id: KpiId, leads: readonly LeadSummary[], inWindow: Window): Kp
     case "quotedToActivated":
       return flow(activations(), quoted());
     case "timeToActivate": {
-      const days = leads
-        .filter((l) => inWindow(l.reached.Activated) && l.reached["Needs assessed"])
-        .map((l) => (l.reached.Activated!.getTime() - l.reached["Needs assessed"]!.getTime()) / DAY);
+      // From the lead's start, like the case's 17.6 days.
+      const days = leads.filter((l) => inWindow(l.reached.Activated)).map((l) => (l.reached.Activated!.getTime() - l.createdAt.getTime()) / DAY);
       return { value: median(days), sample: days.length };
     }
     case "costPerActivation": {
@@ -107,7 +105,7 @@ function measure(id: KpiId, leads: readonly LeadSummary[], inWindow: Window): Kp
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const BASIS: Record<KpiId, (n: number) => string> = {
   quotedToActivated: (n) => `Activations ÷ ${plural(n, "business", "businesses")} quoted`,
-  timeToActivate: (n) => `Median from quote, ${plural(n, "activation", "activations")}`,
+  timeToActivate: (n) => `Median from first contact, ${plural(n, "activation", "activations")}`,
   costPerActivation: (n) => `Acquisition spend ÷ ${plural(n, "activation", "activations")}`,
   kycFirstPass: (n) => `Of ${plural(n, "business", "businesses")} checked for the first time`,
   churn6Months: () => "Not enough data yet: needs six months of customers after activation",

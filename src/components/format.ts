@@ -16,5 +16,25 @@ export function formatDateTime(iso: string): string {
   }).format(d);
 }
 
+/** "9 Nov" in Indian time. */
+export function formatDay(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' }).format(d);
+}
+
+/** "9 Nov, 2:02 pm" in Indian time: a recent moment, so no year. */
+export function formatDayTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  }).format(d);
+}
+
 /** Catalogue units read "per site", "per line": turns quantity 3 + "per site" into "3 sites". */
 export { englishQuantity as quantityLabel } from '@/lib/i18n/ui';

@@ -70,4 +70,54 @@ describe('dashboard tracker', () => {
     expect(t.current.kind).toBe('closed');
     expect(t.current.cta?.href).toBe('/bot?new=1');
   });
+
+  describe('dates and escalation', () => {
+    const NOW = new Date('2026-11-08T12:00:00Z');
+    const day = (n: number) => new Date(NOW.getTime() + n * 86_400_000).toISOString();
+    const verified = (verifiedDaysAgo: number) =>
+      lead({
+        stage: 'KYC complete',
+        accepted: true,
+        installDays: 5,
+        reached: { 'Needs assessed': day(-10), 'Quote accepted': day(-9), 'KYC complete': day(-verifiedDaysAgo) },
+      });
+
+    it('dates the finished steps and promises installation from the bundle’s install days', () => {
+      const t = run({ lead: verified(1), now: NOW });
+      expect(t.steps.map((s) => s.date?.kind)).toEqual(['done', 'done', 'done', 'expected']);
+      expect(t.steps[0]!.date).toEqual({ kind: 'done', at: day(-10) });
+      expect(t.steps[3]!.date).toEqual({ kind: 'expected', by: day(4), overdue: false });
+      expect(t.current.body).toContain('by 12 Nov');
+      expect(t.escalation).toEqual({ overdue: false });
+    });
+
+    it('says how long installation takes before it starts', () => {
+      const t = run({ lead: lead({ stage: 'Quote accepted', accepted: true, installDays: 5 }), now: NOW });
+      expect(t.steps[2]!.date).toBeNull();
+      expect(t.steps[3]!.date).toEqual({ kind: 'after', days: 5 });
+    });
+
+    it('marks a missed date as overdue and points to escalation', () => {
+      const t = run({ lead: verified(6), now: NOW });
+      expect(t.steps[3]!.date).toMatchObject({ kind: 'expected', overdue: true });
+      expect(t.escalation).toEqual({ overdue: true });
+      expect(t.current.body).toContain('running late');
+    });
+
+    it('promises a manual review within two days of the upload', () => {
+      const t = run({
+        lead: lead({ stage: 'Quote accepted', accepted: true }),
+        latestKyc: { decision: 'MANUAL_REVIEW', findings: [], checkedAt: day(-3) },
+        now: NOW,
+      });
+      expect(t.steps[2]!.date).toEqual({ kind: 'expected', by: day(-1), overdue: true });
+      expect(t.escalation).toEqual({ overdue: true });
+    });
+
+    it('offers escalation only between accepting a quote and being connected', () => {
+      expect(run({ lead: lead({ stage: 'Needs assessed' }) }).escalation).toBeNull();
+      expect(run({ lead: lead({ stage: 'Activated', accepted: true }) }).escalation).toBeNull();
+      expect(run({ lead: lead({ stage: 'Quote accepted', accepted: true, status: 'closed' }) }).escalation).toBeNull();
+    });
+  });
 });

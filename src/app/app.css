@@ -181,24 +181,46 @@
 .stepper-step {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--sp-md);
-  min-height: 44px;
+  padding-bottom: var(--sp-lg);
   font-size: 15px;
   line-height: 20px;
   color: var(--ink-soft);
 }
-.stepper-step + .stepper-step::before {
+.stepper-step:last-child {
+  padding-bottom: 0;
+}
+/* Rail from each mark down to the next, whatever height the row grows to with its date. */
+.stepper-step:not(:last-child)::before {
   content: '';
   position: absolute;
   left: 13px;
-  top: -10px;
-  height: 20px;
+  top: 28px;
+  bottom: 0;
   width: 2px;
   background: var(--line);
 }
-.stepper-step.is-done + .stepper-step::before {
+.stepper-step.is-done::before {
   background: var(--primary);
+}
+.stepper-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 4px;
+}
+.stepper-date {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+/* A promised date that has passed: the darker red (small text needs 4.5:1), stated in words too. */
+.stepper-date .is-late {
+  color: #c40000;
+  font-weight: 600;
 }
 .stepper-mark {
   position: relative;
@@ -248,10 +270,13 @@
     display: grid;
     align-content: start;
     gap: var(--sp-md);
-    padding-top: 0;
+    padding: 0;
   }
-  .stepper-step + .stepper-step::before {
+  .stepper-step:not(:last-child)::before {
     display: none;
+  }
+  .stepper-text {
+    padding-top: 0;
   }
   /* Connecting rail between the marks. */
   .stepper-step::after {
@@ -331,9 +356,60 @@
   line-height: 20px;
   color: var(--ink-soft);
 }
+.now-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+.now-actions .now-cta {
+  margin-top: var(--sp-md);
+}
+/* Escalation while things are on time: one quiet line under the step's own button. */
+.now-escalate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-sm) var(--sp-md);
+  margin-top: var(--sp-xs);
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.now-escalate .btn {
+  min-height: 44px;
+  font-variant-numeric: tabular-nums;
+}
+.now-cta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Under the stepper: how many status updates so far, and the latest one. */
+.dash-updates {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+  margin: var(--sp-xl) 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.dash-updates .icon {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+.dash-updates a {
+  color: var(--ink);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.dash-updates time {
+  font-variant-numeric: tabular-nums;
+}
 
 .dash-section {
   margin-top: 56px;
+  scroll-margin-top: 88px;
 }
 .dash-section-head {
   display: flex;
@@ -371,6 +447,10 @@
 .summary-price span {
   font-size: 16px;
   color: var(--ink-soft);
+}
+.summary-head {
+  display: grid;
+  gap: var(--sp-lg);
 }
 .summary-facts {
   margin: 0;
@@ -458,6 +538,55 @@
 .history time {
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+}
+
+/* Your consent: what was agreed to, and one tap to withdraw it. */
+.consent-intro {
+  margin: var(--sp-lg) 0 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.consent-list {
+  list-style: none;
+  margin: var(--sp-sm) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-sm);
+}
+.consent-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 16px;
+  line-height: 24px;
+}
+.consent-list .icon {
+  margin-top: 2px;
+  color: var(--ink);
+}
+.consent-withdraw {
+  display: grid;
+  gap: var(--sp-md);
+  justify-items: start;
+  margin-top: var(--sp-xl);
+  padding-top: var(--sp-xl);
+  border-top: 1px solid var(--line);
+}
+.consent-withdraw .btn {
+  min-height: 44px;
+}
+.consent-withdraw p {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.consent-withdraw p a {
+  color: var(--ink);
+  font-weight: 600;
+  text-underline-offset: 3px;
 }
 
 /* ---------- KYC ---------- */
@@ -1223,10 +1352,18 @@
     padding: var(--sp-2xl) var(--sp-xl);
   }
   .now-cta,
+  .now-actions,
   .kyc-result .btn,
   .kyc-submit .btn {
     width: 100%;
     white-space: normal;
+  }
+  .now-actions {
+    gap: 0;
+  }
+  .now-escalate .btn {
+    white-space: normal;
+    text-align: left;
   }
   .kyc-submit {
     justify-items: stretch;

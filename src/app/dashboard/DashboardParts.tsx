@@ -1,9 +1,34 @@
 import Link from 'next/link';
-import { formatDateTime, plural, quantityLabel } from '@/components/format';
-import { AlertIcon, ArrowIcon, CheckIcon, ClockIcon, InfoIcon } from '@/components/icons';
+import { formatDateTime, formatDay, formatDayTime, plural, quantityLabel } from '@/components/format';
+import { AlertIcon, ArrowIcon, CheckIcon, ClockIcon, InfoIcon, MailIcon, PhoneIcon } from '@/components/icons';
 import { formatRupees } from '@/lib/bot/script';
 import type { CustomerLead } from '@/lib/dashboard/data';
-import type { Tracker } from '@/lib/dashboard/tracker';
+import type { StepDate, Tracker } from '@/lib/dashboard/tracker';
+import { GST_RATE, gstOn, withGst } from '@/lib/gst';
+import { SUPPORT_PHONE, SUPPORT_TEL } from '@/lib/support';
+
+/** The grievance officer, who handles consent withdrawals (see /privacy#contact). */
+const GRIEVANCE_EMAIL = 'grievance@accelbusiness.example';
+const GST_PERCENT = Math.round(GST_RATE * 100);
+
+function StepWhen({ date }: { date: StepDate }) {
+  switch (date.kind) {
+    case 'done':
+      return <time dateTime={date.at}>{formatDay(date.at)}</time>;
+    case 'expected':
+      return date.overdue ? (
+        <span className="is-late">
+          Due <time dateTime={date.by}>{formatDay(date.by)}</time> · late
+        </span>
+      ) : (
+        <span>
+          By <time dateTime={date.by}>{formatDay(date.by)}</time>
+        </span>
+      );
+    case 'after':
+      return <span>Up to {plural(date.days, 'day')}</span>;
+  }
+}
 
 // The dashboard's sections. Each renders the server's data as given (the tracker is never re-derived here).
 export function Stepper({ steps }: { steps: Tracker['steps'] }) {
@@ -15,9 +40,16 @@ export function Stepper({ steps }: { steps: Tracker['steps'] }) {
           <span className="stepper-mark" aria-hidden="true">
             {step.state === 'done' ? <CheckIcon /> : i + 1}
           </span>
-          <span className="stepper-label">
-            {step.label}
-            <span className="sr-only">{step.state === 'done' ? ' (done)' : step.state === 'current' ? ' (current step)' : ''}</span>
+          <span className="stepper-text">
+            <span className="stepper-label">
+              {step.label}
+              <span className="sr-only">{step.state === 'done' ? ' (done)' : step.state === 'current' ? ' (current step)' : ''}</span>
+            </span>
+            {step.date && (
+              <span className="stepper-date">
+                <StepWhen date={step.date} />
+              </span>
+            )}
           </span>
         </li>
       ))}
@@ -25,9 +57,42 @@ export function Stepper({ steps }: { steps: Tracker['steps'] }) {
   );
 }
 
-export function CurrentStep({ current }: { current: Tracker['current'] }) {
+/** What a history event says happened. */
+const eventLabel = (event: CustomerLead['history'][number]) =>
+  event.status === 'closed' ? 'Request closed' : (event.stage ?? 'Request started');
+
+/** One line under the stepper: how many status updates so far, and the latest. The full list is History. */
+export function UpdatesLine({ history }: { history: CustomerLead['history'] }) {
+  const latest = history.at(-1);
+  if (!latest) return null;
+  return (
+    <p className="dash-updates">
+      <ClockIcon />
+      <span>
+        {plural(history.length, 'update')} · Latest: {eventLabel(latest)},{' '}
+        <time dateTime={latest.at}>{formatDayTime(latest.at)}</time>
+        {history.length > 1 && (
+          <>
+            {' · '}
+            <a href="#history">See all</a>
+          </>
+        )}
+      </span>
+    </p>
+  );
+}
+
+export function CurrentStep({ current, escalation }: { current: Tracker['current']; escalation: Tracker['escalation'] }) {
   const waiting = current.kind === 'kyc_review' || current.kind === 'activation';
   const finished = current.kind === 'done';
+  // Late: escalating is the thing to do, so it takes the red and the step's own button steps back.
+  const late = !!escalation?.overdue;
+  const cta = current.cta && (
+    <Link href={current.cta.href} className={`btn ${late ? 'btn-outline-dark' : 'btn-primary'} now-cta`}>
+      {current.cta.label}
+      <ArrowIcon />
+    </Link>
+  );
   return (
     <section className={`now-card is-${current.kind}`} aria-labelledby="now-title">
       {(waiting || finished) && (
@@ -51,13 +116,28 @@ export function CurrentStep({ current }: { current: Tracker['current'] }) {
         </ul>
       )}
 
-      {current.cta && (
-        <Link href={current.cta.href} className="btn btn-primary now-cta">
-          {current.cta.label}
-          <ArrowIcon />
-        </Link>
+      {late ? (
+        <div className="now-actions">
+          <a href={SUPPORT_TEL} className="btn btn-primary now-cta">
+            <PhoneIcon />
+            Escalate: call {SUPPORT_PHONE}
+          </a>
+          {cta}
+        </div>
+      ) : (
+        cta
       )}
       {current.kind === 'start' && <p className="now-note">Takes about two minutes. Answer by typing, tapping or speaking.</p>}
+      {escalation && !late && (
+        <div className="now-escalate">
+          <span>Something not right?</span>
+          <a href={SUPPORT_TEL} className="btn btn-outline-dark btn-sm">
+            <PhoneIcon />
+            Call {SUPPORT_PHONE} to escalate
+          </a>
+        </div>
+      )}
+      {late && <p className="now-note">Our support line is open 24×7.</p>}
     </section>
   );
 }
@@ -80,10 +160,28 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
       </div>
 
       <div className="summary">
-        <p className="summary-price">
-          <strong>{formatRupees(totals.monthly)}</strong>
-          <span>a month</span>
-        </p>
+        <div className="summary-head">
+          <p className="summary-price">
+            <strong>{formatRupees(totals.monthly)}</strong>
+            <span>a month + GST</span>
+          </p>
+          <dl className="tax-lines">
+            <div>
+              <dt>GST at {GST_PERCENT}%</dt>
+              <dd>+{formatRupees(gstOn(totals.monthly))} a month</dd>
+            </div>
+            <div className="is-total">
+              <dt>You pay, with GST</dt>
+              <dd>{formatRupees(withGst(totals.monthly))} a month</dd>
+            </div>
+            {totals.setupFee > 0 && (
+              <div className="is-once">
+                <dt>GST on the setup fee at {GST_PERCENT}%</dt>
+                <dd>+{formatRupees(gstOn(totals.setupFee))} once</dd>
+              </div>
+            )}
+          </dl>
+        </div>
         <dl className="summary-facts">
           <div>
             <dt>One-time setup</dt>
@@ -130,7 +228,7 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
             ))}
           </ul>
         )}
-        <p className="fine-print">Accel is a fictional operator and all prices are synthetic.</p>
+        <p className="fine-print">Prices exclude GST unless shown with it. Accel is a fictional operator and all prices are synthetic.</p>
       </div>
     </section>
   );
@@ -139,18 +237,66 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
 export function History({ history }: { history: CustomerLead['history'] }) {
   const items = [...history].reverse();
   return (
-    <section className="dash-section" aria-labelledby="history-title">
+    <section id="history" className="dash-section" aria-labelledby="history-title">
       <h2 id="history-title" className="dash-h2">
         History
       </h2>
       <ol className="history">
         {items.map((event, i) => (
           <li key={`${event.at}-${i}`}>
-            <span className="history-what">{event.status === 'closed' ? 'Request closed' : (event.stage ?? 'Request started')}</span>
+            <span className="history-what">{eventLabel(event)}</span>
             <time dateTime={event.at}>{formatDateTime(event.at)}</time>
           </li>
         ))}
       </ol>
+    </section>
+  );
+}
+
+/** A ready-to-send email to the grievance officer, so withdrawing is one tap. */
+function withdrawHref(leadId: string, email: string) {
+  const body = [
+    'Hello,',
+    '',
+    'I withdraw my consent for my Accel Business request. Please stop work on it and erase its data.',
+    '',
+    `Request reference: ${leadId}`,
+    `Account email: ${email}`,
+    '',
+    'Thank you.',
+  ].join('\r\n');
+  return `mailto:${GRIEVANCE_EMAIL}?subject=${encodeURIComponent('Withdraw my consent')}&body=${encodeURIComponent(body)}`;
+}
+
+export function ConsentSection({ leadId, email, checkedDocuments }: { leadId: string; email: string; checkedDocuments: boolean }) {
+  return (
+    <section id="consent" className="dash-section" aria-labelledby="consent-title">
+      <h2 id="consent-title" className="dash-h2">
+        Your consent
+      </h2>
+      <p className="consent-intro">You agreed to:</p>
+      <ul className="consent-list">
+        <li>
+          <CheckIcon />
+          <span>Accel Bot’s questions, and using your answers to prepare your quote</span>
+        </li>
+        {checkedDocuments && (
+          <li>
+            <CheckIcon />
+            <span>Checking your business documents to verify your business</span>
+          </li>
+        )}
+      </ul>
+      <div className="consent-withdraw">
+        <a href={withdrawHref(leadId, email)} className="btn btn-outline-dark btn-sm">
+          <MailIcon />
+          Withdraw consent
+        </a>
+        <p>
+          Opens a ready-to-send email to our grievance officer. We’ll stop work on this request and erase its data.{' '}
+          <Link href="/privacy#consent">How consent works</Link>
+        </p>
+      </div>
     </section>
   );
 }

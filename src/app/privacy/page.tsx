@@ -149,8 +149,13 @@ export default function PrivacyPage() {
             <h2 id="consent-title">Your consent</h2>
             <p>
               We ask for your agreement before Accel Bot’s questions begin and, with a tick box, before we check your
-              documents. You can withdraw your consent at any time by contacting us. Withdrawing doesn’t affect what we have
-              already processed, but without your consent we can’t continue with your request.
+              documents. You can withdraw your consent at any time with one tap from{' '}
+              <Link href="/dashboard#consent">your dashboard</Link>, under “Your consent”, or by contacting our{' '}
+              <a href="#contact">grievance officer</a>.
+            </p>
+            <p>
+              When you withdraw, we stop work on that request and erase its data. Processing we did before you withdrew
+              stays lawful, but without your consent we can’t continue with your request.
             </p>
           </section>
 

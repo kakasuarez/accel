@@ -167,6 +167,53 @@
   width: 18px;
   height: 18px;
 }
+/* ---------- Talk to a person ---------- */
+.bot-talk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--sp-sm);
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.bot-talk-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  min-height: 44px;
+  margin-left: -10px;
+  padding: 0 12px 0 10px;
+  border-radius: var(--r-pill-lg);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+.bot-talk-link:hover {
+  background: var(--canvas-soft);
+}
+.bot-talk-label {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.bot-talk-number {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.bot .bot-talk-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+.bot-state > .bot-talk {
+  margin-top: var(--sp-xs);
+}
+.bot-result-explain .bot-talk {
+  margin-top: var(--sp-lg);
+}
 
 .bot-question {
   margin: 0;
@@ -844,6 +891,9 @@
   font-size: 16px;
   line-height: 22px;
   color: var(--ink-soft);
+}
+.bundle-tax {
+  margin-top: var(--sp-lg);
 }
 .bundle-items {
   list-style: none;

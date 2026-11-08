@@ -1,7 +1,8 @@
 import 'server-only';
 import type { SessionUser } from '../auth/session';
 import { latestKycCheck, type KycCheck } from '../kyc/store';
-import { listEvents, listLeadsForUser, type LeadRow } from '../leads/repository';
+import { listEvents, listLeadsForUser, type LeadEventRow, type LeadRow } from '../leads/repository';
+import type { LeadStage } from '../leads/stages';
 import { customerLead, intakeState } from '../leads/views';
 import { getQuestions } from '../questions';
 import { getRecommender } from '../recommender';
@@ -18,6 +19,13 @@ export interface DashboardData {
   latestKyc: KycCheck | null;
 }
 
+/** When the lead first reached each stage, for the tracker's dates. */
+function reachedAt(events: readonly LeadEventRow[]): Partial<Record<LeadStage, string>> {
+  const reached: Partial<Record<LeadStage, string>> = {};
+  for (const e of events) if (e.stage && !reached[e.stage]) reached[e.stage] = new Date(e.created_at).toISOString();
+  return reached;
+}
+
 /** The lead the dashboard follows: the newest open one, otherwise the newest one at all. */
 const focusLead = (leads: readonly LeadRow[]) => leads.find((l) => l.status === 'open') ?? leads[0] ?? null;
 
@@ -29,7 +37,14 @@ export async function dashboardData(user: SessionUser): Promise<DashboardData> {
   // The dashboard is in English, whatever language the bot ran in.
   const intake = intakeState(row, getRecommender(), getQuestions(), 'en');
   const tracker = buildTracker({
-    lead: { id: row.id, stage: row.stage, status: row.status, accepted: row.quote != null },
+    lead: {
+      id: row.id,
+      stage: row.stage,
+      status: row.status,
+      accepted: row.quote != null,
+      reached: reachedAt(events),
+      installDays: row.quote?.totals.installDays ?? null,
+    },
     hasNextQuestion: intake.nextQuestion != null,
     latestKyc,
   });

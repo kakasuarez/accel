@@ -139,6 +139,18 @@
     "en": "Quote accepted",
     "text": "कोट स्वीकार किया गया"
   },
+  "talk.label": {
+    "en": "Talk to a person",
+    "text": "किसी व्यक्ति से बात करें"
+  },
+  "talk.call": {
+    "en": "Call {phone}, 24×7",
+    "text": "कॉल करें {phone}, 24×7"
+  },
+  "talk.quote": {
+    "en": "Questions about this quote?",
+    "text": "इस कोटेशन के बारे में प्रश्न?"
+  },
   "language.title": {
     "en": "Choose your language",
     "text": "अपनी भाषा चुनें"
@@ -304,8 +316,8 @@
     "text": "अपना बंडल चुनें"
   },
   "tiers.sub": {
-    "en": "Monthly prices before add-ons. You can switch any time before you accept.",
-    "text": "ऐड-ऑन से पहले मासिक कीमतें। स्वीकार करने से पहले आप कभी भी बदल सकते हैं।"
+    "en": "Monthly prices before add-ons and GST. You can switch any time before you accept.",
+    "text": "ऐड-ऑन और GST से पहले मासिक कीमतें। आप स्वीकार करने से पहले कभी भी बदल सकते हैं।"
   },
   "tiers.bestFit": {
     "en": "Best fit",
@@ -330,6 +342,30 @@
   "bundle.yours": {
     "en": "Your bundle",
     "text": "आपका बंडल"
+  },
+  "bundle.perMonthPlusGst": {
+    "en": "a month + GST",
+    "text": "प्रति माह + GST"
+  },
+  "bundle.gst": {
+    "en": "GST at {rate}%",
+    "text": "GST {rate}% की दर से"
+  },
+  "bundle.setupGst": {
+    "en": "GST on the setup fee at {rate}%",
+    "text": "GST सेटअप शुल्क पर {rate}% की दर से"
+  },
+  "bundle.totalWithGst": {
+    "en": "You pay, with GST",
+    "text": "आप भुगतान करते हैं, GST सहित"
+  },
+  "bundle.amountMonthly": {
+    "en": "{amount} a month",
+    "text": "{amount} प्रति माह"
+  },
+  "bundle.amountOnce": {
+    "en": "{amount} once",
+    "text": "{amount} एक बार"
   },
   "bundle.setup": {
     "en": "One-time setup",
@@ -400,8 +436,8 @@
     "text": "यह कोट स्वीकार करें"
   },
   "accept.sub": {
-    "en": "At {price} a month. Next, you’ll verify your business with a few documents.",
-    "text": "{price} प्रति माह की दर से। आगे, आप कुछ दस्तावेज़ों के साथ अपने व्यवसाय का सत्यापन करेंगे।"
+    "en": "At {price} a month plus GST. Next, you’ll verify your business with a few documents.",
+    "text": "{price} प्रति माह + GST पर। आगे, आप कुछ दस्तावेज़ों के साथ अपने व्यवसाय का सत्यापन करेंगे।"
   },
   "accept.businessName": {
     "en": "Business name",

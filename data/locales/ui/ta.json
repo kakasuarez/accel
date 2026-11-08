@@ -139,6 +139,18 @@
     "en": "Quote accepted",
     "text": "மேற்கோள் ஏற்கப்பட்டது"
   },
+  "talk.label": {
+    "en": "Talk to a person",
+    "text": "பேசுங்கள்"
+  },
+  "talk.call": {
+    "en": "Call {phone}, 24×7",
+    "text": "24×7 {phone} எண்ணில் அழையுங்கள்"
+  },
+  "talk.quote": {
+    "en": "Questions about this quote?",
+    "text": "இந்த மேற்கோள் பற்றி கேள்விகள் உள்ளதா?"
+  },
   "language.title": {
     "en": "Choose your language",
     "text": "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்"
@@ -304,8 +316,8 @@
     "text": "உங்கள் பண்டிலை தேர்வு செய்யவும்"
   },
   "tiers.sub": {
-    "en": "Monthly prices before add-ons. You can switch any time before you accept.",
-    "text": "கூடுதல் சேர்ப்புகளுக்கு முன் மாத விலைகள். நீங்கள் ஏற்றுக்கொள்வதற்கு முன் எந்த நேரத்திலும் மாறலாம்."
+    "en": "Monthly prices before add-ons and GST. You can switch any time before you accept.",
+    "text": "கூடுதல் சேவைகள் மற்றும் ஜிஎஸ்டிக்கு முன் மாத விலைகள். நீங்கள் ஏற்றுக்கொள்வதற்கு முன் எந்த நேரத்திலும் மாறலாம்."
   },
   "tiers.bestFit": {
     "en": "Best fit",
@@ -330,6 +342,30 @@
   "bundle.yours": {
     "en": "Your bundle",
     "text": "உங்கள் பண்டில்"
+  },
+  "bundle.perMonthPlusGst": {
+    "en": "a month + GST",
+    "text": "ஒரு மாதம் + ஜிஎஸ்டி"
+  },
+  "bundle.gst": {
+    "en": "GST at {rate}%",
+    "text": "GST {rate}%"
+  },
+  "bundle.setupGst": {
+    "en": "GST on the setup fee at {rate}%",
+    "text": "{rate}% அமைப்புக் கட்டணத்திற்கான ஜிஎஸ்டி"
+  },
+  "bundle.totalWithGst": {
+    "en": "You pay, with GST",
+    "text": "நீங்கள் செலுத்துவது, ஜிஎஸ்டியுடன்"
+  },
+  "bundle.amountMonthly": {
+    "en": "{amount} a month",
+    "text": "மாதத்திற்கு {amount}"
+  },
+  "bundle.amountOnce": {
+    "en": "{amount} once",
+    "text": "ஒரு முறை {amount}"
   },
   "bundle.setup": {
     "en": "One-time setup",
@@ -400,8 +436,8 @@
     "text": "இந்த மேற்கோளை ஏற்கவும்"
   },
   "accept.sub": {
-    "en": "At {price} a month. Next, you’ll verify your business with a few documents.",
-    "text": "{price} ஒரு மாதத்திற்கு. அடுத்து, சில ஆவணங்களுடன் உங்கள் வணிகத்தைச் சரிபார்ப்பீர்கள்."
+    "en": "At {price} a month plus GST. Next, you’ll verify your business with a few documents.",
+    "text": "மாதத்திற்கு {price} மற்றும் ஜிஎஸ்டி. அடுத்து, சில ஆவணங்களுடன் உங்கள் வணிகத்தை சரிபார்ப்பீர்கள்."
   },
   "accept.businessName": {
     "en": "Business name",

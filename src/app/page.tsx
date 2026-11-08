@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { AccelMark } from '@/components/AccelMark';
+import { SUPPORT_PHONE, SUPPORT_TEL } from '@/lib/support';
 // Route for the Accel Bot bundle-recommendation experience.
 const BOT_HREF = '/bot';
 
@@ -260,7 +261,7 @@ export default function Home() {
               <h4>Support</h4>
               <ul>
                 <li><Link href={BOT_HREF}>Accel Bot</Link></li>
-                <li><a href="tel:121">Call 121 (24×7)</a></li>
+                <li><a href={SUPPORT_TEL}>Call {SUPPORT_PHONE} (24×7)</a></li>
                 <li><a href="#get-started">KYC help</a></li>
                 <li><Link href="/privacy">Privacy & DPDP</Link></li>
               </ul>

@@ -151,14 +151,14 @@ document, message) are stored in `kyc_checks`.
 (`?days=`), each compared with the period before.
 
 **Key metrics** have targets, defined in `src/lib/admin/kpis.ts`. "Before" is the old sales-led
-process, from `training_leads.csv` (time to activate isn't recorded there, so it's the brief's 3–5 days
-to quote plus 10–14 to activate).
+process: the case's figures for time to activate (17.6 days) and cost per activation (₹15,050), and
+`training_leads.csv` for the rest. Targets are the deck's month-12 targets.
 
 | KPI | How it's measured | Before | Target |
 |---|---|---|---|
 | Quoted to activated | Activations in the period ÷ businesses quoted (needs assessed) in the period | 18.6% | ≥ 30% |
-| Time to activation | Median days from quote (needs assessed) to activated, for activations in the period | ~16 days | ≤ 7 days |
-| Cost per activation | Acquisition spend ÷ activations. **Placeholder data**: spend isn't recorded, so it assumes ₹600 per business quoted | ₹8,200 (made up) | ≤ ₹2,500 (made up) |
+| Time to activation | Median days from the lead's start to activated, for activations in the period | 17.6 days | ≤ 7 days |
+| Cost per activation | Acquisition spend ÷ activations. **Placeholder data**: spend isn't recorded, so it assumes ₹600 per business quoted | ₹15,050 | ≤ ₹4,850 |
 | KYC approved first time | Share of businesses whose first KYC check in the period was approved | none (paper) | ≥ 80% |
 | 6-month churn | Not measured: there isn't enough history after activation yet | 15.2% | ≤ 10% |
 

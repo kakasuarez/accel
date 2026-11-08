@@ -334,6 +334,48 @@ a {
   text-decoration-thickness: 2px;
 }
 
+/* GST under a headline price (dashboard and Accel Bot): a short receipt, the total with GST in ink. */
+.tax-lines {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  max-width: 420px;
+}
+.tax-lines > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-lg);
+  font-size: 15px;
+  line-height: 22px;
+}
+.tax-lines dt {
+  min-width: 0;
+  color: var(--ink-soft);
+}
+.tax-lines dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+.tax-lines .is-total {
+  padding-top: var(--sp-sm);
+  border-top: 1px solid #dcdddf;
+}
+.tax-lines .is-total dt,
+.tax-lines .is-total dd {
+  color: var(--ink);
+  font-weight: 700;
+}
+/* The one-time GST sits apart from the monthly sum it isn't part of. */
+.tax-lines .is-once {
+  margin-top: var(--sp-xs);
+}
+.tax-lines .is-once dd {
+  color: var(--ink-soft);
+}
+
 /* Three-dot "working" indicator. */
 .bot-dots {
   display: inline-flex;

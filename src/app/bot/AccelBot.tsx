@@ -11,6 +11,7 @@ import { scriptFor, uiText, unitText, type UiKey } from '@/lib/i18n/ui';
 import { BotExplanation } from './BotExplanation';
 import { BotResult } from './BotResult';
 import { BotLanguageProvider } from './i18n';
+import { TalkToPerson } from './TalkToPerson';
 import type { AnswerResult, BundleChoice, CustomerLead, IntakeState, LeadState, PublicQuestion } from './types';
 import { VoiceAurora } from './VoiceAurora';
 import { useBotSpeech } from './useBotSpeech';
@@ -746,6 +747,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
               </h1>
               <div className={`bot-result-explain${showResult ? ' is-in' : ''}`}>
                 <BotExplanation key={intake.leadId} leadId={intake.leadId} tier={bundleTier} explanation={intake.explanation} />
+                <TalkToPerson lead={t('talk.quote')} />
               </div>
             </div>
             <div className={`bot-result-body${showResult ? ' is-in' : ''}`}>
@@ -772,6 +774,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                 {t('startOver')}
               </Link>
             </div>
+            <TalkToPerson />
           </section>
         )}
       </main>
