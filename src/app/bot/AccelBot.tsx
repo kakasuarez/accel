@@ -6,9 +6,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccelMark } from '@/components/AccelMark';
 import { api, ApiFailure } from '@/components/api';
 import { ArrowIcon } from '@/components/icons';
-import { ACKNOWLEDGEMENTS, CLOSING_MESSAGE, GREETING, WELCOME_BACK, pickAcknowledgement } from '@/lib/bot/script';
+import { DEFAULT_LANG, isLang, LANGUAGES, languageInfo, type Lang, type LanguageInfo } from '@/lib/i18n/languages';
+import { scriptFor, uiText, unitText, type UiKey } from '@/lib/i18n/ui';
 import { BotExplanation } from './BotExplanation';
 import { BotResult } from './BotResult';
+import { BotLanguageProvider } from './i18n';
 import type { AnswerResult, BundleChoice, CustomerLead, IntakeState, LeadState, PublicQuestion } from './types';
 import { VoiceAurora } from './VoiceAurora';
 import { useBotSpeech } from './useBotSpeech';
@@ -29,12 +31,36 @@ const LEAVE_MS = 240;
 const TURN_GLOW_MS = 3500;
 /** Above this many options, chips are filtered by what's typed and the rest sit behind "Show all". */
 const CHIP_LIMIT = 8;
-const SKIP_LABEL = 'Not sure';
+/** The language picked last time, preselected in the picker. A convenience only: the lead holds the real choice. */
+const LANGUAGE_KEY = 'accel-bot-language';
 
-const VOICE_ERRORS: Record<VoiceError, string> = {
-  blocked: 'Microphone access is blocked. Allow it in your browser settings, or type your answer.',
-  'no-mic': 'No microphone was found on this device. Type your answer instead.',
-  failed: 'Voice input stopped unexpectedly. Try again, or type your answer.',
+function savedLanguage(): Lang | null {
+  try {
+    const saved = window.localStorage.getItem(LANGUAGE_KEY);
+    return isLang(saved) ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveLanguage(lang: Lang) {
+  try {
+    window.localStorage.setItem(LANGUAGE_KEY, lang);
+  } catch {
+    /* private mode or blocked storage: nothing to remember */
+  }
+}
+
+/** The acknowledgement before the next question: never the same one twice in a row. */
+function pickAcknowledgement(pool: readonly string[], previous?: string): string {
+  const options = pool.filter((a) => a !== previous);
+  return options[Math.floor(Math.random() * options.length)]!;
+}
+
+const VOICE_ERRORS: Record<VoiceError, UiKey> = {
+  blocked: 'voiceError.blocked',
+  'no-mic': 'voiceError.no-mic',
+  failed: 'voiceError.failed',
 };
 
 /** The line shown (and spoken) above the question: greeting, acknowledgement or "I couldn't tell…". */
@@ -48,11 +74,12 @@ type Load = { kind: 'consent' } | { kind: 'loading' } | { kind: 'ready' } | { ki
 
 const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
 
-function placeholderFor(q: PublicQuestion | null): string {
-  if (!q) return 'Type your answer';
-  if (q.type === 'integer' || q.type === 'number') return q.unit ? `Type a number (${q.unit})` : 'Type a number';
-  if (q.options && q.options.length > CHIP_LIMIT) return 'Type or pick an answer';
-  return 'Type your answer';
+function placeholderFor(q: PublicQuestion | null, lang: Lang): string {
+  const t = (key: UiKey, vars?: Record<string, string>) => uiText(lang, key, vars);
+  if (!q) return t('placeholder.answer');
+  if (q.type === 'integer' || q.type === 'number') return q.unit ? t('placeholder.numberUnit', { unit: unitText(lang, q.unit) }) : t('placeholder.number');
+  if (q.options && q.options.length > CHIP_LIMIT) return t('placeholder.pick');
+  return t('placeholder.answer');
 }
 
 export function AccelBot({ leadId }: { leadId: string | null }) {
@@ -80,6 +107,19 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
    */
   const [agreed, setAgreed] = useState(false);
   const agreedRef = useRef(false);
+  /**
+   * The conversation's language. Before a lead exists it is the customer's pick (or last visit's, preselected);
+   * after that it is the lead's. Picked once per visit, like the privacy note.
+   */
+  const [lang, setLang] = useState<Lang>(DEFAULT_LANG);
+  const langRef = useRef<Lang>(DEFAULT_LANG);
+  langRef.current = lang;
+  const [languageChosen, setLanguageChosen] = useState(false);
+  const languageChosenRef = useRef(false);
+  /** A language from the list that isn't available yet, tapped in the picker. */
+  const [comingSoon, setComingSoon] = useState<LanguageInfo | null>(null);
+  const t = useCallback((key: UiKey, vars?: Record<string, string | number>) => uiText(lang, key, vars), [lang]);
+  const script = useMemo(() => scriptFor(lang), [lang]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const lastAck = useRef<string | undefined>(undefined);
@@ -92,6 +132,8 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   // and for a saved one with no answers yet. A conversation with answers resumes straight away.
   const needsConsent =
     !agreed && (load.kind === 'consent' || (load.kind === 'ready' && !accepted && !!question && answeredCount === 0));
+  // The language is picked first, then the privacy note is shown in it.
+  const needsLanguage = needsConsent && !languageChosen;
   const done = load.kind === 'ready' && !accepted && !!intake && !question;
   const asking = load.kind === 'ready' && !accepted && !!question && !needsConsent;
 
@@ -99,6 +141,20 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   const loadedFor = useRef<string | null>(null);
   const stopSpeech = useRef<() => void>(() => {});
   const loadSeq = useRef(0);
+
+  useEffect(() => {
+    const saved = savedLanguage();
+    if (saved && !languageChosenRef.current && !intakeRef.current) setLang(saved);
+  }, []);
+
+  /** A server error in the customer's language. Server messages are English, so other languages get a plain one. */
+  const errorText = useCallback((err: unknown, notFound?: UiKey): string => {
+    const language = langRef.current;
+    if (err instanceof ApiFailure && err.status === 404 && notFound) return uiText(language, notFound);
+    if (err instanceof ApiFailure && err.code === 'network') return uiText(language, 'error.network');
+    if (language === 'en' && err instanceof Error && err.message) return err.message;
+    return uiText(language, 'error.generic');
+  }, []);
 
   const applyState = useCallback((state: IntakeState, lead: CustomerLead | null, first: Intro | null) => {
     setIntake(state);
@@ -123,26 +179,27 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
         setLoad({ kind: 'ready' });
       } catch (err) {
         if (seq !== loadSeq.current) return;
-        setLoad({ kind: 'error', message: err instanceof ApiFailure && err.status === 404 ? 'We couldn’t find that conversation.' : (err as Error).message });
+        setLoad({ kind: 'error', message: errorText(err, 'error.notFound') });
       }
     },
-    [applyState],
+    [applyState, errorText],
   );
 
   /** Create the conversation. Only called once the customer has agreed to the privacy note. */
   const createLead = useCallback(
     (seq: number) => {
-      api<IntakeState>('/api/leads', { method: 'POST' })
+      api<IntakeState>('/api/leads', { method: 'POST', json: { language: langRef.current } })
         .then((state) => {
           if (seq !== loadSeq.current) return;
           loadedFor.current = state.leadId;
-          applyState(state, null, { text: GREETING, tone: 'greet' });
+          setLang(state.language);
+          applyState(state, null, { text: scriptFor(state.language).greeting, tone: 'greet' });
           setLoad({ kind: 'ready' });
           router.replace(`/bot?lead=${encodeURIComponent(state.leadId)}`, { scroll: false });
         })
-        .catch((err: Error) => seq === loadSeq.current && setLoad({ kind: 'error', message: err.message }));
+        .catch((err: Error) => seq === loadSeq.current && setLoad({ kind: 'error', message: errorText(err) }));
     },
-    [applyState, router],
+    [applyState, router, errorText],
   );
 
   useEffect(() => {
@@ -170,18 +227,37 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
       .then((state) => {
         if (seq !== loadSeq.current) return;
         const started = Object.keys(state.answers).length > 0;
-        const first: Intro | null = state.nextQuestion ? { text: started ? WELCOME_BACK : GREETING, tone: 'greet' } : null;
+        // A conversation with answers keeps its language. One with none yet takes the customer's pick, if made.
+        const language = started || !languageChosenRef.current ? state.language : langRef.current;
+        setLang(language);
+        const lines = scriptFor(language);
+        const first: Intro | null = state.nextQuestion ? { text: started ? lines.welcomeBack : lines.greeting, tone: 'greet' } : null;
         applyState(state, state.lead, first);
         setLoad({ kind: 'ready' });
       })
       .catch((err) => {
         if (seq !== loadSeq.current) return;
-        setLoad({
-          kind: 'error',
-          message: err instanceof ApiFailure && err.status === 404 ? 'We couldn’t find that conversation.' : (err as Error).message,
-        });
+        setLoad({ kind: 'error', message: errorText(err, 'error.notFound') });
       });
-  }, [leadId, applyState, createLead]);
+  }, [leadId, applyState, createLead, errorText]);
+
+  /** A language from the picker. One that isn't available yet only says so. */
+  const chooseLanguage = (info: LanguageInfo) => {
+    if (!info.available || !isLang(info.code)) {
+      setComingSoon(info);
+      return;
+    }
+    setComingSoon(null);
+    saveLanguage(info.code);
+    setLang(info.code);
+    languageChosenRef.current = true;
+    setLanguageChosen(true);
+  };
+
+  const changeLanguage = () => {
+    languageChosenRef.current = false;
+    setLanguageChosen(false);
+  };
 
   /** "Let's start": record the agreement, then create the conversation if it doesn't exist yet. */
   const agree = () => {
@@ -191,7 +267,25 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
       const seq = ++loadSeq.current;
       setLoad({ kind: 'loading' });
       createLead(seq);
+      return;
     }
+    const current = intakeRef.current;
+    if (!current || Object.keys(current.answers).length > 0) return;
+    // A saved conversation with no answers yet: greet in the language picked here, switching the lead if needed.
+    if (current.language === lang) {
+      setIntro({ text: script.greeting, tone: 'greet' });
+      return;
+    }
+    const seq = ++loadSeq.current;
+    setLoad({ kind: 'loading' });
+    api<LeadState>(`/api/leads/${encodeURIComponent(current.leadId)}`, { method: 'PATCH', json: { language: lang } })
+      .then((state) => {
+        if (seq !== loadSeq.current) return;
+        setLang(state.language);
+        applyState(state, state.lead, { text: scriptFor(state.language).greeting, tone: 'greet' });
+        setLoad({ kind: 'ready' });
+      })
+      .catch((err) => seq === loadSeq.current && setLoad({ kind: 'error', message: errorText(err) }));
   };
 
   // ---------- Speech ----------
@@ -207,11 +301,12 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
       .then((c) => setConfig(c ?? { tts: false, stt: false }));
   }, []);
 
-  const speech = useBotSpeech(config?.tts ?? false);
+  const speech = useBotSpeech(config?.tts ?? false, lang);
   stopSpeech.current = speech.stop;
 
   const voice = useVoice({
     serverStt: config?.stt ?? false,
+    lang,
     onHeard: (text) => {
       emptyRuns.current = 0;
       submitRef.current(text);
@@ -219,15 +314,15 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
     onNothingHeard: () => {
       emptyRuns.current += 1;
       // Listen once more, then pause so the mic is never left open indefinitely.
-      if (emptyRuns.current >= 2) setVoicePause('I didn’t hear anything, so I’ve paused the microphone.');
+      if (emptyRuns.current >= 2) setVoicePause(uiText(langRef.current, 'voice.nothingHeard'));
     },
     onError: (err) => {
       if (err === 'failed') {
-        setVoicePause('The microphone stopped. Tap to speak again.');
+        setVoicePause(uiText(langRef.current, 'voice.stopped'));
         return;
       }
       setVoiceOn(false);
-      setNotice(VOICE_ERRORS[err]);
+      setNotice(uiText(langRef.current, VOICE_ERRORS[err]));
     },
   });
 
@@ -254,7 +349,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   // What the bot says on this turn. Each line is spoken exactly as written, so pre-generated clips match.
   const questionText = question?.question;
   const lines = useMemo<RevealLine[]>(() => {
-    if (done) return [{ text: CLOSING_MESSAGE }];
+    if (done) return [{ text: script.closing }];
     // Nothing is shown or spoken until the customer continues past the privacy note.
     if (!questionText || needsConsent) return [];
     const out: RevealLine[] = [];
@@ -263,7 +358,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
     return out;
     // `turn` restarts the line set when the same question is asked again.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done, questionText, intro, turn, needsConsent]);
+  }, [done, questionText, intro, turn, needsConsent, script]);
 
   const onRevealed = useCallback(() => {
     setRevealed(true);
@@ -272,8 +367,8 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
 
   const { prefetch, speak } = speech;
   useEffect(() => {
-    if (config) prefetch([...ACKNOWLEDGEMENTS, CLOSING_MESSAGE]);
-  }, [config, prefetch]);
+    if (config && languageChosen) prefetch([...script.acknowledgements, script.closing]);
+  }, [config, prefetch, script, languageChosen]);
 
   useEffect(() => {
     if (config && lines.length > 0) void speak(lines.map((l) => l.text));
@@ -304,7 +399,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
         await wait(reducedMotion.current ? 0 : LEAVE_MS);
         let ack: Intro | null = null;
         if (res.nextQuestion) {
-          const line = pickAcknowledgement(lastAck.current);
+          const line = pickAcknowledgement(scriptFor(langRef.current).acknowledgements, lastAck.current);
           lastAck.current = line;
           ack = { text: line, tone: 'ack' };
         }
@@ -317,11 +412,11 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
           await refetch(id);
           return;
         }
-        setNotice(err instanceof ApiFailure ? err.message : 'Something went wrong. Please try again.');
+        setNotice(errorText(err));
         if (!voiceOn) setDraft(text);
       }
     },
-    [pending, leaving, speech, applyState, refetch, voiceOn],
+    [pending, leaving, speech, applyState, refetch, voiceOn, errorText],
   );
   submitRef.current = (t) => void submit(t);
 
@@ -379,8 +474,9 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   const chips = useMemo(() => {
     if (!question) return { shown: [] as string[], hidden: 0 };
     const labels = (question.options ?? []).map((o) => o.label);
-    const hasSkip = labels.some((l) => l.toLowerCase() === SKIP_LABEL.toLowerCase());
-    const skip = question.canSkip && !hasSkip ? [SKIP_LABEL] : [];
+    const skipLabel = question.skipLabel ?? t('skip');
+    const hasSkip = labels.some((l) => l.toLowerCase() === skipLabel.toLowerCase());
+    const skip = question.canSkip && !hasSkip ? [skipLabel] : [];
     if (labels.length <= CHIP_LIMIT || showAllChips) return { shown: [...labels, ...skip], hidden: 0 };
     const typed = draft.trim().toLowerCase();
     if (typed) {
@@ -388,46 +484,49 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
       return { shown: [...matches.slice(0, CHIP_LIMIT), ...skip], hidden: 0 };
     }
     return { shown: [...labels.slice(0, CHIP_LIMIT), ...skip], hidden: labels.length - CHIP_LIMIT };
-  }, [question, showAllChips, draft]);
+  }, [question, showAllChips, draft, t]);
 
   // ---------- Header ----------
   const phase = question?.phase;
   const countText = accepted
-    ? 'Quote accepted'
+    ? t('count.accepted')
     : done
-      ? 'Your bundle'
+      ? t('count.bundle')
       : load.kind !== 'ready' || !phase || needsConsent
         ? ''
         : phase === 'profile'
-          ? `${Math.min(answeredCount + 1, PROFILE_TOTAL)} of ${PROFILE_TOTAL}`
-          : `Add-ons ${Math.min(answeredCount - PROFILE_TOTAL + 1, ADD_ON_MAX)} of ${ADD_ON_MAX}`;
+          ? t('count.profile', { n: Math.min(answeredCount + 1, PROFILE_TOTAL), total: PROFILE_TOTAL })
+          : t('count.addOns', { n: Math.min(answeredCount - PROFILE_TOTAL + 1, ADD_ON_MAX), total: ADD_ON_MAX });
   const progressTotal = PROFILE_TOTAL + ADD_ON_MAX;
   const progressDone = done || accepted ? progressTotal : Math.min(answeredCount, progressTotal);
 
-  const voiceStatusText = !voice.canTranscribe
-    ? 'This browser can’t turn speech into text yet'
-    : pending
-      ? 'Checking'
-      : voicePause
-        ? 'Paused'
-        : voice.status === 'listening'
-          ? 'Listening'
-          : voice.status === 'transcribing'
-            ? 'Transcribing'
-            : voice.status === 'starting'
-              ? 'Starting the microphone…'
-              : speech.speaking
-                ? 'Speaking'
-                : 'Next question';
+  const voiceStatusText = t(
+    !voice.canTranscribe
+      ? 'voice.unsupported'
+      : pending
+        ? 'voice.checking'
+        : voicePause
+          ? 'voice.paused'
+          : voice.status === 'listening'
+            ? 'voice.listening'
+            : voice.status === 'transcribing'
+              ? 'voice.transcribing'
+              : voice.status === 'starting'
+                ? 'voice.starting'
+                : speech.speaking
+                  ? 'voice.speaking'
+                  : 'voice.next',
+  );
 
   const heard = pending ?? `${voice.finalText} ${voice.interimText}`.trim();
   const numeric = question?.type === 'integer' ? 'numeric' : question?.type === 'number' ? 'decimal' : undefined;
 
   return (
-    <div className={`bot${voiceOn ? ' is-voice' : ''}${done ? ' is-done' : ''}`}>
+    <BotLanguageProvider value={lang}>
+    <div className={`bot${voiceOn ? ' is-voice' : ''}${done ? ' is-done' : ''}`} lang={languageInfo(lang).bcp47}>
       <header className="bot-header">
         <div className="bot-header-row">
-          <Link href="/dashboard" className="bot-brand" aria-label="Accel Business dashboard">
+          <Link href="/dashboard" className="bot-brand" aria-label={t('header.home')}>
             <AccelMark className="bot-orb" />
             <span>Accel Bot</span>
           </Link>
@@ -439,8 +538,8 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
             className="bot-icon-btn"
             onClick={speech.toggleMute}
             aria-pressed={speech.muted}
-            aria-label={speech.muted ? 'Unmute Accel Bot’s voice' : 'Mute Accel Bot’s voice'}
-            title={speech.muted ? 'Unmute voice' : 'Mute voice'}
+            aria-label={t(speech.muted ? 'header.unmute' : 'header.mute')}
+            title={t(speech.muted ? 'header.unmuteTitle' : 'header.muteTitle')}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
@@ -448,13 +547,13 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
             </svg>
           </button>
           <Link href="/dashboard" className="bot-header-link">
-            Dashboard
+            {t('header.dashboard')}
           </Link>
         </div>
         <div
           className="bot-progress"
           role="progressbar"
-          aria-label="Questions answered"
+          aria-label={t('header.progress')}
           aria-valuemin={0}
           aria-valuemax={progressTotal}
           aria-valuenow={progressDone}
@@ -486,31 +585,72 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                 <span />
                 <span />
               </span>
-              <span className="sr-only">Loading your conversation</span>
+              <span className="sr-only">{t('loading')}</span>
             </p>
           </section>
         )}
 
-        {needsConsent && (
+        {needsLanguage && (
+          <section className="bot-stage bot-state bot-language" aria-labelledby="bot-language">
+            {/* Asked before anything is in a language, so the heading is shown in each available one. */}
+            <h1 id="bot-language" className="bot-question">
+              {LANGUAGES.filter((l) => l.available && isLang(l.code)).map((l) => (
+                <span key={l.code} lang={l.bcp47} className="bot-language-title">
+                  {uiText(l.code as Lang, 'language.title')}
+                </span>
+              ))}
+            </h1>
+            <ul className="bot-language-list">
+              {LANGUAGES.map((l) => (
+                <li key={l.code}>
+                  <button
+                    type="button"
+                    className={`bot-language-option${l.code === lang ? ' is-current' : ''}`}
+                    aria-pressed={l.code === lang}
+                    onClick={() => chooseLanguage(l)}
+                  >
+                    <span className="bot-language-native" lang={l.bcp47}>
+                      {l.nativeName}
+                    </span>
+                    {l.nativeName !== l.englishName && <span className="bot-language-english">{l.englishName}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="bot-language-note" role="status">
+              {comingSoon && t('language.comingSoon', { language: comingSoon.nativeName })}
+            </p>
+          </section>
+        )}
+
+        {needsConsent && !needsLanguage && (
           <section className="bot-stage bot-state bot-consent" aria-labelledby="bot-consent">
             <h1 id="bot-consent" className="bot-question">
-              Before we start
+              {t('consent.title')}
             </h1>
-            <p className="bot-state-body">
-              Your answers are used to recommend a bundle and prepare your quote. If you answer by voice, your speech is
-              turned into text by our speech provider or by your browser.
-            </p>
+            <p className="bot-state-body">{t('consent.body')}</p>
             <p className="bot-consent-agree">
-              By continuing, you agree to our{' '}
-              <Link href="/privacy" target="_blank" rel="noopener">
-                Privacy Policy<span className="sr-only"> (opens in a new tab)</span>
-              </Link>
-              .
+              {(() => {
+                const [before, after = ''] = t('consent.agree').split('{link}');
+                return (
+                  <>
+                    {before}
+                    <Link href="/privacy" target="_blank" rel="noopener">
+                      {t('consent.privacy')}
+                      <span className="sr-only"> {t('consent.newTab')}</span>
+                    </Link>
+                    {after}
+                  </>
+                );
+              })()}
             </p>
             <div className="bundle-actions">
               <button type="button" className="btn btn-primary" onClick={agree}>
-                Let’s start
+                {t('consent.start')}
                 <ArrowIcon />
+              </button>
+              <button type="button" className="btn btn-outline-dark" onClick={changeLanguage}>
+                {t('language.change')}
               </button>
             </div>
           </section>
@@ -523,10 +663,10 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
             </h1>
             <div className="bundle-actions">
               <Link href="/bot?new=1" className="btn btn-primary">
-                Start a new conversation
+                {t('error.newConversation')}
               </Link>
               <Link href="/dashboard" className="btn btn-outline-dark">
-                Go to your dashboard
+                {t('goDashboard')}
               </Link>
             </div>
           </section>
@@ -535,15 +675,15 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
         {accepted && (
           <section className="bot-stage bot-state" aria-labelledby="bot-accepted">
             <h1 id="bot-accepted" className="bot-closing">
-              You’ve already accepted this bundle.
+              {t('accepted.title')}
             </h1>
-            <p className="bot-state-body">Your quote is saved. Next, verify your business from your dashboard.</p>
+            <p className="bot-state-body">{t('accepted.body')}</p>
             <div className="bundle-actions">
               <Link href="/dashboard" className="btn btn-primary">
-                Go to your dashboard
+                {t('goDashboard')}
               </Link>
               <Link href="/bot?new=1" className="btn btn-outline-dark">
-                Start a new request
+                {t('accepted.newRequest')}
               </Link>
             </div>
           </section>
@@ -556,7 +696,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" />
                 </svg>
-                Start over
+                {t('startOver')}
               </Link>
             ) : (
               <div className="bot-back" aria-hidden="true" />
@@ -566,7 +706,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
             </h1>
 
             {chips.shown.length > 0 && (
-              <ul className={`bot-suggestions${revealed ? ' is-in' : ''}`} aria-label="Suggested answers">
+              <ul className={`bot-suggestions${revealed ? ' is-in' : ''}`} aria-label={t('chips.label')}>
                 {chips.shown.map((label, i) => (
                   <li key={label} style={{ transitionDelay: revealed ? `${Math.min(i, 12) * 40}ms` : '0ms' }}>
                     <button
@@ -589,7 +729,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                       tabIndex={revealed ? 0 : -1}
                       disabled={!!pending}
                     >
-                      Show all {chips.hidden + CHIP_LIMIT}
+                      {t('chips.showAll', { n: chips.hidden + CHIP_LIMIT })}
                     </button>
                   </li>
                 )}
@@ -613,7 +753,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                 key={intake.leadId}
                 leadId={intake.leadId}
                 bundles={
-                  intake.bundles ?? [{ tier: 'recommended', label: 'Recommended', comparison: null, recommendation: intake.recommendation }]
+                  intake.bundles ?? [{ tier: 'recommended', label: t('tiers.recommended'), comparison: null, recommendation: intake.recommendation }]
                 }
                 onTierChange={setBundleTier}
                 onAlreadyAccepted={() => void refetch(intake.leadId)}
@@ -625,11 +765,11 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
         {done && !intake?.recommendation && (
           <section className="bot-stage bot-state" aria-labelledby="bot-norec">
             <h1 id="bot-norec" className="bot-closing">
-              We couldn’t put a bundle together from these answers.
+              {t('noBundle')}
             </h1>
             <div className="bundle-actions">
               <Link href="/bot?new=1" className="btn btn-primary">
-                Start over
+                {t('startOver')}
               </Link>
             </div>
           </section>
@@ -639,7 +779,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
       {asking && (
         <div className="bot-dock">
           {voiceOn ? (
-            <div className="bot-voice" role="group" aria-label="Voice answer">
+            <div className="bot-voice" role="group" aria-label={t('voice.group')}>
               <VoiceAurora sample={voice.sample} />
               <p className={`bot-voice-status${voicePause && !pending ? ' is-paused' : ''}`} aria-live="polite">
                 {voiceStatusText}
@@ -661,8 +801,8 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                   type="button"
                   className="bot-round bot-round-ghost"
                   onClick={exitVoice}
-                  aria-label="Exit voice mode"
-                  title="Exit voice mode and type"
+                  aria-label={t('voice.exit')}
+                  title={t('voice.exitTitle')}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <rect x="2.5" y="6" width="19" height="12" rx="2" />
@@ -670,7 +810,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                   </svg>
                 </button>
                 {voicePause && !pending ? (
-                  <button type="button" className="bot-round bot-round-solid" onClick={resumeVoice} aria-label="Tap to speak">
+                  <button type="button" className="bot-round bot-round-solid" onClick={resumeVoice} aria-label={t('voice.tapToSpeak')}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5.5 11a6.5 6.5 0 0013 0M12 17.5V21" />
                     </svg>
@@ -682,7 +822,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                       className="bot-round bot-round-solid"
                       onClick={sendNow}
                       disabled={!heard || !!pending}
-                      aria-label="Send answer now"
+                      aria-label={t('voice.sendNow')}
                     >
                       {voice.silenceSince !== null && !pending && (
                         <svg key={voice.silenceSince} className="bot-countdown" viewBox="0 0 64 64" aria-hidden="true">
@@ -706,7 +846,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
                     <span />
                     <span />
                   </span>
-                  Checking your answer
+                  {t('checking')}
                 </p>
               ) : (
                 notice && (
@@ -724,26 +864,26 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
               >
                 {turnGlow > 0 && !pending && <span key={turnGlow} className="bot-turn-glow" aria-hidden="true" />}
                 <label htmlFor="bot-input" className="sr-only">
-                  Your answer
+                  {t('answer.label')}
                 </label>
                 <input
                   id="bot-input"
                   ref={inputRef}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder={placeholderFor(question)}
+                  placeholder={placeholderFor(question, lang)}
                   autoComplete="off"
                   enterKeyHint="send"
                   inputMode={numeric}
                   maxLength={1000}
                   readOnly={!!pending}
                 />
-                <button type="button" className="bot-icon-btn" onClick={startVoice} aria-label="Answer by voice" disabled={!!pending}>
+                <button type="button" className="bot-icon-btn" onClick={startVoice} aria-label={t('answer.voice')} disabled={!!pending}>
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5.5 11a6.5 6.5 0 0013 0M12 17.5V21" />
                   </svg>
                 </button>
-                <button type="submit" className="bot-send" disabled={!draft.trim() || !!pending} aria-label="Send answer">
+                <button type="submit" className="bot-send" disabled={!draft.trim() || !!pending} aria-label={t('answer.send')}>
                   {pending ? (
                     <span className="bot-send-spin" aria-hidden="true" />
                   ) : (
@@ -758,5 +898,6 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
         </div>
       )}
     </div>
+    </BotLanguageProvider>
   );
 }

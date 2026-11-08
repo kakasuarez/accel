@@ -1,0 +1,630 @@
+{
+  "flag.segment_inferred": {
+    "en": "We treated this business as \"{segment}\" based on its size and type. Please confirm.",
+    "text": "உங்கள் வணிகத்தின் அளவு மற்றும் வகையின் அடிப்படையில், இதை \"{segment}\" என்று கருதுகிறோம். தயவுசெய்து உறுதிப்படுத்தவும்."
+  },
+  "flag.no_eligible_link": {
+    "en": "None of our internet connections fit this business yet. Our team can look at the options with you.",
+    "text": "தற்போது உங்கள் வணிகத்திற்குப் பொருந்தக்கூடிய இணைய இணைப்புகள் எங்களிடம் இல்லை. உங்கள் தேவைகளுக்கு ஏற்ப சிறந்த இணைப்பைத் தேர்வுசெய்ய எங்கள் குழு உங்களுக்கு உதவும்."
+  },
+  "flag.fibre_unconfirmed": {
+    "en": "{product} depends on fibre at the site.",
+    "text": "{product} க்கு உங்கள் இடத்தில் ஃபைபர் இணைப்பு தேவை."
+  },
+  "flag.fibre_unconfirmed.fallback": {
+    "en": "{product} depends on fibre at the site. If it isn't available, {fallback} is the alternative.",
+    "text": "{product} க்கு உங்கள் இடத்தில் ஃபைபர் இணைப்பு தேவை. அது கிடைக்கவில்லை என்றால், {fallback} ஒரு மாற்று வழியாகும்."
+  },
+  "flag.second_site_not_covered": {
+    "en": "This quote covers {covered} of your {sites} locations. If the others need their own connection, add another {product}.",
+    "text": "இந்த விலைப்பட்டியல் உங்கள் {sites} இடங்களில் {covered} இடங்களுக்கு மட்டுமே பொருந்தும். மற்ற இடங்களுக்கும் தனி இணைப்பு தேவைப்பட்டால், கூடுதலாக ஒரு {product} ஐச் சேர்க்கவும்."
+  },
+  "flag.long_install": {
+    "en": "Full setup may take up to {days} days. Other items can go live sooner.",
+    "text": "முழு அமைப்பிற்கும் {days} நாட்கள் வரை ஆகலாம். மற்ற சேவைகள் விரைவில் செயல்படத் தொடங்கும்."
+  },
+  "flag.slower_link_chosen": {
+    "en": "You told us you use the internet a lot, so {chosen} may feel slow at busy times. We recommended {recommended}.",
+    "text": "நீங்கள் இணையத்தை அதிகமாகப் பயன்படுத்துவதாகக் கூறியுள்ளீர்கள், எனவே அதிகப் பயன்பாடு உள்ள நேரங்களில் {chosen} மெதுவாகச் செயல்படக்கூடும். நாங்கள் {recommended} ஐப் பரிந்துரைத்தோம்."
+  },
+  "flag.city_unconfirmed": {
+    "en": "Availability in {city} is to be confirmed, so this quote may change.",
+    "text": "{city} இல் இணைப்பு கிடைப்பது உறுதிசெய்யப்பட வேண்டும், எனவே இந்த விலைப்பட்டியல் மாறக்கூடும்."
+  },
+  "flag.gstin_unconfirmed": {
+    "en": "You weren't sure about GST registration, so we've left out products that need a GST number. You can confirm it when you upload your documents.",
+    "text": "உங்களுக்கு ஜிஎஸ்டி பதிவு பற்றி உறுதியாகத் தெரியாததால், ஜிஎஸ்டி எண் தேவைப்படும் தயாரிப்புகளை நாங்கள் சேர்க்கவில்லை. உங்கள் ஆவணங்களைப் பதிவேற்றும்போது நீங்கள் அதை உறுதிப்படுத்தலாம்."
+  },
+  "block.segment": {
+    "en": "{product} isn't offered to this type of business.",
+    "text": "{product} இந்த வகை வணிகங்களுக்கு வழங்கப்படுவதில்லை."
+  },
+  "block.city_tier": {
+    "en": "{product} isn't available in tier {tier} cities yet.",
+    "text": "{product} இன்னும் tier {tier} நகரங்களில் கிடைக்கவில்லை."
+  },
+  "block.no_fibre": {
+    "en": "{product} needs fibre, which isn't available at your location.",
+    "text": "{product} க்கு ஃபைபர் தேவை, அது உங்கள் இருப்பிடத்தில் கிடைக்கவில்லை."
+  },
+  "block.min_employees": {
+    "en": "{product} is for businesses with {min}+ employees.",
+    "text": "{product} என்பது {min}+ ஊழியர்களைக் கொண்ட வணிகங்களுக்கானது."
+  },
+  "block.min_sites": {
+    "en": "{product} is for businesses with {min}+ sites.",
+    "text": "{product} என்பது {min}+ இடங்களைக் கொண்ட வணிகங்களுக்கானது."
+  },
+  "block.gstin": {
+    "en": "{product} requires a GSTIN.",
+    "text": "{product} க்கு ஜிஎஸ்டிஐஎன் தேவை."
+  },
+  "block.dependency": {
+    "en": "{product} doesn't work with the internet connection in this bundle.",
+    "text": "இந்த பண்டிலில் உள்ள இணைய இணைப்புடன் {product} வேலை செய்யாது."
+  },
+  "addOn.share": {
+    "en": "{description}. {percent} of similar customers added this.",
+    "text": "{description}. இதேபோன்ற {percent} வாடிக்கையாளர்கள் இதைச் சேர்த்துள்ளனர்."
+  },
+  "tier.recommended": {
+    "en": "Recommended",
+    "text": "பரிந்துரைக்கப்பட்டது"
+  },
+  "tier.budget": {
+    "en": "Budget",
+    "text": "பட்ஜெட்"
+  },
+  "tier.premium": {
+    "en": "Premium",
+    "text": "பிரீமியம்"
+  },
+  "compare.saves": {
+    "en": "Saves {amount} a month",
+    "text": "மாதத்திற்கு {amount} சேமிப்பு"
+  },
+  "compare.more": {
+    "en": "{amount} more a month",
+    "text": "மாதத்திற்கு {amount} அதிகம்"
+  },
+  "compare.swap": {
+    "en": "{now} instead of {before}",
+    "text": "{before} க்கு பதிலாக இப்போது {now}"
+  },
+  "compare.lines.one": {
+    "en": "{now} mobile line instead of {before}",
+    "text": "{before} க்கு பதிலாக {now} மொபைல் லைன்"
+  },
+  "compare.lines.other": {
+    "en": "{now} mobile lines instead of {before}",
+    "text": "{before} க்கு பதிலாக இப்போது {now} மொபைல் லைன்கள்"
+  },
+  "compare.withChanges": {
+    "en": "{lead}: {changes}.",
+    "text": "{lead}: {changes}."
+  },
+  "compare.only": {
+    "en": "{lead}.",
+    "text": "{lead}."
+  },
+  "interpret.unclear": {
+    "en": "Sorry, we didn't quite catch that. Could you answer a little differently?",
+    "text": "மன்னிக்கவும், நீங்கள் சொன்னது எங்களுக்கு சரியாகப் புரியவில்லை. வேறுவிதமாகக் கூற முடியுமா?"
+  },
+  "interpret.needed": {
+    "en": "No problem, but we do need this one to suggest the right bundle.",
+    "text": "பரவாயில்லை, ஆனால் சரியான பண்டிலை பரிந்துரைக்க எங்களுக்கு இது தேவை."
+  },
+  "explain.compared": {
+    "en": "Compared with the Recommended bundle: {changes}.",
+    "text": "பரிந்துரைக்கப்பட்ட பண்டிலுடன் ஒப்பிடும்போது: {changes}."
+  },
+  "explain.alternativeFallback": {
+    "en": "{label} bundle. {comparison}",
+    "text": "{label} பண்டில். {comparison}"
+  },
+  "question.businessType": {
+    "en": "What kind of business do you run?",
+    "text": "நீங்கள் என்ன வகையான வணிகம் செய்கிறீர்கள்?"
+  },
+  "hint.businessType": {
+    "en": "You can just describe what you sell or do, for example \"we run a clinic\" or \"we make furniture\".",
+    "text": "நீங்கள் என்ன விற்கிறீர்கள் அல்லது என்ன செய்கிறீர்கள் என்பதை விவரிக்கலாம், உதாரணமாக \"நாங்கள் ஒரு கிளினிக் நடத்துகிறோம்\" அல்லது \"நாங்கள் மரச்சாமான்கள் தயாரிக்கிறோம்\"."
+  },
+  "label.Apparel retail chain": {
+    "en": "Apparel retail chain",
+    "text": "ஆடை சில்லறை விற்பனை சங்கிலி"
+  },
+  "label.Architecture studio": {
+    "en": "Architecture studio",
+    "text": "கட்டிடக்கலை ஸ்டுடியோ"
+  },
+  "label.Auto-parts unit": {
+    "en": "Auto-parts unit",
+    "text": "வாகன உதிரி பாகங்கள் பிரிவு"
+  },
+  "label.Bakery": {
+    "en": "Bakery",
+    "text": "பேக்கரி"
+  },
+  "label.Bakery chain": {
+    "en": "Bakery chain",
+    "text": "பேக்கரி சங்கிலி"
+  },
+  "label.Boutique": {
+    "en": "Boutique",
+    "text": "பூட்டிக்"
+  },
+  "label.Budget hotel group": {
+    "en": "Budget hotel group",
+    "text": "குறைந்த விலை ஹோட்டல் குழு"
+  },
+  "label.CA firm": {
+    "en": "CA firm",
+    "text": "CA நிறுவனம்"
+  },
+  "label.Coaching centre": {
+    "en": "Coaching centre",
+    "text": "பயிற்சி மையம்"
+  },
+  "label.Dental clinic": {
+    "en": "Dental clinic",
+    "text": "பல் மருத்துவமனை"
+  },
+  "label.Diagnostic lab": {
+    "en": "Diagnostic lab",
+    "text": "நோய் கண்டறியும் ஆய்வகம்"
+  },
+  "label.Electronics retail chain": {
+    "en": "Electronics retail chain",
+    "text": "மின்னணுப் பொருட்கள் சில்லறை விற்பனை சங்கிலி"
+  },
+  "label.Food processing unit": {
+    "en": "Food processing unit",
+    "text": "உணவு பதப்படுத்தும் அலகு"
+  },
+  "label.Furniture workshop": {
+    "en": "Furniture workshop",
+    "text": "தளபாடங்கள் பட்டறை"
+  },
+  "label.Gym chain": {
+    "en": "Gym chain",
+    "text": "உடற்பயிற்சி கூடம் சங்கிலி"
+  },
+  "label.Hardware store": {
+    "en": "Hardware store",
+    "text": "ஹார்டுவேர் கடை"
+  },
+  "label.Insurance agency": {
+    "en": "Insurance agency",
+    "text": "காப்பீட்டு நிறுவனம்"
+  },
+  "label.Kirana store": {
+    "en": "Kirana store",
+    "text": "மளிகைக் கடை"
+  },
+  "label.Law office": {
+    "en": "Law office",
+    "text": "சட்ட அலுவலகம்"
+  },
+  "label.Mobile repair shop": {
+    "en": "Mobile repair shop",
+    "text": "மொபைல் பழுதுபார்க்கும் கடை"
+  },
+  "label.Optician": {
+    "en": "Optician",
+    "text": "கண் கண்ணாடி விற்பனையாளர்"
+  },
+  "label.Packaging unit": {
+    "en": "Packaging unit",
+    "text": "பேக்கேஜிங் அலகு"
+  },
+  "label.Pharmacy": {
+    "en": "Pharmacy",
+    "text": "மருந்தகம்"
+  },
+  "label.Pharmacy chain": {
+    "en": "Pharmacy chain",
+    "text": "மருந்தக சங்கிலி"
+  },
+  "label.Physiotherapy clinic": {
+    "en": "Physiotherapy clinic",
+    "text": "பிசியோதெரபி கிளினிக்"
+  },
+  "label.Plastic moulding unit": {
+    "en": "Plastic moulding unit",
+    "text": "பிளாஸ்டிக் மோல்டிங் அலகு"
+  },
+  "label.Pre-school chain": {
+    "en": "Pre-school chain",
+    "text": "முன் பள்ளி சங்கிலி"
+  },
+  "label.Printing press": {
+    "en": "Printing press",
+    "text": "அச்சுக்கூடம்"
+  },
+  "label.Real estate agency": {
+    "en": "Real estate agency",
+    "text": "ரியல் எஸ்டேட் நிறுவனம்"
+  },
+  "label.Restaurant chain": {
+    "en": "Restaurant chain",
+    "text": "உணவக சங்கிலி"
+  },
+  "label.Salon": {
+    "en": "Salon",
+    "text": "சலூன்"
+  },
+  "label.Stationery shop": {
+    "en": "Stationery shop",
+    "text": "எழுதுபொருள் கடை"
+  },
+  "label.Sweet shop": {
+    "en": "Sweet shop",
+    "text": "இனிப்புக் கடை"
+  },
+  "label.Textile unit": {
+    "en": "Textile unit",
+    "text": "ஜவுளி அலகு"
+  },
+  "label.Travel agency": {
+    "en": "Travel agency",
+    "text": "பயண நிறுவனம்"
+  },
+  "question.employees": {
+    "en": "How many people work in the business?",
+    "text": "வியாபாரத்தில் எத்தனை பேர் வேலை செய்கிறார்கள்?"
+  },
+  "hint.employees": {
+    "en": "A rough estimate is fine, including the owner.",
+    "text": "உரிமையாளர் உட்பட, தோராயமான எண்ணிக்கை போதுமானது."
+  },
+  "question.sites": {
+    "en": "How many locations do you operate from?",
+    "text": "நீங்கள் எத்தனை இடங்களில் இருந்து செயல்படுகிறீர்கள்?"
+  },
+  "hint.sites": {
+    "en": "Count each shop, office, branch or factory. A rough number is fine.",
+    "text": "ஒவ்வொரு கடை, அலுவலகம், கிளை அல்லது தொழிற்சாலையைக் கணக்கிடுங்கள். தோராயமான எண்ணிக்கை போதுமானது."
+  },
+  "question.city": {
+    "en": "Which city is your business in? If you have several, tell us the smallest one.",
+    "text": "உங்கள் வியாபாரம் எந்த நகரத்தில் உள்ளது? உங்களிடம் பல இருந்தால், சிறிய நகரத்தைச் சொல்லுங்கள்."
+  },
+  "hint.city": {
+    "en": "Just the city name is enough, for example Pune. It tells us which services are available there.",
+    "text": "நகரத்தின் பெயர் மட்டும் போதும், உதாரணமாக Pune. அங்கு என்ன சேவைகள் உள்ளன என்பதை இது நமக்குத் தெரிவிக்கும்."
+  },
+  "label.Ahmedabad": {
+    "en": "Ahmedabad",
+    "text": "அகமதாபாத்"
+  },
+  "label.Bengaluru": {
+    "en": "Bengaluru",
+    "text": "பெங்களூரு"
+  },
+  "label.Bhopal": {
+    "en": "Bhopal",
+    "text": "போபால்"
+  },
+  "label.Chennai": {
+    "en": "Chennai",
+    "text": "சென்னை"
+  },
+  "label.Coimbatore": {
+    "en": "Coimbatore",
+    "text": "கோயம்புத்தூர்"
+  },
+  "label.Delhi": {
+    "en": "Delhi",
+    "text": "டெல்லி"
+  },
+  "label.Hyderabad": {
+    "en": "Hyderabad",
+    "text": "ஹைதராபாத்"
+  },
+  "label.Indore": {
+    "en": "Indore",
+    "text": "இந்தூர்"
+  },
+  "label.Jaipur": {
+    "en": "Jaipur",
+    "text": "ஜெய்ப்பூர்"
+  },
+  "label.Kochi": {
+    "en": "Kochi",
+    "text": "கொச்சி"
+  },
+  "label.Kolkata": {
+    "en": "Kolkata",
+    "text": "கொல்கத்தா"
+  },
+  "label.Lucknow": {
+    "en": "Lucknow",
+    "text": "லக்னோ"
+  },
+  "label.Ludhiana": {
+    "en": "Ludhiana",
+    "text": "லুধியானா"
+  },
+  "label.Mumbai": {
+    "en": "Mumbai",
+    "text": "மும்பை"
+  },
+  "label.Mysuru": {
+    "en": "Mysuru",
+    "text": "மைசூரு"
+  },
+  "label.Nagpur": {
+    "en": "Nagpur",
+    "text": "நாக்பூர்"
+  },
+  "label.Nashik": {
+    "en": "Nashik",
+    "text": "நாசிக்"
+  },
+  "label.Patna": {
+    "en": "Patna",
+    "text": "பாட்னா"
+  },
+  "label.Pune": {
+    "en": "Pune",
+    "text": "புனே"
+  },
+  "label.Surat": {
+    "en": "Surat",
+    "text": "சூரத்"
+  },
+  "label.Vadodara": {
+    "en": "Vadodara",
+    "text": "வதோதரா"
+  },
+  "label.Visakhapatnam": {
+    "en": "Visakhapatnam",
+    "text": "விசாகப்பட்டினம்"
+  },
+  "question.hasGstin": {
+    "en": "Is your business registered for GST?",
+    "text": "உங்கள் வியாபாரத்திற்கு GST பதிவு உள்ளதா?"
+  },
+  "label.Yes": {
+    "en": "Yes",
+    "text": "ஆம்"
+  },
+  "label.No": {
+    "en": "No",
+    "text": "இல்லை"
+  },
+  "label.Not sure": {
+    "en": "Not sure",
+    "text": "நிச்சயமில்லை"
+  },
+  "question.currentInternet": {
+    "en": "What internet connection do you use today?",
+    "text": "இன்று நீங்கள் என்ன இன்டர்நெட் இணைப்பு பயன்படுத்துகிறீர்கள்?"
+  },
+  "label.Business broadband": {
+    "en": "Business broadband",
+    "text": "வியாபார பிராட்பேண்ட்"
+  },
+  "label.Home broadband": {
+    "en": "Home broadband",
+    "text": "வீட்டு பிராட்பேண்ட்"
+  },
+  "label.Leased line": {
+    "en": "Leased line",
+    "text": "லீஸ்டு லைன்"
+  },
+  "label.Mixed per site": {
+    "en": "Mixed per site",
+    "text": "ஒவ்வொரு இடத்திற்கும் கலவையாக"
+  },
+  "label.Mobile hotspot": {
+    "en": "Mobile hotspot",
+    "text": "மொபைல் ஹாட்ஸ்பாட்"
+  },
+  "label.None": {
+    "en": "None",
+    "text": "எதுவுமில்லை"
+  },
+  "question.monthlyTelecomSpend": {
+    "en": "Roughly how much do you spend on phone and internet each month, in rupees?",
+    "text": "தொலைபேசி மற்றும் இன்டர்நெட்டிற்கு மாதத்திற்கு எவ்வளவு செலவு செய்கிறீர்கள், ரூபாயில்?"
+  },
+  "hint.monthlyTelecomSpend": {
+    "en": "A rough figure is fine.",
+    "text": "தோராயமான கணக்கு போதும்."
+  },
+  "question.heavyBandwidth": {
+    "en": "Does your business use the internet a lot, for things like video calls, sending big files or working online all day?",
+    "text": "வீடியோ அழைப்புகள், பெரிய ஃபைல்களை அனுப்புதல் அல்லது நாள் முழுவதும் ஆன்லைனில் வேலை செய்தல் போன்றவற்றுக்கு உங்கள் வியாபாரம் இன்டர்நெட்டை அதிகமாகப் பயன்படுத்துகிறதா?"
+  },
+  "question.need:P09": {
+    "en": "Do you need your internet to keep working even if the main connection goes down?",
+    "text": "முக்கிய இணைப்பு துண்டிக்கப்பட்டாலும் உங்கள் இன்டர்நெட் தொடர்ந்து வேலை செய்ய வேண்டுமா?"
+  },
+  "label.I already have this": {
+    "en": "I already have this",
+    "text": "என்னிடம் ஏற்கனவே இது உள்ளது"
+  },
+  "question.need:P10": {
+    "en": "Would you like to manage the internet at all your locations from one place, with your key apps given priority?",
+    "text": "உங்கள் எல்லா இடங்களிலும் உள்ள இன்டர்நெட்டை ஒரே இடத்தில் இருந்து நிர்வகிக்கவும், முக்கிய ஆப்களுக்கு முன்னுரிமை அளிக்கவும் விரும்புகிறீர்களா?"
+  },
+  "question.need:P11": {
+    "en": "Do you need to reach CCTV cameras, a server or office computers from outside the office?",
+    "text": "அலுவலகத்திற்கு வெளியே இருந்து CCTV கேமராக்கள், சர்வர் அல்லது அலுவலக கணினிகளை அணுக வேண்டுமா?"
+  },
+  "question.need:P12": {
+    "en": "Would you like business phone lines that work over the internet, with a call menu (\"press 1 for sales\") and call recording?",
+    "text": "இன்டர்நெட் வழியாக வேலை செய்யும் வியாபார தொலைபேசி இணைப்புகள், கால் மெனு (\"விற்பனைக்கு 1 ஐ அழுத்தவும்\") மற்றும் கால் ரெக்கார்டிங் உடன் வேண்டுமா?"
+  },
+  "question.need:P13": {
+    "en": "Would you like a free-to-call 1800 number for your customers?",
+    "text": "உங்கள் வாடிக்கையாளர்களுக்காக இலவசமாக அழைக்கக்கூடிய 1800 எண்ணை விரும்புகிறீர்களா?"
+  },
+  "question.need:P14": {
+    "en": "Do you send customers text messages, like order updates, reminders or offers?",
+    "text": "வாடிக்கையாளர்களுக்கு ஆர்டர் அப்டேட்கள், நினைவூட்டல்கள் அல்லது சலுகைகள் போன்ற குறுஞ்செய்திகளை அனுப்புகிறீர்களா?"
+  },
+  "question.need:P15": {
+    "en": "Would you like an official, verified WhatsApp account to chat with customers and share your catalogue?",
+    "text": "வாடிக்கையாளர்களுடன் அரட்டை அடிக்கவும் உங்கள் கேட்லாக்கைப் பகிரவும் அதிகாரப்பூர்வ, சரிபார்க்கப்பட்ட WhatsApp கணக்கை விரும்புகிறீர்களா?"
+  },
+  "question.need:P16": {
+    "en": "Would you like email addresses with your business name, like name@yourbusiness.com, plus shared documents and video calls?",
+    "text": "உங்கள் வியாபாரப் பெயரில் மின்னஞ்சல் முகவரிகள் (name@yourbusiness.com போன்றவை), பகிரப்பட்ட ஆவணங்கள் மற்றும் வீடியோ அழைப்புகள் வேண்டுமா?"
+  },
+  "question.need:P17": {
+    "en": "Would you like your computers and phones backed up automatically, so files aren't lost if a device breaks?",
+    "text": "உங்கள் கணினிகள் மற்றும் தொலைபேசிகள் தானாகவே பேக்கப் செய்யப்பட வேண்டுமா, இதனால் ஒரு சாதனம் பழுதடைந்தால் கோப்புகள் இழக்கப்படாது?"
+  },
+  "question.need:P18": {
+    "en": "Would you like a simple website for your business, with your own web address?",
+    "text": "உங்கள் வியாபாரத்திற்கு, உங்களுக்கென ஒரு வெப் அட்ரஸுடன் கூடிய எளிமையான வெப்சைட் வேண்டுமா?"
+  },
+  "question.need:P19": {
+    "en": "Would you like a tablet for billing that makes GST bills, tracks stock and takes UPI and card payments?",
+    "text": "GST பில்கள் போடும், ஸ்டாக் கணக்கு வைக்கும், UPI மற்றும் கார்டு பேமெண்ட்களை ஏற்கும் பில்லிங் டேப்லெட் வேண்டுமா?"
+  },
+  "question.need:P20": {
+    "en": "Would you like protection against viruses and ransomware on your computers and phones?",
+    "text": "உங்கள் கம்ப்யூட்டர்கள் மற்றும் போன்களில் வைரஸ் மற்றும் ரான்சம்வேர் தாக்குதல்களிலிருந்து பாதுகாப்பு வேண்டுமா?"
+  },
+  "question.need:P21": {
+    "en": "Would you like a security system for your office network, managed for you by our security team?",
+    "text": "உங்கள் ஆபீஸ் நெட்வொர்க்கிற்கு, எங்கள் பாதுகாப்பு குழுவால் நிர்வகிக்கப்படும் பாதுகாப்பு அமைப்பு வேண்டுமா?"
+  },
+  "question.need:P22": {
+    "en": "Would you like Wi-Fi for your customers that's kept separate from your business network?",
+    "text": "உங்கள் வியாபார நெட்வொர்க்கிலிருந்து தனியாக, உங்கள் வாடிக்கையாளர்களுக்கு வைஃபை (Wi-Fi) வேண்டுமா?"
+  },
+  "question.need:P23": {
+    "en": "Would you like security cameras you can watch on your phone, with recordings saved for 30 days?",
+    "text": "உங்கள் போனில் பார்க்கக்கூடிய, 30 நாட்களுக்கு ரெக்கார்டிங் சேமிக்கப்படும் பாதுகாப்பு கேமராக்கள் வேண்டுமா?"
+  },
+  "question.need:P24": {
+    "en": "Would you like sensors that track when your machines are running and how much power they use?",
+    "text": "உங்கள் மெஷின்கள் எப்போது இயங்குகின்றன, எவ்வளவு பவர் பயன்படுத்துகின்றன என்பதைக் கண்காணிக்கும் சென்சார்கள் வேண்டுமா?"
+  },
+  "question.need:P25": {
+    "en": "Do you have vehicles you'd like to track live on a map?",
+    "text": "உங்கள் வாகனங்களை வரைபடத்தில் லைவாக கண்காணிக்க வேண்டுமா?"
+  },
+  "label.Micro retail & services": {
+    "en": "Micro retail & services",
+    "text": "சிறு சில்லறை & சேவைகள்"
+  },
+  "label.Professional offices": {
+    "en": "Professional offices",
+    "text": "தொழில்முறை அலுவலகங்கள்"
+  },
+  "label.Small manufacturers": {
+    "en": "Small manufacturers",
+    "text": "சிறு உற்பத்தியாளர்கள்"
+  },
+  "label.Small multi-site businesses": {
+    "en": "Small multi-site businesses",
+    "text": "பல கிளைகள் கொண்ட சிறு வியாபாரங்கள்"
+  },
+  "description.P01": {
+    "en": "Business fibre broadband, 100 Mbps, unlimited data",
+    "text": "பிசினஸ் ஃபைபர் பிராட்பேண்ட், 100 Mbps, அன்லிமிடெட் டேட்டா"
+  },
+  "description.P02": {
+    "en": "Business fibre broadband, 300 Mbps, unlimited data, static IP optional",
+    "text": "பிசினஸ் ஃபைபர் பிராட்பேண்ட், 300 Mbps, அன்லிமிடெட் டேட்டா, ஸ்டாட்டிக் IP ஆப்ஷனல்"
+  },
+  "description.P03": {
+    "en": "Business fibre broadband, 1 Gbps, priority support",
+    "text": "பிசினஸ் ஃபைபர் பிராட்பேண்ட், 1 Gbps, பிரையாரிட்டி சப்போர்ட்"
+  },
+  "description.P04": {
+    "en": "Wireless (5G FWA) broadband, 100 Mbps, plug-and-play, for sites without fibre",
+    "text": "வயர்லெஸ் (5G FWA) பிராட்பேண்ட், 100 Mbps, பிளக்-அண்ட்-பிளே, ஃபைபர் இல்லாத இடங்களுக்கு"
+  },
+  "description.P05": {
+    "en": "Dedicated 1:1 internet, 20 Mbps, 99.5% SLA",
+    "text": "டெடிகேட்டட் 1:1 இன்டர்நெட், 20 Mbps, 99.5% SLA"
+  },
+  "description.P06": {
+    "en": "Dedicated 1:1 internet, 100 Mbps, 99.9% SLA",
+    "text": "டெடிகேட்டட் 1:1 இன்டர்நெட், 100 Mbps, 99.9% SLA"
+  },
+  "description.P07": {
+    "en": "Business mobile line, 50 GB data, unlimited calls",
+    "text": "பிசினஸ் மொபைல் லைன், 50 GB டேட்டா, அன்லிமிடெட் கால்கள்"
+  },
+  "description.P08": {
+    "en": "Business mobile line, 150 GB data, roaming, priority care",
+    "text": "பிசினஸ் மொபைல் லைன், 150 GB டேட்டா, ரோமிங், பிரையாரிட்டி கேர்"
+  },
+  "description.P09": {
+    "en": "Automatic failover router with data SIM for when the main link is down",
+    "text": "முக்கிய இணைப்பு துண்டிக்கப்படும்போது டேட்டா சிம் உடன் ஆட்டோமேட்டிக் ஃபைல்ஓவர் ரௌட்டர்"
+  },
+  "description.P10": {
+    "en": "Central management of links across sites, app-priority routing",
+    "text": "பல இடங்களுக்கான இணைப்புகளின் சென்ட்ரல் மேனேஜ்மென்ட், ஆப்-பிரையாரிட்டி ரூட்டிங்"
+  },
+  "description.P11": {
+    "en": "Fixed public IP for CCTV, servers or remote access",
+    "text": "CCTV, சர்வர்கள் அல்லது ரிமோட் அக்சஸிற்கான ஃபிக்ஸட் பப்ளிக் IP"
+  },
+  "description.P12": {
+    "en": "Business phone lines over internet with IVR, call recording",
+    "text": "IVR, கால் ரெக்கார்டிங் உடன் இன்டர்நெட் வழியாக பிசினஸ் போன் லைன்கள்"
+  },
+  "description.P13": {
+    "en": "1800 number routed to mobile or cloud telephony",
+    "text": "1800 நம்பர் மொபைல் அல்லது கிளவுட் டெலிபோனிக்கு ரூட் செய்யப்படும்"
+  },
+  "description.P14": {
+    "en": "10,000 SMS per month for alerts and promotions, DLT registration assisted",
+    "text": "10,000 SMS மாதத்திற்கு அலர்ட்ஸ் மற்றும் ப்ரோமோஷன்களுக்கு, DLT ரெஜிஸ்ட்ரேஷன் உதவி"
+  },
+  "description.P15": {
+    "en": "Verified WhatsApp channel, catalogue, 1,000 conversations a month",
+    "text": "வெரிஃபைடு வாட்ஸ்அப் சேனல், கேட்லாக், 1,000 உரையாடல்கள் மாதம்"
+  },
+  "description.P16": {
+    "en": "Business email on own domain, documents, video meetings",
+    "text": "சொந்த டொமைனில் பிசினஸ் ஈமெயில், டாக்குமெண்ட்ஸ், வீடியோ மீட்டிங்ஸ்"
+  },
+  "description.P17": {
+    "en": "Automatic backup of PCs and phones, 1 TB",
+    "text": "PCகள் மற்றும் போன்களின் ஆட்டோமேட்டிக் பேக்கப், 1 TB"
+  },
+  "description.P18": {
+    "en": "Domain, 5-page website builder, hosting, SSL",
+    "text": "டொமைன், 5-பேஜ் வெப்சைட் பில்டர், ஹோஸ்டிங், SSL"
+  },
+  "description.P19": {
+    "en": "GST-ready billing, inventory, UPI/card acceptance on a tablet",
+    "text": "GST-ரெடி பில்லிங், இன்வென்டரி, டேப்லெட்டில் UPI/கார்டு ஏற்பு"
+  },
+  "description.P20": {
+    "en": "Antivirus and ransomware protection for PCs and phones",
+    "text": "PCகள் மற்றும் போன்களுக்கான ஆன்டிவைரஸ் மற்றும் ரான்சம்வேர் பாதுகாப்பு"
+  },
+  "description.P21": {
+    "en": "Next-gen firewall at the site, managed by Accel SOC",
+    "text": "தளத்தில் நெக்ஸ்ட்-ஜென் ஃபயர்வால், Accel SOC ஆல் நிர்வகிக்கப்படுகிறது"
+  },
+  "description.P22": {
+    "en": "Managed Wi-Fi access point with separate customer Wi-Fi and content filtering",
+    "text": "தனி கஸ்டமர் வைஃபை மற்றும் கன்டென்ட் ஃபில்டரிங் உடன் மேனேஜ்டு வைஃபை அக்சஸ் பாயிண்ட்"
+  },
+  "description.P23": {
+    "en": "HD camera with 30-day cloud recording and mobile app view",
+    "text": "30-நாள் கிளவுட் ரெக்கார்டிங் மற்றும் மொபைல் ஆப் வியூ உடன் HD கேமரா"
+  },
+  "description.P24": {
+    "en": "IoT SIM + sensor kit for machine uptime and energy use",
+    "text": "மெஷின் அப்டைம் மற்றும் எனர்ஜி பயன்பாட்டிற்கான IoT சிம் + சென்சார் கிட்"
+  },
+  "description.P25": {
+    "en": "GPS tracker with IoT SIM and live dashboard",
+    "text": "IoT சிம் மற்றும் லைவ் டேஷ்போர்டுடன் கூடிய GPS டிராக்கர்"
+  }
+}

@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
 import { ApiError, parseBody, route } from "@/lib/http";
+import { localizeRecommendation } from "@/lib/i18n/localize";
 import { ownLead } from "@/lib/leads/access";
 import { BUNDLE_TIERS, chosenBundle, priceSelection } from "@/lib/leads/quote";
+import { leadLanguage } from "@/lib/leads/repository";
 import { getQuestions } from "@/lib/questions";
 import { customerView, getRecommender } from "@/lib/recommender";
 
@@ -20,5 +22,6 @@ export const POST = route(async (request, { params }: RouteContext<"/api/leads/[
   const recommender = getRecommender();
   const option = chosenBundle(recommender, getQuestions(), lead.answers, bundle);
   if (!option) throw new ApiError(409, "not_ready", "Please finish the questions first.");
-  return NextResponse.json({ ...priceSelection(option.recommendation, selectedAddOns, recommender.catalogue), recommendation: customerView(option.recommendation) });
+  const recommendation = localizeRecommendation(customerView(option.recommendation), leadLanguage(lead), recommender.catalogue);
+  return NextResponse.json({ ...priceSelection(option.recommendation, selectedAddOns, recommender.catalogue), recommendation });
 });

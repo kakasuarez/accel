@@ -1,3 +1,5 @@
+import type { MessageKey } from "./messages";
+
 /** Ids and segment codes come from the CSVs, so they're plain strings: nothing here names a product. */
 export type ProductId = string;
 export type Segment = string;
@@ -130,6 +132,8 @@ export type AddOnRecommendation = "stated_need" | "model";
 export interface AddOnOption extends Priced {
   /** Null means the product is available but we aren't recommending it. */
   recommendation: AddOnRecommendation | null;
+  /** For a model pick: the share of similar customers who added it, e.g. "62%", as quoted in `why`. */
+  sharePercent?: string;
 }
 
 export interface BundleTotals {
@@ -148,6 +152,8 @@ export interface BlockedProduct {
   name: string;
   code: BlockCode;
   reason: string;
+  /** The values `reason` was built from (see messages.ts), so it can be rebuilt in another language. */
+  params?: Readonly<Record<string, string | number>>;
 }
 
 /** Another product that can take a line's place: an internet connection or a mobile plan. */
@@ -177,6 +183,12 @@ export interface Flag {
   /** "internal" flags are for sales staff and must never be shown to a prospect. */
   audience: "customer" | "internal";
   message: string;
+  /**
+   * Customer flags: the template in messages.ts and the values `message` was built from, so it can be rebuilt in
+   * another language. Missing on quotes saved before translations existed; those show `message` as it is.
+   */
+  template?: MessageKey;
+  params?: Readonly<Record<string, string | number>>;
 }
 
 export interface OpenQuestion {

@@ -320,6 +320,130 @@
   text-underline-offset: 3px;
 }
 
+/* Language picker: the first screen, before anything is in a language. One heading in each available
+   language, stacked: the one the bot is set to leads in the question voice, the others follow quietly. */
+.bot-language .bot-question {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 22ch;
+}
+.bot-language-title {
+  order: 1;
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+}
+.bot:lang(en) .bot-language-title:lang(en),
+.bot:lang(hi) .bot-language-title:lang(hi),
+.bot:lang(ta) .bot-language-title:lang(ta) {
+  order: 0;
+  margin-bottom: var(--sp-sm);
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  color: var(--ink);
+}
+.bot-language-list {
+  list-style: none;
+  margin: var(--sp-lg) 0 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  /* Fixed column counts, not auto-fill: auto-fill against a max-width inflates the list's min-content and
+     pushes the page sideways on a phone. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-sm);
+}
+/* Narrower than a 360px phone, two columns would wrap some names onto a second line: one column instead. */
+@media (max-width: 359px) {
+  .bot-language-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (min-width: 600px) {
+  .bot-language-list {
+    max-width: 760px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+/* Same chip language as the answer suggestions: white pill, #c9cacc hairline. */
+.bot-language-option {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px var(--sp-sm);
+  width: 100%;
+  min-height: 52px;
+  padding: 13px 16px 13px 18px;
+  border: 1px solid #c9cacc;
+  border-radius: var(--r-pill-lg);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.bot-language-native {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.bot-language-english {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+  transition: color 0.15s ease;
+}
+/* The preselected language: an ink hairline and a small tick, nothing louder. */
+.bot-language-option.is-current {
+  border-color: var(--ink);
+}
+.bot-language-option.is-current::after {
+  content: '';
+  align-self: center;
+  flex-shrink: 0;
+  width: 5px;
+  height: 10px;
+  margin: -3px 2px 0 auto;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(45deg);
+}
+.bot-language-option:active {
+  background: var(--canvas-soft);
+}
+/* Hover only where there is a pointer, so a tapped option doesn't stay filled on a phone. */
+@media (hover: hover) {
+  .bot-language-option:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--on-dark);
+  }
+  .bot-language-option:hover .bot-language-english {
+    color: #c9cacc;
+  }
+}
+/* Space is held for two lines, so the "coming soon" line never moves anything when it appears. */
+.bot-language-note {
+  margin: var(--sp-xs) 0 0;
+  min-height: 48px;
+  max-width: 44ch;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+}
+.bot-language-note:not(:empty) {
+  animation: bot-fade-up 0.4s var(--bot-ease) both;
+}
+
 /* ---------- Dock: composer ---------- */
 .bot-dock {
   position: sticky;
@@ -1249,7 +1373,74 @@
   }
 }
 
+/* ---------- Hindi and Tamil ----------
+   Noto Sans Devanagari / Tamil (layout.tsx) pick up the Indic glyphs. Their marks sit above the headline and
+   below the baseline, so lines open up; tracking is a Latin calibration and is dropped; 300 is too thin for
+   matras and conjuncts on a phone screen, so the question voice steps to 400. Tamil words run long, so the
+   Tamil question is a size smaller and gets a wider measure. */
+.bot :is(.bot-question, .bot-closing):is(:lang(hi), :lang(ta)) {
+  font-weight: 400;
+  line-height: 1.32;
+}
+.bot .bot-question.is-long:is(:lang(hi), :lang(ta)) {
+  line-height: 1.4;
+}
+.bot .bot-question:lang(ta) {
+  font-size: clamp(26px, 4.4vw, 46px);
+  max-width: 24ch;
+}
+.bot .bot-question.is-long:lang(ta) {
+  font-size: clamp(21px, 3.1vw, 32px);
+  max-width: 32ch;
+}
+.bot .bot-closing:lang(ta) {
+  font-size: clamp(24px, 2.6vw, 32px);
+  max-width: 24ch;
+}
+.bot
+  :is(
+    .bot-question,
+    .bot-closing,
+    .bot-language-title,
+    .bundle-name,
+    .addons-title,
+    .accept-title,
+    .bot-voice-status,
+    .bundle-facts dt,
+    .bot-recap dt
+  ):is(:lang(hi), :lang(ta)) {
+  letter-spacing: 0;
+}
+.bot .bot-ack:is(:lang(hi), :lang(ta)) {
+  line-height: 1.45;
+}
+.bot :is(.bot-chip, .bot-language-native):is(:lang(hi), :lang(ta)) {
+  line-height: 26px;
+}
+.bot :is(.bot-state-body, .bot-consent-agree):is(:lang(hi), :lang(ta)) {
+  line-height: 29px;
+}
+.bot .bot-voice-text:is(:lang(hi), :lang(ta)) {
+  line-height: 31px;
+}
+.bot .bundle-name:is(:lang(hi), :lang(ta)) {
+  line-height: 38px;
+}
+.bot :is(.addons-title, .accept-title):is(:lang(hi), :lang(ta)) {
+  line-height: 34px;
+}
+/* Translated labels can outgrow a phone-width pill: let them wrap instead of overflowing. */
+.bot .btn:is(:lang(hi), :lang(ta)) {
+  white-space: normal;
+  text-align: center;
+}
+/* A single long word (Tamil especially) breaks rather than pushing past a 360px screen. */
+.bot :is(.bot-question, .bot-closing, .bot-ack, .bot-chip, .bot-voice-text, .bot-state-body, .bot-language-note) {
+  overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .bot-language-note:not(:empty),
   .bot-composer,
   .bot-voice-status,
   .bot-voice-text,

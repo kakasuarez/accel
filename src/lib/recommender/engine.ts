@@ -1,4 +1,5 @@
 import { eligibilityBlock } from "./eligibility";
+import { message, type MessageKey } from "./messages";
 import { FIRST_BUSINESS_LINK, PEOPLE_UNITS, buildInsights, rate, type Insights } from "./insights";
 import { forestScorer, frequencyScorer, type ModelOptions, type Scorer } from "./model/scorer";
 import { buildSegmentIndex } from "./segments";
@@ -49,6 +50,8 @@ export interface Recommender {
   cities: readonly string[];
   /** Values of `currentInternet` seen in the leads. */
   currentInternetTypes: readonly string[];
+  /** The customer-facing name of each segment, e.g. "Professional offices". */
+  segmentLabels: readonly string[];
   catalogue: Catalogue;
 }
 
@@ -192,8 +195,11 @@ export function createRecommender(
 
     const toOption = (product: Product, recommendation: AddOnRecommendation | null): AddOnOption => {
       const support = insights.support(segment, product.id);
-      const why = recommendation === "model" && support ? `${product.description}. ${percent(rate(support))} of similar customers added this.` : product.description;
-      return { ...priced(product, why), recommendation };
+      if (recommendation === "model" && support) {
+        const sharePercent = percent(rate(support));
+        return { ...priced(product, message("addOn.share", { description: product.description, percent: sharePercent })), recommendation, sharePercent };
+      }
+      return { ...priced(product, product.description), recommendation };
     };
 
     const totals = totalsOf(lines);
@@ -224,6 +230,7 @@ export function createRecommender(
     businessTypes: segments.businessTypes,
     cities: distinct(leads.map((l) => l.city)),
     currentInternetTypes: distinct(leads.map((l) => l.profile.currentInternet)),
+    segmentLabels: distinct(leads.map((l) => l.segmentLabel)),
     catalogue,
   };
 }
@@ -257,13 +264,7 @@ function choiceFlags(profile: BusinessProfile, link: Product | undefined, recomm
   const recommendedLink = catalogue.byId.get(recommended?.lines.find((l) => l.role === "link")?.productId ?? "");
   if (!profile.heavyBandwidth || !link || !recommendedLink) return [];
   if ((link.speedMbps ?? 0) >= (recommendedLink.speedMbps ?? 0)) return [];
-  return [
-    {
-      code: "slower_link_chosen",
-      audience: "customer",
-      message: `You told us you use the internet a lot, so ${link.name} may feel slow at busy times. We recommended ${recommendedLink.name}.`,
-    },
-  ];
+  return [customerFlag("slower_link_chosen", "flag.slower_link_chosen", { chosen: link.name, recommended: recommendedLink.name })];
 }
 
 function flagsFor(
@@ -278,36 +279,24 @@ function flagsFor(
 ): Flag[] {
   const flags: Flag[] = [];
   if (inferred) {
-    flags.push({
-      code: "segment_inferred",
-      audience: "customer",
-      message: `We treated this business as "${insights.segmentLabel(segment)}" based on its size and type. Please confirm.`,
-    });
+    flags.push(customerFlag("segment_inferred", "flag.segment_inferred", { segment: insights.segmentLabel(segment) }));
   }
   if (!link) {
-    flags.push({
-      code: "no_eligible_link",
-      audience: "customer",
-      message: "None of our internet connections fit this business yet. Our team can look at the options with you.",
-    });
+    flags.push(customerFlag("no_eligible_link", "flag.no_eligible_link"));
   }
   if (link && profile.fibreAvailable === undefined && link.needsFibre) {
     const fallback = catalogue.products
       .filter((p) => p.role === "link" && !eligibilityBlock(p, { ...profile, fibreAvailable: false }, segment))
       .sort((a, b) => a.priceMin - b.priceMin)[0];
-    flags.push({
-      code: "fibre_unconfirmed",
-      audience: "customer",
-      message: `${link.name} depends on fibre at the site.${fallback ? ` If it isn't available, ${fallback.name} is the alternative.` : ""}`,
-    });
+    flags.push(
+      fallback
+        ? customerFlag("fibre_unconfirmed", "flag.fibre_unconfirmed.fallback", { product: link.name, fallback: fallback.name })
+        : customerFlag("fibre_unconfirmed", "flag.fibre_unconfirmed", { product: link.name }),
+    );
   }
   const linkLine = lines.find((l) => l.role === "link");
   if (link && linkLine && linkLine.quantity < profile.sites) {
-    flags.push({
-      code: "second_site_not_covered",
-      audience: "customer",
-      message: `This quote covers ${linkLine.quantity} of your ${profile.sites} locations. If the others need their own connection, add another ${link.name}.`,
-    });
+    flags.push(customerFlag("second_site_not_covered", "flag.second_site_not_covered", { covered: linkLine.quantity, sites: profile.sites, product: link.name }));
   }
   if ((segment === "micro" || segment === "prof") && FIRST_BUSINESS_LINK.includes(profile.currentInternet ?? "")) {
     const { firstBusinessLink: first, existingBusinessLink: existing } = insights.retention;
@@ -334,7 +323,7 @@ function flagsFor(
     });
   }
   if (installDays >= LONG_INSTALL_DAYS) {
-    flags.push({ code: "long_install", audience: "customer", message: `Full setup may take up to ${installDays} days. Other items can go live sooner.` });
+    flags.push(customerFlag("long_install", "flag.long_install", { days: installDays }));
   }
   return flags;
 }
@@ -358,6 +347,11 @@ function openQuestions(profile: BusinessProfile, addOnsToConfirm: Product[], lin
 /** The catalogue's plain-language question, or one made from the product's name and description. */
 export function productQuestion(product: Product): string {
   return product.customerQuestion ?? `Would you like ${product.name}? ${product.description}.`;
+}
+
+/** A flag for the customer, built from a template so it can be shown in their language. */
+export function customerFlag(code: Flag["code"], template: MessageKey, params?: Readonly<Record<string, string | number>>): Flag {
+  return { code, audience: "customer", message: message(template, params), template, ...(params && { params }) };
 }
 
 function percent(value: number): string {

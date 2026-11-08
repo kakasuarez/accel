@@ -1,0 +1,546 @@
+{
+  "script.greeting": {
+    "en": "Hi, I’m Accel Bot. I’ll ask a few quick questions about your business, then suggest a bundle that fits.",
+    "text": "வணக்கம், நான் Accel Bot. உங்கள் வியாபாரத்தைப் பற்றி சில விரைவான கேள்விகளைக் கேட்கிறேன், பிறகு உங்களுக்குப் பொருத்தமான ஒரு பண்டலை பரிந்துரைக்கிறேன்."
+  },
+  "script.welcomeBack": {
+    "en": "Welcome back. Let’s pick up where we left off.",
+    "text": "மீண்டும் வரவேற்கிறோம். நாம் விட்ட இடத்திலிருந்து தொடங்குவோம்."
+  },
+  "script.closing": {
+    "en": "Thank you, that’s everything I need. Based on what you’ve told me, here’s the bundle I’d start your business with.",
+    "text": "நன்றி, எனக்குத் தேவையானவை அனைத்தும் கிடைத்துவிட்டன. நீங்கள் சொன்ன தகவல்களின் அடிப்படையில், உங்கள் வியாபாரத்திற்கு நான் பரிந்துரைக்கும் பண்டல் இதுதான்."
+  },
+  "script.ack.0": {
+    "en": "Got it.",
+    "text": "சரி."
+  },
+  "script.ack.1": {
+    "en": "Thank you.",
+    "text": "நன்றி."
+  },
+  "script.ack.2": {
+    "en": "Understood.",
+    "text": "புரிந்தது."
+  },
+  "script.ack.3": {
+    "en": "Noted, thank you.",
+    "text": "குறிப்பெடுத்துக் கொண்டேன், நன்றி."
+  },
+  "script.ack.4": {
+    "en": "That helps.",
+    "text": "இது உதவியாக இருக்கிறது."
+  },
+  "script.ack.5": {
+    "en": "Thanks, that’s useful.",
+    "text": "நன்றி, இது பயனுள்ளதாக இருக்கிறது."
+  },
+  "script.ack.6": {
+    "en": "Perfect.",
+    "text": "சிறப்பு."
+  },
+  "script.ack.7": {
+    "en": "Clear, thank you.",
+    "text": "தெளிவாக உள்ளது, நன்றி."
+  },
+  "placeholder.answer": {
+    "en": "Type your answer",
+    "text": "உங்கள் பதிலை டைப் செய்யவும்"
+  },
+  "placeholder.number": {
+    "en": "Type a number",
+    "text": "ஒரு எண்ணை டைப் செய்யவும்"
+  },
+  "placeholder.numberUnit": {
+    "en": "Type a number ({unit})",
+    "text": "ஒரு எண்ணை டைப் செய்யவும் ({unit})"
+  },
+  "placeholder.pick": {
+    "en": "Type or pick an answer",
+    "text": "ஒரு பதிலை டைப் செய்யவும் அல்லது தேர்ந்தெடுக்கவும்"
+  },
+  "chips.label": {
+    "en": "Suggested answers",
+    "text": "பரிந்துரைக்கப்பட்ட பதில்கள்"
+  },
+  "chips.showAll": {
+    "en": "Show all {n}",
+    "text": "அனைத்தையும் காட்டு {n}"
+  },
+  "skip": {
+    "en": "Not sure",
+    "text": "நிச்சயமில்லை"
+  },
+  "checking": {
+    "en": "Checking your answer",
+    "text": "உங்கள் பதிலைச் சரிபார்க்கிறது"
+  },
+  "answer.label": {
+    "en": "Your answer",
+    "text": "உங்கள் பதில்"
+  },
+  "answer.voice": {
+    "en": "Answer by voice",
+    "text": "குரல் மூலம் பதிலளிக்கவும்"
+  },
+  "answer.send": {
+    "en": "Send answer",
+    "text": "பதிலை அனுப்பவும்"
+  },
+  "startOver": {
+    "en": "Start over",
+    "text": "மீண்டும் தொடங்கவும்"
+  },
+  "loading": {
+    "en": "Loading your conversation",
+    "text": "உங்கள் உரையாடலை ஏற்றுகிறது"
+  },
+  "header.home": {
+    "en": "Accel Business dashboard",
+    "text": "Accel வியாபார டாஷ்போர்டு"
+  },
+  "header.dashboard": {
+    "en": "Dashboard",
+    "text": "டாஷ்போர்டு"
+  },
+  "header.mute": {
+    "en": "Mute Accel Bot’s voice",
+    "text": "Accel Bot குரலை முடக்கவும்"
+  },
+  "header.unmute": {
+    "en": "Unmute Accel Bot’s voice",
+    "text": "Accel Bot குரலை இயக்கவும்"
+  },
+  "header.muteTitle": {
+    "en": "Mute voice",
+    "text": "குரலை முடக்கு"
+  },
+  "header.unmuteTitle": {
+    "en": "Unmute voice",
+    "text": "குரலை இயக்கு"
+  },
+  "header.progress": {
+    "en": "Questions answered",
+    "text": "கேள்விகள் பதிலளிக்கப்பட்டுள்ளன"
+  },
+  "count.profile": {
+    "en": "{n} of {total}",
+    "text": "{n} இல் {total}"
+  },
+  "count.addOns": {
+    "en": "Add-ons {n} of {total}",
+    "text": "கூடுதல் அம்சங்கள் {n} இல் {total}"
+  },
+  "count.bundle": {
+    "en": "Your bundle",
+    "text": "உங்கள் பண்டல்"
+  },
+  "count.accepted": {
+    "en": "Quote accepted",
+    "text": "மேற்கோள் ஏற்கப்பட்டது"
+  },
+  "language.title": {
+    "en": "Choose your language",
+    "text": "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்"
+  },
+  "language.comingSoon": {
+    "en": "{language} is coming soon. Please pick another language for now.",
+    "text": "{language} விரைவில் வருகிறது. இப்போதைக்கு வேறு மொழியைத் தேர்ந்தெடுக்கவும்."
+  },
+  "language.change": {
+    "en": "Change language",
+    "text": "மொழியை மாற்று"
+  },
+  "consent.title": {
+    "en": "Before we start",
+    "text": "தொடங்குவதற்கு முன்"
+  },
+  "consent.body": {
+    "en": "Your answers are used to recommend a bundle and prepare your quote. If you answer by voice, your speech is turned into text by our speech provider or by your browser.",
+    "text": "உங்கள் பதில்கள் ஒரு பண்டலைப் பரிந்துரைக்கவும் உங்கள் மேற்கோளைத் தயாரிக்கவும் பயன்படுத்தப்படுகின்றன. நீங்கள் குரல் மூலம் பதிலளித்தால், உங்கள் பேச்சு எங்கள் பேச்சு வழங்குநர் அல்லது உங்கள் உலாவி மூலம் உரையாக மாற்றப்படும்."
+  },
+  "consent.agree": {
+    "en": "By continuing, you agree to our {link}.",
+    "text": "தொடர்வதன் மூலம், நீங்கள் எங்கள் {link} ஒப்புக்கொள்கிறீர்கள்."
+  },
+  "consent.privacy": {
+    "en": "Privacy Policy",
+    "text": "தனியுரிமைக் கொள்கை"
+  },
+  "consent.newTab": {
+    "en": "(opens in a new tab)",
+    "text": "(புதிய தாவலில் திறக்கும்)"
+  },
+  "consent.start": {
+    "en": "Let’s start",
+    "text": "தொடங்குவோம்"
+  },
+  "voice.group": {
+    "en": "Voice answer",
+    "text": "குரல் பதில்"
+  },
+  "voice.exit": {
+    "en": "Exit voice mode",
+    "text": "குரல் பயன்முறையிலிருந்து வெளியேறு"
+  },
+  "voice.exitTitle": {
+    "en": "Exit voice mode and type",
+    "text": "குரல் பயன்முறையிலிருந்து வெளியேறி தட்டச்சு செய்யவும்"
+  },
+  "voice.tapToSpeak": {
+    "en": "Tap to speak",
+    "text": "பேசுவதற்குத் தட்டவும்"
+  },
+  "voice.sendNow": {
+    "en": "Send answer now",
+    "text": "இப்போதே பதிலை அனுப்பு"
+  },
+  "voice.unsupported": {
+    "en": "This browser can’t turn speech into text yet",
+    "text": "இந்த உலாவி இன்னும் பேச்சை உரையாக மாற்ற முடியாது"
+  },
+  "voice.checking": {
+    "en": "Checking",
+    "text": "சரிபார்க்கிறது"
+  },
+  "voice.paused": {
+    "en": "Paused",
+    "text": "இடைநிறுத்தப்பட்டது"
+  },
+  "voice.listening": {
+    "en": "Listening",
+    "text": "கேட்டுக் கொண்டிருக்கிறது"
+  },
+  "voice.transcribing": {
+    "en": "Transcribing",
+    "text": "உரையாக மாற்றுகிறது"
+  },
+  "voice.starting": {
+    "en": "Starting the microphone…",
+    "text": "மைக்ரோஃபோனைத் தொடங்குகிறது..."
+  },
+  "voice.speaking": {
+    "en": "Speaking",
+    "text": "பேசுகிறது"
+  },
+  "voice.next": {
+    "en": "Next question",
+    "text": "அடுத்த கேள்வி"
+  },
+  "voice.nothingHeard": {
+    "en": "I didn’t hear anything, so I’ve paused the microphone.",
+    "text": "நான் எதையும் கேட்கவில்லை, அதனால் மைக்ரோஃபோனை இடைநிறுத்திவிட்டேன்."
+  },
+  "voice.stopped": {
+    "en": "The microphone stopped. Tap to speak again.",
+    "text": "மைக்ரோஃபோன் நிறுத்தப்பட்டது. மீண்டும் பேசத் தட்டவும்."
+  },
+  "voiceError.blocked": {
+    "en": "Microphone access is blocked. Allow it in your browser settings, or type your answer.",
+    "text": "மைக்ரோஃபோன் அணுகல் தடுக்கப்பட்டுள்ளது. உங்கள் உலாவி அமைப்புகளில் அதை அனுமதிக்கவும் அல்லது உங்கள் பதிலை தட்டச்சு செய்யவும்."
+  },
+  "voiceError.no-mic": {
+    "en": "No microphone was found on this device. Type your answer instead.",
+    "text": "இந்த சாதனத்தில் மைக்ரோஃபோன் எதுவும் காணப்படவில்லை. அதற்கு பதிலாக உங்கள் பதிலை தட்டச்சு செய்யவும்."
+  },
+  "voiceError.failed": {
+    "en": "Voice input stopped unexpectedly. Try again, or type your answer.",
+    "text": "குரல் உள்ளீடு எதிர்பாராதவிதமாக நிறுத்தப்பட்டது. மீண்டும் முயற்சிக்கவும் அல்லது உங்கள் பதிலை தட்டச்சு செய்யவும்."
+  },
+  "error.notFound": {
+    "en": "We couldn’t find that conversation.",
+    "text": "அந்த உரையாடலைக் கண்டுபிடிக்க முடியவில்லை."
+  },
+  "error.generic": {
+    "en": "Something went wrong. Please try again.",
+    "text": "ஏதோ தவறு நடந்துவிட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்."
+  },
+  "error.network": {
+    "en": "We couldn’t reach Accel. Check your connection and try again.",
+    "text": "Accel-ஐ எங்களால் அடைய முடியவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்."
+  },
+  "error.newConversation": {
+    "en": "Start a new conversation",
+    "text": "புதிய உரையாடலைத் தொடங்கு"
+  },
+  "goDashboard": {
+    "en": "Go to your dashboard",
+    "text": "உங்கள் டாஷ்போர்டுக்குச் செல்லவும்"
+  },
+  "accepted.title": {
+    "en": "You’ve already accepted this bundle.",
+    "text": "இந்த பண்டிலை நீங்கள் ஏற்கனவே ஏற்றுக்கொண்டீர்கள்."
+  },
+  "accepted.body": {
+    "en": "Your quote is saved. Next, verify your business from your dashboard.",
+    "text": "உங்கள் மேற்கோள் சேமிக்கப்பட்டது. அடுத்து, உங்கள் டாஷ்போர்டிலிருந்து உங்கள் வணிகத்தைச் சரிபார்க்கவும்."
+  },
+  "accepted.newRequest": {
+    "en": "Start a new request",
+    "text": "புதிய கோரிக்கையைத் தொடங்கு"
+  },
+  "noBundle": {
+    "en": "We couldn’t put a bundle together from these answers.",
+    "text": "இந்த பதில்களிலிருந்து ஒரு பண்டிலை எங்களால் உருவாக்க முடியவில்லை."
+  },
+  "explain.recommended": {
+    "en": "Writing a short note on why this fits your business",
+    "text": "இது உங்கள் வணிகத்திற்கு ஏன் பொருந்துகிறது என்பதற்கான ஒரு சிறு குறிப்பை எழுதுதல்"
+  },
+  "explain.other": {
+    "en": "Writing a short note on this bundle",
+    "text": "இந்த பண்டில் பற்றிய ஒரு சிறு குறிப்பை எழுதுதல்"
+  },
+  "tag.stated_need": {
+    "en": "You asked for this",
+    "text": "நீங்கள் இதைக் கேட்டீர்கள்"
+  },
+  "tag.model": {
+    "en": "Suggested for you",
+    "text": "உங்களுக்காகப் பரிந்துரைக்கப்பட்டது"
+  },
+  "tiers.title": {
+    "en": "Choose your bundle",
+    "text": "உங்கள் பண்டிலை தேர்வு செய்யவும்"
+  },
+  "tiers.sub": {
+    "en": "Monthly prices before add-ons. You can switch any time before you accept.",
+    "text": "கூடுதல் சேர்ப்புகளுக்கு முன் மாத விலைகள். நீங்கள் ஏற்றுக்கொள்வதற்கு முன் எந்த நேரத்திலும் மாறலாம்."
+  },
+  "tiers.bestFit": {
+    "en": "Best fit",
+    "text": "சிறந்த பொருத்தம்"
+  },
+  "tiers.ourPick": {
+    "en": "Our pick for your business, based on your answers.",
+    "text": "உங்கள் பதில்களின் அடிப்படையில், உங்கள் வணிகத்திற்கான எங்கள் தேர்வு."
+  },
+  "tiers.recommended": {
+    "en": "Recommended",
+    "text": "பரிந்துரைக்கப்பட்டது"
+  },
+  "perMonth": {
+    "en": "a month",
+    "text": "ஒரு மாதத்திற்கு"
+  },
+  "bundle.named": {
+    "en": "{label} bundle",
+    "text": "{label} பண்டில்"
+  },
+  "bundle.yours": {
+    "en": "Your bundle",
+    "text": "உங்கள் பண்டில்"
+  },
+  "bundle.setup": {
+    "en": "One-time setup",
+    "text": "ஒரு முறை கட்டணம்"
+  },
+  "bundle.setupNone": {
+    "en": "None",
+    "text": "இல்லை"
+  },
+  "bundle.contract": {
+    "en": "Minimum contract",
+    "text": "குறைந்தபட்ச ஒப்பந்தம்"
+  },
+  "bundle.installation": {
+    "en": "Installation",
+    "text": "நிறுவுதல்"
+  },
+  "bundle.installUpTo": {
+    "en": "Up to {days}",
+    "text": "{days} வரை"
+  },
+  "bundle.included": {
+    "en": "Included in your bundle",
+    "text": "உங்கள் பண்டிலில் சேர்க்கப்பட்டுள்ளது"
+  },
+  "bundle.goodToKnow": {
+    "en": "Good to know",
+    "text": "தெரிந்து கொள்ள வேண்டியவை"
+  },
+  "months.one": {
+    "en": "{n} month",
+    "text": "{n} மாதம்"
+  },
+  "months.other": {
+    "en": "{n} months",
+    "text": "{n} மாதங்கள்"
+  },
+  "days.one": {
+    "en": "{n} day",
+    "text": "{n} நாள்"
+  },
+  "days.other": {
+    "en": "{n} days",
+    "text": "{n} நாட்கள்"
+  },
+  "addOns.title": {
+    "en": "Add to your bundle",
+    "text": "உங்கள் பண்டிலில் சேர்க்க"
+  },
+  "addOns.sub": {
+    "en": "Optional. Tick anything you’d like and the monthly price updates.",
+    "text": "விருப்பத்தேர்வு. உங்களுக்குத் தேவையானவற்றைத் தேர்வுசெய்யவும், மாதாந்திர விலை புதுப்பிக்கப்படும்."
+  },
+  "addOns.more.one": {
+    "en": "Show {n} more add-on",
+    "text": "மேலும் {n} ஆட்-ஆன் காட்டு"
+  },
+  "addOns.more.other": {
+    "en": "Show {n} more add-ons",
+    "text": "மேலும் {n} ஆட்-ஆன்கள் காட்டு"
+  },
+  "blocked.title": {
+    "en": "Why some services aren’t included",
+    "text": "சில சேவைகள் ஏன் சேர்க்கப்படவில்லை"
+  },
+  "accept.title": {
+    "en": "Accept this quote",
+    "text": "இந்த மேற்கோளை ஏற்கவும்"
+  },
+  "accept.sub": {
+    "en": "At {price} a month. Next, you’ll verify your business with a few documents.",
+    "text": "{price} ஒரு மாதத்திற்கு. அடுத்து, சில ஆவணங்களுடன் உங்கள் வணிகத்தைச் சரிபார்ப்பீர்கள்."
+  },
+  "accept.businessName": {
+    "en": "Business name",
+    "text": "வணிகத்தின் பெயர்"
+  },
+  "accept.contactName": {
+    "en": "Your name",
+    "text": "உங்கள் பெயர்"
+  },
+  "accept.phone": {
+    "en": "Phone number",
+    "text": "தொலைபேசி எண்"
+  },
+  "accept.businessNameError": {
+    "en": "Enter your business’s name.",
+    "text": "உங்கள் வணிகத்தின் பெயரை உள்ளிடவும்."
+  },
+  "accept.contactNameError": {
+    "en": "Enter the name of the person we should speak to.",
+    "text": "நாங்கள் பேச வேண்டிய நபரின் பெயரை உள்ளிடவும்."
+  },
+  "accept.phoneError": {
+    "en": "Enter a phone number, like +91 98765 43210.",
+    "text": "தொலைபேசி எண்ணை உள்ளிடவும், எ.கா. +91 98765 43210."
+  },
+  "accept.failed": {
+    "en": "We couldn’t accept the quote. Please try again.",
+    "text": "மேற்கோளை ஏற்க முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்."
+  },
+  "accept.accepting": {
+    "en": "Accepting…",
+    "text": "ஏற்கிறது..."
+  },
+  "accept.submit": {
+    "en": "Accept quote",
+    "text": "மேற்கோளை ஏற்கவும்"
+  },
+  "accept.note": {
+    "en": "Accel is a fictional operator. Prices are synthetic and shown per month.",
+    "text": "Accel ஒரு கற்பனையான ஆபரேட்டர். விலைகள் செயற்கையானவை மற்றும் மாதந்தோறும் காட்டப்படுகின்றன."
+  },
+  "quantity.per site.one": {
+    "en": "{n} site",
+    "text": "{n} இடம்"
+  },
+  "quantity.per site.other": {
+    "en": "{n} sites",
+    "text": "{n} இடங்கள்"
+  },
+  "quantity.per line.one": {
+    "en": "{n} line",
+    "text": "{n} லைன்"
+  },
+  "quantity.per line.other": {
+    "en": "{n} lines",
+    "text": "{n} லைன்கள்"
+  },
+  "quantity.per IP.one": {
+    "en": "{n} IP",
+    "text": "{n} IP"
+  },
+  "quantity.per IP.other": {
+    "en": "{n} IPs",
+    "text": "{n} ஐபிக்கள்"
+  },
+  "quantity.per channel.one": {
+    "en": "{n} channel",
+    "text": "{n} சேனல்"
+  },
+  "quantity.per channel.other": {
+    "en": "{n} channels",
+    "text": "{n} சேனல்கள்"
+  },
+  "quantity.per number.one": {
+    "en": "{n} number",
+    "text": "{n} எண்"
+  },
+  "quantity.per number.other": {
+    "en": "{n} numbers",
+    "text": "{n} எண்கள்"
+  },
+  "quantity.per pack.one": {
+    "en": "{n} pack",
+    "text": "{n} பேக்"
+  },
+  "quantity.per pack.other": {
+    "en": "{n} packs",
+    "text": "{n} பேக்குகள்"
+  },
+  "quantity.per account.one": {
+    "en": "{n} account",
+    "text": "{n} கணக்கு"
+  },
+  "quantity.per account.other": {
+    "en": "{n} accounts",
+    "text": "{n} கணக்குகள்"
+  },
+  "quantity.per user.one": {
+    "en": "{n} user",
+    "text": "{n} பயனர்"
+  },
+  "quantity.per user.other": {
+    "en": "{n} users",
+    "text": "{n} பயனர்கள்"
+  },
+  "quantity.per counter.one": {
+    "en": "{n} counter",
+    "text": "{n} கவுண்டர்"
+  },
+  "quantity.per counter.other": {
+    "en": "{n} counters",
+    "text": "{n} கவுண்டர்கள்"
+  },
+  "quantity.per device.one": {
+    "en": "{n} device",
+    "text": "{n} சாதனம்"
+  },
+  "quantity.per device.other": {
+    "en": "{n} devices",
+    "text": "{n} சாதனங்கள்"
+  },
+  "quantity.per camera.one": {
+    "en": "{n} camera",
+    "text": "{n} கேமரா"
+  },
+  "quantity.per camera.other": {
+    "en": "{n} cameras",
+    "text": "{n} கேமராக்கள்"
+  },
+  "quantity.per vehicle.one": {
+    "en": "{n} vehicle",
+    "text": "{n} வாகனம்"
+  },
+  "quantity.per vehicle.other": {
+    "en": "{n} vehicles",
+    "text": "{n} வாகனங்கள்"
+  },
+  "unit.INR per month": {
+    "en": "INR per month",
+    "text": "மாதத்திற்கு INR"
+  }
+}

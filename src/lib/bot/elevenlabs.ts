@@ -9,6 +9,7 @@ import {
   requestSpeech,
   voiceSettingsFromEnv,
 } from './elevenlabsApi';
+import { lineLanguage, ttsModelFor } from './speakable';
 
 // ElevenLabs text-to-speech and speech-to-text for Accel Bot.
 // Configure in .env.local (see .env.local.example). Without a key the bot falls back to the browser.
@@ -26,8 +27,10 @@ export function isConfigured(): boolean {
 const inFlight = new Map<string, Promise<Buffer>>();
 
 export function synthesize(text: string): Promise<Buffer> {
-  const { key, voice, model } = voiceSettingsFromEnv();
+  const settings = voiceSettingsFromEnv();
+  const { key, voice } = settings;
   if (!key) throw new ElevenLabsError('ELEVENLABS_API_KEY is not set.');
+  const model = ttsModelFor(lineLanguage(text) ?? 'en', settings.model);
   const name = clipName({ voice, model }, text);
 
   const pending = inFlight.get(name);
@@ -48,13 +51,18 @@ export function synthesize(text: string): Promise<Buffer> {
   return job;
 }
 
-export async function transcribe(audio: Blob): Promise<string> {
+/**
+ * `languageCode` (ISO 639-3, e.g. "hin") tells Scribe which language to expect. Without it Scribe guesses, and
+ * can confuse Hindi with Marathi or write Hindi speech in Urdu script.
+ */
+export async function transcribe(audio: Blob, languageCode?: string): Promise<string> {
   const { key } = voiceSettingsFromEnv();
   if (!key) throw new ElevenLabsError('ELEVENLABS_API_KEY is not set.');
   const form = new FormData();
   form.append('model_id', process.env.ELEVENLABS_STT_MODEL?.trim() || DEFAULT_STT_MODEL);
   form.append('file', audio, 'answer');
   form.append('tag_audio_events', 'false');
+  if (languageCode) form.append('language_code', languageCode);
 
   const res = await fetch(`${ELEVENLABS_API}/speech-to-text`, { method: 'POST', headers: { 'xi-api-key': key }, body: form });
   if (!res.ok) throw new ElevenLabsError(`Speech-to-text failed (${res.status}): ${await res.text()}`);

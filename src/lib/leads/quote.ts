@@ -2,6 +2,8 @@ import { addOnQuestionId } from "../questions/build";
 import type { Answers, Question, QuestionSet } from "../questions/types";
 import { ApiError } from "../http";
 import { budgetMobileLines, isChoiceError, priceWithAddOns, quotedPrice, type BundleTotals, type BusinessProfile, type Catalogue, type Choices, type Flag, type ProductId, type Recommendation, type Recommender } from "../recommender";
+import { customerFlag } from "../recommender/engine";
+import { message, type MessageKey } from "../recommender/messages";
 
 /** The next question for this customer, or null once there's nothing left to ask. */
 export function nextQuestion({ questions, maxAddOnQuestions }: QuestionSet, answers: Answers, recommendation: Recommendation | null): Question | null {
@@ -59,14 +61,10 @@ export function recommendationFor(recommender: Recommender, questionSet: Questio
   const city = String(answers.city);
   const flags: Flag[] = [];
   if (recommender.cityTierOf(city) === undefined) {
-    flags.push({ code: "city_unconfirmed", audience: "customer", message: `Availability in ${city} is to be confirmed, so this quote may change.` });
+    flags.push(customerFlag("city_unconfirmed", "flag.city_unconfirmed", { city }));
   }
   if (answers.hasGstin === null) {
-    flags.push({
-      code: "gstin_unconfirmed",
-      audience: "customer",
-      message: "You weren't sure about GST registration, so we've left out products that need a GST number. You can confirm it when you upload your documents.",
-    });
+    flags.push(customerFlag("gstin_unconfirmed", "flag.gstin_unconfirmed"));
   }
   return flags.length ? { ...recommendation, flags: [...recommendation.flags, ...flags] } : recommendation;
 }
@@ -90,7 +88,15 @@ export function priceSelection(recommendation: Recommendation, ticked: readonly 
 
 export const BUNDLE_TIERS = ["recommended", "budget", "premium"] as const;
 export type BundleTier = (typeof BUNDLE_TIERS)[number];
-const TIER_LABELS: Record<BundleTier, string> = { recommended: "Recommended", budget: "Budget", premium: "Premium" };
+export const tierLabelKey = (tier: BundleTier): MessageKey => `tier.${tier}`;
+const TIER_LABELS: Record<BundleTier, string> = { recommended: message("tier.recommended"), budget: message("tier.budget"), premium: message("tier.premium") };
+
+/** What a comparison line is built from, so it can be rebuilt in the customer's language. */
+export interface Comparison {
+  /** Monthly price of this bundle minus Recommended's. */
+  delta: number;
+  changes: ({ kind: "swap"; now: string; before: string } | { kind: "lines"; now: number; before: number })[];
+}
 
 export interface BundleOption {
   tier: BundleTier;
@@ -98,6 +104,7 @@ export interface BundleOption {
   recommendation: Recommendation;
   /** How this bundle differs from Recommended, e.g. "Saves ₹399 a month: …". Null for Recommended. */
   comparison: string | null;
+  comparisonParts: Comparison | null;
 }
 
 /**
@@ -109,11 +116,12 @@ export interface BundleOption {
 export function bundleOptions(recommender: Recommender, questionSet: QuestionSet, answers: Answers): BundleOption[] | null {
   const recommended = recommendationFor(recommender, questionSet, answers);
   if (!recommended) return null;
-  const options: BundleOption[] = [{ tier: "recommended", label: TIER_LABELS.recommended, recommendation: recommended, comparison: null }];
+  const options: BundleOption[] = [{ tier: "recommended", label: TIER_LABELS.recommended, recommendation: recommended, comparison: null, comparisonParts: null }];
   const add = (tier: BundleTier, choices: Choices) => {
     const recommendation = recommendationFor(recommender, questionSet, answers, choices)!;
     if (sameLines(recommendation, recommended)) return;
-    options.push({ tier, label: TIER_LABELS[tier], recommendation, comparison: compare(recommendation, recommended) });
+    const parts = compare(recommendation, recommended);
+    options.push({ tier, label: TIER_LABELS[tier], recommendation, comparison: comparisonText(parts), comparisonParts: parts });
   };
 
   const link = recommended.lines.find((l) => l.role === "link");
@@ -146,20 +154,36 @@ const sameLines = (a: Recommendation, b: Recommendation) => lineKey(a) === lineK
 
 const rupees = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
-/** One plain line built from the two bundles, so it can't claim anything they don't show. */
-function compare(option: Recommendation, recommended: Recommendation): string {
-  const delta = option.totals.monthly - recommended.totals.monthly;
-  const changes: string[] = [];
+/** What changes between the two bundles, so the line built from it can't claim anything they don't show. */
+function compare(option: Recommendation, recommended: Recommendation): Comparison {
+  const changes: Comparison["changes"] = [];
   for (const role of ["link", "mobile"] as const) {
     const now = option.lines.find((l) => l.role === role);
     const before = recommended.lines.find((l) => l.role === role);
-    if (now && before && now.productId !== before.productId) changes.push(`${now.name} instead of ${before.name}`);
-    if (role === "mobile" && now && before && now.quantity !== before.quantity) {
-      changes.push(`${now.quantity} mobile ${now.quantity === 1 ? "line" : "lines"} instead of ${before.quantity}`);
-    }
+    if (now && before && now.productId !== before.productId) changes.push({ kind: "swap", now: now.name, before: before.name });
+    if (role === "mobile" && now && before && now.quantity !== before.quantity) changes.push({ kind: "lines", now: now.quantity, before: before.quantity });
   }
-  const lead = delta <= 0 ? `Saves ${rupees(-delta)} a month` : `${rupees(delta)} more a month`;
-  return changes.length ? `${lead}: ${changes.join(", ")}.` : `${lead}.`;
+  return { delta: option.totals.monthly - recommended.totals.monthly, changes };
+}
+
+type Translate = (key: MessageKey, vars?: Readonly<Record<string, string | number>>) => string;
+
+/** The changes alone, e.g. "Biz Fibre 100 instead of Biz Fibre 300, 2 mobile lines instead of 3". Empty when none. */
+export function comparisonChanges({ changes }: Comparison, t: Translate = message): string {
+  return changes
+    .map((c) =>
+      c.kind === "swap"
+        ? t("compare.swap", { now: c.now, before: c.before })
+        : t(c.now === 1 ? "compare.lines.one" : "compare.lines.other", { now: c.now, before: c.before }),
+    )
+    .join(", ");
+}
+
+/** The whole line, e.g. "Saves ₹399 a month: Biz Fibre 100 instead of Biz Fibre 300." */
+export function comparisonText(parts: Comparison, t: Translate = message): string {
+  const lead = parts.delta <= 0 ? t("compare.saves", { amount: rupees(-parts.delta) }) : t("compare.more", { amount: rupees(parts.delta) });
+  const changes = comparisonChanges(parts, t);
+  return changes ? t("compare.withChanges", { lead, changes }) : t("compare.only", { lead });
 }
 
 /** The option the customer picked, or a 400 if this customer isn't offered that bundle. */

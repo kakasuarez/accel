@@ -17,8 +17,4 @@ export function formatDateTime(iso: string): string {
 }
 
 /** Catalogue units read "per site", "per line": turns quantity 3 + "per site" into "3 sites". */
-export function quantityLabel(quantity: number, unit: string): string {
-  const u = unit.trim().replace(/^per\s+/i, '');
-  if (!u) return `× ${quantity}`;
-  return `${quantity} ${u}${quantity === 1 || /s$/i.test(u) ? '' : 's'}`;
-}
+export { englishQuantity as quantityLabel } from '@/lib/i18n/ui';

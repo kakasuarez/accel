@@ -3,9 +3,12 @@ import type { AddressInfo } from "node:net";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { isLang } from "../src/lib/i18n/languages";
+import { localizeQuestion, localizeRecommendation } from "../src/lib/i18n/localize";
 import { explainRecommendation } from "../src/lib/leads/explain";
 import { bundleOptions, chosenBundle, nextQuestion, priceSelection, profileComplete, recommendationFor } from "../src/lib/leads/quote";
 import { canAdvance } from "../src/lib/leads/stages";
+import { publicQuestion } from "../src/lib/leads/views";
 import { LlmConfigError, LlmError, createLlmClient, type LlmClient } from "../src/lib/llm/client";
 import { addOnQuestionId, buildQuestions } from "../src/lib/questions/build";
 import { interpretAnswer, parseReply, validValue } from "../src/lib/questions/interpret";
@@ -405,5 +408,85 @@ describe("LLM providers", () => {
     expect(() => createLlmClient({ LLM_PROVIDER: "other" })).toThrow("must be one of");
     const bad = createLlmClient({ OPENROUTER_API_KEY: "bad", OPENROUTER_BASE_URL: baseUrl });
     await expect(bad.complete([{ role: "user", content: "hi" }])).rejects.toThrow("Invalid key");
+  });
+});
+
+describe("in the customer's language", () => {
+  const hindi = (q: Question) => localizeQuestion(q, "hi");
+
+  it("translates a question's text and labels but never its values", () => {
+    const english = publicQuestion(question("hasGstin"), "en");
+    const shown = publicQuestion(question("hasGstin"), "hi");
+    expect(shown.options!.map((o) => o.value)).toEqual(english.options!.map((o) => o.value));
+    expect(shown.question).not.toBe(english.question);
+    expect(shown.options!.map((o) => o.label)).not.toEqual(english.options!.map((o) => o.label));
+    expect(english.skipLabel).toBe("Not sure");
+    expect(shown.skipLabel).not.toBe("Not sure");
+  });
+
+  it("tells the model the language and passes on its reason in that language", async () => {
+    const llm = scripted(`{"status":"unclear","reason":"क्या आप बता सकते हैं कि कितने लोग काम करते हैं?"}`);
+    const result = await interpretAnswer(llm, question("employees"), "पता नहीं, कई लोग", "hi");
+    expect(result).toEqual({ status: "unclear", reason: "क्या आप बता सकते हैं कि कितने लोग काम करते हैं?" });
+    expect(llm.sent[0]).toContain("The customer is using Hindi");
+    expect(llm.sent[0]).toContain(hindi(question("employees")).question);
+  });
+
+  it("stores the English value when the model maps a Hindi answer", async () => {
+    const llm = scripted(`{"status":"answered","value":"Pune"}`);
+    expect(await interpretAnswer(llm, question("city"), "हम पुणे में हैं", "hi")).toEqual({ status: "answered", value: "Pune" });
+    expect(llm.sent[0]).toContain(`"value":"Pune"`);
+  });
+
+  it("takes a tapped chip in either language without asking the model", async () => {
+    const noModel = scripted();
+    const yes = hindi(question("hasGstin")).options!.find((o) => o.value === true)!.label;
+    expect(await interpretAnswer(noModel, question("hasGstin"), yes, "hi")).toEqual({ status: "answered", value: true });
+    expect(await interpretAnswer(noModel, question("hasGstin"), "yes", "hi")).toEqual({ status: "answered", value: true });
+    expect(await interpretAnswer(noModel, question("hasGstin"), hindi(question("hasGstin")).skipOption!.label, "hi")).toEqual({ status: "answered", value: null });
+    expect(await interpretAnswer(noModel, question("businessType"), "Bakery")).toEqual({ status: "answered", value: "Bakery" });
+    expect(noModel.sent).toEqual([]);
+  });
+
+  it("accepts the skip chip's label in the customer's language", () => {
+    expect(validValue(question("hasGstin"), hindi(question("hasGstin")).skipOption!.label, "hi")).toBeNull();
+    expect(validValue(question("hasGstin"), "Not sure", "hi")).toBeNull();
+  });
+
+  it("uses its own fallback reason in the customer's language", async () => {
+    const result = await interpretAnswer(scripted(`{"status":"unclear"}`), question("employees"), "कुछ नहीं पता", "ta");
+    expect(result.status === "unclear" && result.reason).toContain(localizeQuestion(question("employees"), "ta").hint!);
+  });
+
+  const full = recommendationFor(recommender, questionSet, { ...profile, hasGstin: null, city: "Shillong" })!;
+  const view = customerView(full);
+
+  it("explains the bundle in the customer's language, and still catches prices", async () => {
+    const llm = scripted("यह बंडल आपकी बेकरी के लिए सही है।");
+    expect(await explainRecommendation(llm, profile, view, undefined, "hi")).toBe("यह बंडल आपकी बेकरी के लिए सही है।");
+    expect(llm.sent[0]).toContain("plain Hindi");
+    const priced = await explainRecommendation(scripted("इसकी कीमत 999 रुपये महीना है।"), profile, view, undefined, "hi");
+    expect(priced).not.toContain("999 रुपये");
+    expect(priced).toContain(view.lines[0]!.name);
+  });
+
+  it("rebuilds the result's reasons and notes in the customer's language, keeping names and prices", () => {
+    const shown = localizeRecommendation(view, "ta", recommender.catalogue);
+    expect(shown.lines.map((l) => [l.productId, l.name, l.monthly])).toEqual(view.lines.map((l) => [l.productId, l.name, l.monthly]));
+    expect(shown.lines.map((l) => l.why)).not.toEqual(view.lines.map((l) => l.why));
+    const flag = (r: typeof view, code: string) => r.flags.find((f) => f.code === code)!.message;
+    expect(flag(shown, "gstin_unconfirmed")).not.toBe(flag(view, "gstin_unconfirmed"));
+    expect(flag(shown, "city_unconfirmed")).toContain("Shillong");
+    expect(localizeRecommendation(view, "en", recommender.catalogue)).toBe(view);
+  });
+
+  it("shows notes saved before translations existed as they were written", () => {
+    const old = { ...view, flags: [{ code: "long_install" as const, audience: "customer" as const, message: "Full setup may take up to 30 days." }] };
+    expect(localizeRecommendation(old, "hi", recommender.catalogue).flags[0]!.message).toBe("Full setup may take up to 30 days.");
+  });
+
+  it("only lets a lead be stored in a language that is ready", () => {
+    expect(["en", "hi", "ta"].every(isLang)).toBe(true);
+    expect(["bn", "mr", "te", "kn", "fr", ""].some(isLang)).toBe(false);
   });
 });
