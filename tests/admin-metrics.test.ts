@@ -49,14 +49,18 @@ describe("admin metrics", () => {
 
   it("measures the KPIs against their targets", () => {
     const kpi = (id: string) => m.kpis.find((k) => k.id === id)!;
-    // 1 activation in the period over 4 new leads; 1 over 2 accepted quotes (the 5-day-old lead's and today's).
-    expect(kpi("conversion").current).toEqual({ value: 0.25, sample: 4 });
-    expect(kpi("conversion").onTarget).toBe(false);
-    expect(kpi("quoteToActivation").current).toEqual({ value: 0.5, sample: 2 });
+    // 1 activation in the period over 4 businesses quoted.
+    expect(kpi("quotedToActivated").current).toEqual({ value: 0.25, sample: 4 });
+    expect(kpi("quotedToActivated").onTarget).toBe(false);
     // Activated 2 days after needs were assessed.
     expect(kpi("timeToActivate").current).toEqual({ value: 2, sample: 1 });
     expect(kpi("timeToActivate").onTarget).toBe(true);
     expect(kpi("kycFirstPass").current).toEqual({ value: 1, sample: 1 });
+    // Placeholder spend: ₹600 for each of 4 businesses quoted, over 1 activation.
+    expect(kpi("costPerActivation").current).toEqual({ value: 2400, sample: 1 });
+    expect(kpi("costPerActivation").onTarget).toBe(true);
+    // Not enough history to measure churn.
+    expect(kpi("churn6Months")).toMatchObject({ current: { value: null }, onTarget: null });
   });
 
   it("judges KYC on the first attempt, not the latest", () => {
