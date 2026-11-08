@@ -3,6 +3,7 @@
  *
  *   npm run seed:demo            replaces the demo data with a fresh set
  *   npm run seed:demo -- --remove  deletes it
+ *   npm run seed:demo -- --dry-run prints the KPIs the data would give, without touching the database
  *
  * All demo leads belong to one account, DEMO_EMAIL. Deleting that account deletes its leads, stage
  * events and KYC checks with it, so real data is never touched. Profiles are real rows from
@@ -13,6 +14,8 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+import { buildKpis } from "../src/lib/admin/kpis";
+import { PERIODS, type LeadSummary } from "../src/lib/admin/metrics";
 import { profileLift, trainPropensity } from "../src/lib/admin/propensity";
 import { db } from "../src/lib/db";
 import { REASONS } from "../src/lib/kyc/reasons";
@@ -81,22 +84,44 @@ async function removeDemoUser(): Promise<boolean> {
 /** Stored the way the KYC route stores findings: code, severity, document and message only. */
 const finding = (code: keyof typeof REASONS, doc?: DocType) => ({ code, severity: REASONS[code].severity, ...(doc ? { doc } : {}), message: REASONS[code].message });
 
+/** The KPI tiles each period would show, worked out the way the admin page does. */
+function printKpis(leads: Record<string, unknown>[], events: Record<string, unknown>[], checks: Record<string, unknown>[], now: number) {
+  const summaries = leads.map((lead) => {
+    const reached: LeadSummary["reached"] = {};
+    for (const e of events.filter((e) => e.lead_id === lead.id)) reached[e.stage as LeadStage] ??= new Date(e.created_at as string);
+    const first = checks.find((c) => c.lead_id === lead.id);
+    return { reached, createdAt: new Date(lead.created_at as string), firstKyc: first ? { decision: first.decision, at: new Date(first.created_at as string) } : null } as LeadSummary;
+  });
+  for (const days of PERIODS) {
+    const start = now - days * DAY;
+    const window = (from: number, to: number) => (d: Date | null | undefined) => !!d && d.getTime() > from && d.getTime() <= to;
+    const kpis = buildKpis(summaries, window(start, now), window(start - days * DAY, start));
+    const shown = kpis.filter((k) => k.current.value !== null);
+    const line = shown.map((k) => `${k.label} ${k.unit === "percent" ? `${Math.round(k.current.value! * 100)}%` : Math.round(k.current.value!)} ${k.onTarget ? "✓" : "✗"}`);
+    console.log(`${days} days: ${shown.filter((k) => k.onTarget).length}/${shown.length} on target · ${line.join(" · ")}`);
+  }
+}
+
 async function main() {
-  const removed = await removeDemoUser();
+  const dryRun = process.argv.includes("--dry-run");
+  const removed = dryRun ? false : await removeDemoUser();
   if (process.argv.includes("--remove")) {
     console.log(removed ? `Deleted ${DEMO_EMAIL} and all of its demo leads.` : "There was no demo data to delete.");
     return;
   }
   if (removed) console.log("Replaced the previous demo data.");
 
-  const { data: created, error } = await supabase.auth.admin.createUser({
-    email: DEMO_EMAIL,
-    password: randomUUID(),
-    email_confirm: true,
-    user_metadata: { demo: true },
-  });
-  if (error) throw error;
-  const userId = created.user.id;
+  let userId = "dry-run";
+  if (!dryRun) {
+    const { data: created, error } = await supabase.auth.admin.createUser({
+      email: DEMO_EMAIL,
+      password: randomUUID(),
+      email_confirm: true,
+      user_metadata: { demo: true },
+    });
+    if (error) throw error;
+    userId = created.user.id;
+  }
 
   const recommender = loadRecommender();
   const questions = buildQuestions(recommender);
@@ -136,7 +161,7 @@ async function main() {
     // KYC attempts, oldest first. A failed first check is often fixed with better documents a day or two later.
     let attempts: { decision: Decision; at: number }[] = [];
 
-    if (chance(likelier(0.58))) {
+    if (chance(likelier(0.64))) {
       const weights: Record<BundleTier, number> =
         sensitivity === "high" ? { recommended: 5, budget: 4, premium: 1 } : sensitivity === "low" ? { recommended: 5, budget: 1, premium: 3 } : { recommended: 6, budget: 2, premium: 2 };
       const offered = Object.fromEntries(options.map((o) => [o.tier, weights[o.tier]])) as Record<BundleTier, number>;
@@ -145,17 +170,17 @@ async function main() {
       const ticked = option.recommendation.addOns.filter((a) => a.recommendation && chance(0.55)).map((a) => a.productId);
       const priced = priceSelection(option.recommendation, ticked, recommender.catalogue);
       quote = { recommendation: option.recommendation, bundle: option.tier, selectedAddOns: priced.selectedAddOns, totals: priced.totals };
-      timeline.push({ stage: "Quote accepted", at: timeline[0]!.at + between(0.02, 3) * DAY });
+      timeline.push({ stage: "Quote accepted", at: timeline[0]!.at + between(0.02, 1.5) * DAY });
 
       if (chance(0.88)) {
-        attempts.push({ decision: weighted<Decision>({ APPROVE: 70, MANUAL_REVIEW: 17, REJECT: p.hasGstin ? 10 : 30 }), at: timeline[1]!.at + between(0.1, 4) * DAY });
+        attempts.push({ decision: weighted<Decision>({ APPROVE: 86, MANUAL_REVIEW: 9, REJECT: p.hasGstin ? 4 : 14 }), at: timeline[1]!.at + between(0.1, 2) * DAY });
         if (attempts[0]!.decision !== "APPROVE" && chance(0.55)) {
           attempts.push({ decision: weighted<Decision>({ APPROVE: 85, MANUAL_REVIEW: 10, REJECT: 5 }), at: attempts[0]!.at + between(0.5, 3) * DAY });
         }
         const approved = attempts.find((a) => a.decision === "APPROVE");
         if (approved) {
           timeline.push({ stage: "KYC complete", at: approved.at });
-          if (chance(likelier(0.9))) timeline.push({ stage: "Activated", at: approved.at + between(2, Math.max(3, option.recommendation.totals.installDays + 3)) * DAY });
+          if (chance(likelier(0.9))) timeline.push({ stage: "Activated", at: approved.at + between(1.5, Math.max(2.5, option.recommendation.totals.installDays)) * DAY });
         }
       }
     }
@@ -207,6 +232,11 @@ async function main() {
             : [pick([finding("DOC_MISSING_SIGNATORY_ID"), finding("DOC_UNREADABLE", "address_proof"), finding("NO_BUSINESS_PROOF")])];
       checks.push({ lead_id: id, user_id: userId, decision: attempt.decision, findings, created_at: new Date(attempt.at).toISOString() });
     }
+  }
+
+  if (dryRun) {
+    printKpis(leads, events, checks, now);
+    return;
   }
 
   const sql = db();
