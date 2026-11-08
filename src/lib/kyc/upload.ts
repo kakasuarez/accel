@@ -7,6 +7,12 @@ const ACCEPTED_FORMATS = new Set(['png', 'jpeg', 'webp']);
 
 export class UploadError extends Error {}
 
+/** The form part the KYC page sends once the customer ticks the consent box. */
+export const CONSENT_FIELD = 'consent';
+
+/** True only when the customer explicitly agreed to the document check (the part is exactly "yes"). */
+export const hasKycConsent = (form: FormData) => form.get(CONSENT_FIELD) === 'yes';
+
 /**
  * Reads the document parts of a KYC multipart upload into memory. Only the format and size are checked here;
  * which documents are present is left to the engine's completeness rule, so it records the reason code.

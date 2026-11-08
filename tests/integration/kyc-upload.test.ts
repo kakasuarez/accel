@@ -9,7 +9,7 @@ import { DEFAULT_CONFIG, validateKyc } from '../../src/lib/kyc';
 import { shutdownOcr } from '../../src/lib/kyc/ocr/engine';
 import { publicFindings } from '../../src/lib/kyc/store';
 import type { DocType } from '../../src/lib/kyc/types';
-import { readKycUpload, UploadError } from '../../src/lib/kyc/upload';
+import { hasKycConsent, readKycUpload, UploadError } from '../../src/lib/kyc/upload';
 
 afterAll(() => shutdownOcr());
 
@@ -43,6 +43,16 @@ describe('KYC upload integration', () => {
     const r = await run({ gst_certificate: file('K05', 'gst_certificate') });
     expect(r.decision).toBe('REJECT');
     expect(r.findings.map((f) => f.code)).toEqual(expect.arrayContaining(['DOC_MISSING_SIGNATORY_ID', 'DOC_MISSING_ADDRESS_PROOF']));
+  });
+
+  it('counts consent only when the customer ticked the box', () => {
+    expect(hasKycConsent(form({}))).toBe(false);
+    const ticked = form({});
+    ticked.append('consent', 'yes');
+    expect(hasKycConsent(ticked)).toBe(true);
+    const other = form({});
+    other.append('consent', 'on');
+    expect(hasKycConsent(other)).toBe(false);
   });
 
   it('refuses files that are not images, whatever their name', async () => {

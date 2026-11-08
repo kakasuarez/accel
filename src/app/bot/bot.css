@@ -303,6 +303,23 @@
   margin-top: var(--sp-sm);
 }
 
+/* Privacy note before the first question: the bot's first words, then one plain agreement line. */
+.bot-consent .bot-question {
+  margin-bottom: var(--sp-xs);
+}
+.bot-consent-agree {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--ink);
+}
+.bot-consent-agree a {
+  color: inherit;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
 /* ---------- Dock: composer ---------- */
 .bot-dock {
   position: sticky;

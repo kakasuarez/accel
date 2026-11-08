@@ -3,7 +3,7 @@ import { requireUser } from '@/lib/auth/session';
 import { ApiError, route } from '@/lib/http';
 import { DEFAULT_CONFIG, KycConfigError, validateKyc } from '@/lib/kyc';
 import { canSubmitKyc, latestKycCheck, saveKycCheck } from '@/lib/kyc/store';
-import { readKycUpload, UploadError } from '@/lib/kyc/upload';
+import { hasKycConsent, readKycUpload, UploadError } from '@/lib/kyc/upload';
 import { ownLead } from '@/lib/leads/access';
 import { getLead, setStage } from '@/lib/leads/repository';
 import { STAGE_AFTER_QUOTE } from '@/lib/leads/stages';
@@ -25,7 +25,7 @@ export const GET = route(async (_request, { params }: RouteContext<'/api/leads/[
 
 /**
  * POST /api/leads/:id/kyc (multipart/form-data)
- * Parts: gst_certificate, udyam_certificate, signatory_id, address_proof. Signatory ID and address proof are
+ * Parts: consent ("yes", required), gst_certificate, udyam_certificate, signatory_id, address_proof. Signatory ID and address proof are
  * required and at least one of GST / Udyam, but that is decided by the engine's completeness rule (it rejects
  * with a reason code), not here. Files stay in memory; only the decision and masked findings are stored.
  * APPROVE moves the lead to "KYC complete"; MANUAL_REVIEW waits for staff; REJECT and MANUAL_REVIEW allow a new
@@ -42,6 +42,8 @@ export const POST = route(async (request, { params }: RouteContext<'/api/leads/[
   if (lead.status !== 'open') throw new ApiError(409, 'closed', 'This request is closed.');
   if (lead.stage !== STAGE_AFTER_QUOTE) throw new ApiError(409, 'not_ready', 'KYC opens once you have accepted your quote.');
   if (!canSubmitKyc(await latestKycCheck(lead.id))) throw new ApiError(409, 'verified', 'Your business is already verified.');
+  // DPDP: no document is read without the customer's explicit consent.
+  if (!hasKycConsent(form)) throw new ApiError(400, 'consent_required', 'Please agree to the document check before uploading.');
 
   let files;
   try {
