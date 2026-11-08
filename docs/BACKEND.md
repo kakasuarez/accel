@@ -121,3 +121,33 @@ document, message) are stored in `kyc_checks`.
 - **Catalogue:** edit `product_catalogue.csv` and commit. The deploy restarts everything.
 - **Leads:** update `smb_leads.csv`, run `npm run clean-leads`, and commit `training_leads.csv`.
 - **Moving away from Supabase Postgres:** SQL is only in `src/lib/leads/repository.ts` and `src/lib/db.ts`.
+
+## Admin dashboard
+
+`/admin` (admin accounts only; others are sent to `/dashboard`) covers the last 7, 30 or 90 days
+(`?days=`), each compared with the period before.
+
+**Key metrics** have targets, defined in `src/lib/admin/kpis.ts`. "Before" is the old sales-led
+process, from `training_leads.csv` (time to activate isn't recorded there, so it's the brief's 3–5 days
+to quote plus 10–14 to activate).
+
+| KPI | How it's measured | Before | Target |
+|---|---|---|---|
+| Lead to activation | Activations in the period ÷ leads whose needs were assessed in the period | 18.6% | ≥ 30% |
+| Time to activate | Median days from needs assessed to activated, for activations in the period | ~16 days | ≤ 7 days |
+| Accepted quotes activated | Activations in the period ÷ quotes accepted in the period | 42.7% | ≥ 75% |
+| KYC approved first time | Share of businesses whose first KYC check in the period was approved | none (paper) | ≥ 80% |
+
+Conversion is a flow, not a cohort: following one period's leads to their outcome makes recent periods
+look better or worse than they are, since wins and losses settle at different speeds. Cost of
+acquisition and 6-month churn aren't shown, because the app doesn't yet record costs or anything after
+activation.
+
+Below them: volume (new leads, activations, monthly revenue won, open pipeline), the stage funnel,
+bundles accepted, leads by segment, KYC results and closed leads by reason and stage. Leads that never
+finished the profile are left out. Quotes accepted before single prices count at their minimum price.
+
+**Demo data:** `npm run seed:demo` adds about 460 made-up leads (real profiles from
+`training_leads.csv`, quotes from the real recommender) over the last 180 days, all owned by
+`demo-data@accel.example`. Running it again replaces them; `npm run seed:demo -- --remove` deletes that
+account and, with it, all of its leads, events and KYC checks.

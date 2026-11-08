@@ -890,3 +890,235 @@
     animation: none;
   }
 }
+
+/* ---------- Admin dashboard ---------- */
+.dash.admin {
+  max-width: 1120px;
+}
+.admin-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-lg);
+  flex-wrap: wrap;
+}
+.period {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: var(--r-pill-md);
+  background: var(--canvas-soft);
+}
+.period-link {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--sp-lg);
+  border-radius: var(--r-pill-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.period-link:hover {
+  color: var(--ink);
+}
+.period-link.is-on {
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.kpis {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--sp-md);
+}
+.kpi {
+  padding: var(--sp-xl);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+.kpi dt {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.57px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.kpi dd {
+  margin: var(--sp-sm) 0 0;
+  display: grid;
+  gap: 6px;
+}
+.kpi strong {
+  font-size: clamp(28px, 3.4vw, 36px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.kpi-change {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.kpis-target {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+.kpis-volume .kpi strong {
+  font-size: clamp(24px, 2.6vw, 28px);
+}
+.kpi-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 2px 10px 2px 6px;
+  border-radius: var(--r-pill-md);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 700;
+}
+.kpi-status .icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.kpi-status.is-on {
+  background: var(--canvas-soft);
+  color: var(--ink);
+}
+.kpi-status.is-off {
+  background: #fdecec;
+  color: #b30000;
+}
+.kpi-target {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.kpi-change span,
+.kpi-note {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.admin-section {
+  margin-top: 48px;
+  min-width: 0;
+}
+.admin-sub {
+  margin: 4px 0 var(--sp-lg);
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  align-items: start;
+  column-gap: 48px;
+}
+.admin-h3 {
+  margin: 0 0 var(--sp-md);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.57px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.admin-grid > .admin-section {
+  margin-top: 48px;
+}
+.admin-section .admin-grid > div {
+  margin-bottom: var(--sp-2xl);
+}
+.admin-empty {
+  margin: 0;
+  padding: var(--sp-xl);
+  border-radius: var(--r-card);
+  background: var(--canvas-soft);
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+/* Bar list: label | bar | value. On phones the bar drops under the label. */
+.bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-md);
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr auto;
+  align-items: center;
+  gap: var(--sp-md);
+}
+.bar-label {
+  display: grid;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.bar-label span {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.bar-track {
+  height: 12px;
+  border-radius: 0 4px 4px 0;
+  background: var(--canvas-soft);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+  background: var(--ink);
+}
+.bar-row:hover .bar-fill {
+  background: #000;
+}
+.bar-value {
+  min-width: 3ch;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .bar-row {
+    grid-template-columns: 1fr auto;
+    row-gap: 6px;
+  }
+  .bar-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+@media (forced-colors: active) {
+  .bar-fill {
+    background: CanvasText;
+  }
+}
+.app:has(.dash.admin) .app-header-inner {
+  max-width: 1120px;
+}

@@ -14,7 +14,8 @@
     "evaluate": "tsx scripts/evaluate.ts",
     "clean-leads": "tsx scripts/clean-leads.ts",
     "questions": "tsx scripts/write-questions.ts",
-    "e2e": "tsx scripts/e2e.ts"
+    "e2e": "tsx scripts/e2e.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <AccountHeader email={user.email} />
+      <AccountHeader email={user.email} isAdmin={user.isAdmin} />
       <main className="dash">
         <h1 className="dash-title">{lead?.businessName ?? 'Your Accel connection'}</h1>
 

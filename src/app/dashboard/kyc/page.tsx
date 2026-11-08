@@ -34,7 +34,7 @@ export default async function KycPage({ searchParams }: PageProps<'/dashboard/ky
 
   return (
     <>
-      <AccountHeader email={user.email} />
+      <AccountHeader email={user.email} isAdmin={user.isAdmin} />
       <main className="dash kyc">
         <Link href="/dashboard" className="back-link">
           <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">

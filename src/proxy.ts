@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-/** Pages that need a signed-in customer. Each page also checks the session itself; this only redirects early. */
-const PROTECTED = [/^\/dashboard(\/|$)/, /^\/bot(\/|$)/];
+/** Pages that need a signed-in user. Each page also checks the session itself; this only redirects early. */
+const PROTECTED = [/^\/dashboard(\/|$)/, /^\/bot(\/|$)/, /^\/admin(\/|$)/];
 /** Pages a signed-in customer skips: the landing page and the sign-in forms go straight to the dashboard. */
 const SIGNED_IN_SKIPS = new Set(['/', '/login', '/signup']);
 
