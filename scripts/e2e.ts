@@ -119,10 +119,10 @@ async function run() {
 
   const bundles: Json[] = state.bundles;
   assert.equal(bundles[0].tier, "recommended");
-  for (const b of bundles) console.log(`      ${b.label}: ${b.recommendation.totals.monthlyMin}/month${b.comparison ? ` (${b.comparison})` : ""}`);
+  for (const b of bundles) console.log(`      ${b.label}: ${b.recommendation.totals.monthly}/month${b.comparison ? ` (${b.comparison})` : ""}`);
   const budget = bundles.find((b) => b.tier === "budget");
   assert.ok(budget, "A micro business should be offered a Budget bundle");
-  assert.ok(budget.recommendation.totals.monthlyMin < bundles[0].recommendation.totals.monthlyMin);
+  assert.ok(budget.recommendation.totals.monthly < bundles[0].recommendation.totals.monthly);
   const priced = await customer("POST", `/api/leads/${id}/quote`, { bundle: "budget", selectedAddOns: ticked });
   assert.equal(priced.status, 200, JSON.stringify(priced.json));
   assert.deepEqual(priced.json.recommendation.lines.map((l: Json) => l.productId), budget.recommendation.lines.map((l: Json) => l.productId));

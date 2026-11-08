@@ -8,6 +8,7 @@ import {
   parseCatalogue,
   parseLeads,
   priceWithAddOns,
+  quotedPrice,
   type BusinessProfile,
   type Recommender,
 } from "../src/lib/recommender";
@@ -83,7 +84,12 @@ describe("catalogue drives everything", () => {
   it("picks up a price change", () => {
     const rec = rebuild(editCsv(fibre300, "price_min_inr_per_month", "1234")).recommend(gym);
     const line = rec.lines.find((l) => l.productId === fibre300)!;
-    expect(line.monthlyMin).toBe(1234 * line.quantity);
+    // No sensitivity file here, so every segment is medium: a third of the way from ₹1,234 to ₹1,799.
+    expect(line.monthly).toBe(1422 * line.quantity);
+  });
+  it("quotes each sensitivity at its point in the price range, to the nearest rupee", () => {
+    const product = { priceMin: 999, priceMax: 1199 };
+    expect((["high", "medium", "medium_low", "low"] as const).map((s) => quotedPrice(product, s))).toEqual([999, 1066, 1132, 1199]);
   });
   it("picks up a setup fee, contract and install change", () => {
     const edited = editCsv(fibre300, "typical_install_days", "9", editCsv(fibre300, "min_contract_months", "36", editCsv(fibre300, "one_time_setup_inr", "500")));
@@ -105,7 +111,7 @@ describe("catalogue drives everything", () => {
     const option = edited.recommend(lawOffice).addOns.find((a) => a.name === "Phishing Shield")!;
     expect(option).toMatchObject({ recommendation: null, support: null, why: "Email phishing protection for staff" });
     expect(option.quantity).toBeGreaterThan(0);
-    expect(option.monthlyMin).toBe(50 * option.quantity);
+    expect(option.monthly).toBe(60 * option.quantity);
   });
   it("offers a new link as an alternative, and uses it if it's the only one allowed", () => {
     const row = 'P98,Connectivity,Biz Fibre 2G,"Business fibre broadband, 2 Gbps",per site,6000,7000,0,12,1;2,1,1,N,,7,prof';
@@ -259,7 +265,7 @@ describe("base bundle", () => {
   });
   it("keeps add-ons out of the totals", () => {
     const rec = r.recommend(gym);
-    expect(rec.totals.monthlyMin).toBe(rec.lines.reduce((t, l) => t + l.monthlyMin, 0));
+    expect(rec.totals.monthly).toBe(rec.lines.reduce((t, l) => t + l.monthly, 0));
   });
 });
 
@@ -301,7 +307,7 @@ describe("add-on picker", () => {
     const rec = r.recommend(press);
     const option = rec.addOns.find((a) => a.productId === firewall)!;
     const totals = priceWithAddOns(rec, [firewall]);
-    expect(totals.monthlyMin).toBe(rec.totals.monthlyMin + option.monthlyMin);
+    expect(totals.monthly).toBe(rec.totals.monthly + option.monthly);
     expect(totals.setupFee).toBe(rec.totals.setupFee + option.setupFee);
     expect(totals.contractMonths).toBe(catalogue.byId.get(firewall)!.minContractMonths);
     expect(priceWithAddOns(rec, [])).toEqual(rec.totals);
@@ -331,10 +337,10 @@ describe("rebuilding around choices, used for bundle options", () => {
 
   it("swaps the link and re-prices by the difference shown", () => {
     const rec = r.recommend(lawOffice);
-    const cheaper = rec.alternatives.find((a) => a.monthlyMinDelta < 0)!;
+    const cheaper = rec.alternatives.find((a) => a.monthlyDelta < 0)!;
     const swapped = r.recommend(lawOffice, { link: cheaper.productId });
     expect(line(swapped, "link").productId).toBe(cheaper.productId);
-    expect(swapped.totals.monthlyMin).toBe(rec.totals.monthlyMin + cheaper.monthlyMinDelta);
+    expect(swapped.totals.monthly).toBe(rec.totals.monthly + cheaper.monthlyDelta);
   });
 
   it("rebuilds the add-ons: wireless internet loses add-ons that need fibre", () => {
@@ -356,7 +362,7 @@ describe("rebuilding around choices, used for bundle options", () => {
     const swapped = r.recommend(lawOffice, { mobile: other.productId });
     expect(line(swapped, "mobile").productId).toBe(other.productId);
     expect(line(swapped, "mobile").quantity).toBe(line(rec, "mobile").quantity);
-    expect(swapped.totals.monthlyMin).toBe(rec.totals.monthlyMin + other.monthlyMinDelta);
+    expect(swapped.totals.monthly).toBe(rec.totals.monthly + other.monthlyDelta);
   });
 
   it("changes per-person quantities from 1 up to the number of staff, and nothing else", () => {
@@ -364,7 +370,7 @@ describe("rebuilding around choices, used for bundle options", () => {
     const mobile = line(rec, "mobile");
     const one = r.recommend(lawOffice, { quantities: { [mobile.productId]: 1 } });
     expect(line(one, "mobile").quantity).toBe(1);
-    expect(line(one, "mobile").monthlyMin).toBe(catalogue.byId.get(mobile.productId)!.priceMin);
+    expect(line(one, "mobile").monthly).toBe(quotedPrice(catalogue.byId.get(mobile.productId)!, "medium"));
     for (const bad of [0, lawOffice.employees + 1, 2.5]) {
       expect(() => r.recommend(lawOffice, { quantities: { [mobile.productId]: bad } })).toThrow(ChoiceError);
     }

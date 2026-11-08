@@ -1,7 +1,7 @@
 import { addOnQuestionId } from "../questions/build";
 import type { Answers, Question, QuestionSet } from "../questions/types";
 import { ApiError } from "../http";
-import { budgetMobileLines, isChoiceError, priceWithAddOns, type BundleTotals, type BusinessProfile, type Catalogue, type Choices, type Flag, type ProductId, type Recommendation, type Recommender } from "../recommender";
+import { budgetMobileLines, isChoiceError, priceWithAddOns, quotedPrice, type BundleTotals, type BusinessProfile, type Catalogue, type Choices, type Flag, type ProductId, type Recommendation, type Recommender } from "../recommender";
 
 /** The next question for this customer, or null once there's nothing left to ask. */
 export function nextQuestion({ questions, maxAddOnQuestions }: QuestionSet, answers: Answers, recommendation: Recommendation | null): Question | null {
@@ -118,7 +118,8 @@ export function bundleOptions(recommender: Recommender, questionSet: QuestionSet
 
   const link = recommended.lines.find((l) => l.role === "link");
   const mobile = recommended.lines.find((l) => l.role === "mobile");
-  const price = (id: ProductId) => recommender.catalogue.byId.get(id)!.priceMin;
+  const sensitivity = recommender.priceSensitivity(recommended.segment);
+  const price = (id: ProductId) => quotedPrice(recommender.catalogue.byId.get(id)!, sensitivity);
   const cheapest = (current: ProductId, others: readonly { productId: ProductId }[]) =>
     [current, ...others.map((o) => o.productId)].sort((a, b) => price(a) - price(b))[0]!;
   const nextUp = (current: ProductId, others: readonly { productId: ProductId }[]) =>
@@ -128,7 +129,7 @@ export function bundleOptions(recommender: Recommender, questionSet: QuestionSet
   if (link) budget.link = cheapest(link.productId, recommended.alternatives);
   if (mobile) {
     budget.mobile = cheapest(mobile.productId, recommended.mobileAlternatives);
-    const lines = budgetMobileLines(recommender.priceSensitivity(recommended.segment), mobile.quantity);
+    const lines = budgetMobileLines(sensitivity, mobile.quantity);
     if (lines < mobile.quantity) budget.quantities = { [budget.mobile]: lines };
   }
   add("budget", budget);
@@ -147,10 +148,7 @@ const rupees = (amount: number) => new Intl.NumberFormat("en-IN", { style: "curr
 
 /** One plain line built from the two bundles, so it can't claim anything they don't show. */
 function compare(option: Recommendation, recommended: Recommendation): string {
-  const low = option.totals.monthlyMin - recommended.totals.monthlyMin;
-  const high = option.totals.monthlyMax - recommended.totals.monthlyMax;
-  const amount = (n: number) => rupees(Math.abs(n));
-  const range = Math.abs(low) === Math.abs(high) ? amount(low) : `${amount(Math.min(Math.abs(low), Math.abs(high)))}–${amount(Math.max(Math.abs(low), Math.abs(high)))}`;
+  const delta = option.totals.monthly - recommended.totals.monthly;
   const changes: string[] = [];
   for (const role of ["link", "mobile"] as const) {
     const now = option.lines.find((l) => l.role === role);
@@ -160,7 +158,7 @@ function compare(option: Recommendation, recommended: Recommendation): string {
       changes.push(`${now.quantity} mobile ${now.quantity === 1 ? "line" : "lines"} instead of ${before.quantity}`);
     }
   }
-  const lead = low <= 0 ? `Saves ${range} a month` : `${range} more a month`;
+  const lead = delta <= 0 ? `Saves ${rupees(-delta)} a month` : `${rupees(delta)} more a month`;
   return changes.length ? `${lead}: ${changes.join(", ")}.` : `${lead}.`;
 }
 

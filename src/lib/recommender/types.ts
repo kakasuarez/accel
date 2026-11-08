@@ -91,8 +91,8 @@ interface Priced {
   support: Support | null;
   /** The model's estimate that this customer would buy it, 0 to 1. Useful for ranking, not a guarantee. */
   score: number;
-  monthlyMin: number;
-  monthlyMax: number;
+  /** Quantity × the price quoted for this segment's price sensitivity. */
+  monthly: number;
   setupFee: number;
   minContractMonths: number;
   installDays: number;
@@ -133,8 +133,7 @@ export interface AddOnOption extends Priced {
 }
 
 export interface BundleTotals {
-  monthlyMin: number;
-  monthlyMax: number;
+  monthly: number;
   setupFee: number;
   /** Longest minimum contract among the items. */
   contractMonths: number;
@@ -155,8 +154,8 @@ export interface BlockedProduct {
 export interface AlternativeLink {
   productId: ProductId;
   name: string;
-  /** Change in the bundle's minimum monthly price if swapped in. */
-  monthlyMinDelta: number;
+  /** Change in the bundle's monthly price if swapped in. */
+  monthlyDelta: number;
   support: Support | null;
 }
 

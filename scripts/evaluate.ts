@@ -132,7 +132,7 @@ for (const lead of allLeads) {
   if (!r.lines.some((l) => l.role === "link")) noLink++;
   if (lead.activated) {
     const accepted = priceWithAddOns(r, r.addOns.filter((a) => a.recommendation).map((a) => a.productId));
-    ratios.push((accepted.monthlyMin + accepted.monthlyMax) / 2 / lead.monthlyValue);
+    ratios.push(accepted.monthly / lead.monthlyValue);
   }
 }
 ratios.sort((a, b) => a - b);

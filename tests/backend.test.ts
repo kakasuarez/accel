@@ -284,7 +284,7 @@ describe("bundle options", () => {
       expect(first!.tier).toBe("recommended");
       expect(first!.comparison).toBeNull();
       for (const option of rest) {
-        const delta = option.recommendation.totals.monthlyMin - first!.recommendation.totals.monthlyMin;
+        const delta = option.recommendation.totals.monthly - first!.recommendation.totals.monthly;
         expect(option.tier === "budget" ? delta < 0 : delta > 0).toBe(true);
         expect(option.comparison).toMatch(option.tier === "budget" ? /^Saves ₹/ : /more a month/);
       }

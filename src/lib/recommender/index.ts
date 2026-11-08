@@ -3,5 +3,5 @@ export { ChoiceError, isChoiceError, createRecommender, priceWithAddOns, product
 export { CatalogueError, parseCatalogue } from "./catalogue";
 export { parseLeads } from "./leads";
 export { customerView, type CustomerRecommendation } from "./customer-view";
-export { budgetMobileLines, parseSensitivity, SENSITIVITIES, type Sensitivity } from "./sensitivity";
+export { budgetMobileLines, parseSensitivity, quotedPrice, SENSITIVITIES, type Sensitivity } from "./sensitivity";
 export type * from "./types";

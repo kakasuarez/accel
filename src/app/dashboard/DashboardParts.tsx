@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { formatDateTime, plural, quantityLabel, rupeeRange } from '@/components/format';
+import { formatDateTime, plural, quantityLabel } from '@/components/format';
 import { AlertIcon, ArrowIcon, CheckIcon, ClockIcon, InfoIcon } from '@/components/icons';
 import { formatRupees } from '@/lib/bot/script';
 import type { CustomerLead } from '@/lib/dashboard/data';
@@ -81,7 +81,7 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
 
       <div className="summary">
         <p className="summary-price">
-          <strong>{rupeeRange(totals.monthlyMin, totals.monthlyMax)}</strong>
+          <strong>{formatRupees(totals.monthly)}</strong>
           <span>a month</span>
         </p>
         <dl className="summary-facts">
@@ -106,7 +106,7 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
                 <strong>{line.name}</strong>
                 <span>{quantityLabel(line.quantity, line.unit)}</span>
               </span>
-              <span className="item-price">{rupeeRange(line.monthlyMin, line.monthlyMax)}</span>
+              <span className="item-price">{formatRupees(line.monthly)}</span>
             </li>
           ))}
           {addOns.map((addOn) => (
@@ -115,7 +115,7 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
                 <strong>{addOn.name}</strong>
                 <span>Add-on · {quantityLabel(addOn.quantity, addOn.unit)}</span>
               </span>
-              <span className="item-price">{rupeeRange(addOn.monthlyMin, addOn.monthlyMax)}</span>
+              <span className="item-price">{formatRupees(addOn.monthly)}</span>
             </li>
           ))}
         </ul>
@@ -130,7 +130,7 @@ export function BundleSummary({ quote }: { quote: NonNullable<CustomerLead['quot
             ))}
           </ul>
         )}
-        <p className="fine-print">Monthly prices are shown as a range. Accel is a fictional operator and all prices are synthetic.</p>
+        <p className="fine-print">Accel is a fictional operator and all prices are synthetic.</p>
       </div>
     </section>
   );

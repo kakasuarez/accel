@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { api, ApiFailure } from '@/components/api';
-import { plural, quantityLabel, rupeeRange } from '@/components/format';
+import { plural, quantityLabel } from '@/components/format';
 import { formatRupees } from '@/lib/bot/script';
 import type { AddOn, BundleChoice, BundleTotals, CustomerLead, CustomerRecommendation } from './types';
 
@@ -17,8 +17,7 @@ function localTotals(rec: CustomerRecommendation, selected: ReadonlySet<string>)
   const items = [...rec.lines, ...rec.addOns.filter((a) => selected.has(a.productId))];
   const sum = (pick: (i: (typeof items)[number]) => number) => items.reduce((t, i) => t + pick(i), 0);
   return {
-    monthlyMin: sum((i) => i.monthlyMin),
-    monthlyMax: sum((i) => i.monthlyMax),
+    monthly: sum((i) => i.monthly),
     setupFee: sum((i) => i.setupFee),
     contractMonths: Math.max(0, ...items.map((i) => i.minContractMonths)),
     installDays: Math.max(0, ...items.map((i) => i.installDays)),
@@ -169,7 +168,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
           <span className="addon-why">{a.why}</span>
         </span>
         <span className="addon-price">
-          +{rupeeRange(a.monthlyMin, a.monthlyMax)}
+          +{formatRupees(a.monthly)}
           <span>{quantityLabel(a.quantity, a.unit)}</span>
         </span>
       </label>
@@ -200,7 +199,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
                   {b.tier === 'recommended' && <span className="addon-tag">Best fit</span>}
                 </span>
                 <span className="tier-price">
-                  <strong>{rupeeRange(b.recommendation.totals.monthlyMin, b.recommendation.totals.monthlyMax)}</strong> a month
+                  <strong>{formatRupees(b.recommendation.totals.monthly)}</strong> a month
                 </span>
                 <span className="tier-note">{b.comparison ?? 'Our pick for your business, based on your answers.'}</span>
               </label>
@@ -218,7 +217,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
         </div>
 
         <p className="bundle-price" aria-live="polite">
-          <strong>{rupeeRange(totals.monthlyMin, totals.monthlyMax)}</strong>
+          <strong>{formatRupees(totals.monthly)}</strong>
           <span>a month</span>
         </p>
         <dl className="bundle-facts">
@@ -248,7 +247,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
                 </strong>
                 <span>{line.why}</span>
               </span>
-              <span className="bundle-item-price">{rupeeRange(line.monthlyMin, line.monthlyMax)}</span>
+              <span className="bundle-item-price">{formatRupees(line.monthly)}</span>
             </li>
           ))}
         </ul>
@@ -303,7 +302,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
           Accept this quote
         </h2>
         <p className="accept-sub">
-          At <strong>{rupeeRange(totals.monthlyMin, totals.monthlyMax)}</strong> a month. Next, you’ll verify your business
+          At <strong>{formatRupees(totals.monthly)}</strong> a month. Next, you’ll verify your business
           with a few documents.
         </p>
         {field('businessName', 'Business name', { autoComplete: 'organization', maxLength: 120 })}
@@ -326,7 +325,7 @@ export function BotResult({ leadId, bundles, onTierChange, onAlreadyAccepted }: 
             Start over
           </Link>
         </div>
-        <p className="bundle-note">Accel is a fictional operator. Prices are synthetic and shown as monthly ranges.</p>
+        <p className="bundle-note">Accel is a fictional operator. Prices are synthetic and shown per month.</p>
       </form>
     </div>
   );

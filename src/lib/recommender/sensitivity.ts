@@ -46,3 +46,14 @@ export function budgetMobileLines(sensitivity: Sensitivity, recommended: number)
       return recommended;
   }
 }
+
+/**
+ * How far into a product's price range this customer is quoted: the most price-sensitive pay the minimum,
+ * the least sensitive the maximum, and the two in between are a third and two thirds of the way up.
+ */
+const PRICE_POSITION: Record<Sensitivity, number> = { high: 0, medium: 1 / 3, medium_low: 2 / 3, low: 1 };
+
+/** The monthly price per unit this customer is quoted, to the nearest rupee. */
+export function quotedPrice(product: { priceMin: number; priceMax: number }, sensitivity: Sensitivity): number {
+  return Math.round(product.priceMin + PRICE_POSITION[sensitivity] * (product.priceMax - product.priceMin));
+}

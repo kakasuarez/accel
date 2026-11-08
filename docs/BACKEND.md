@@ -54,12 +54,14 @@ When the questions are done, `bundles` lists up to three bundles, Recommended fi
 | `premium` | The next dearer connection and mobile plan. |
 
 - **Price sensitivity:** `data/price_sensitivity.csv` maps each segment code to `high`, `medium`,
-  `medium_low` or `low`. It sets how far Budget cuts mobile lines: down to 1 for high, about half for
-  medium, and none otherwise. A segment the file doesn't list counts as medium, and a bad file stops
+  `medium_low` or `low`. It sets the price quoted from each product's catalogue range: the minimum for
+  high, a third and two thirds of the way up for medium and medium_low, and the maximum for low,
+  rounded to the nearest rupee. Customers see that one price, not the range. It also sets how far
+  Budget cuts mobile lines: down to 1 for high, about half for medium, and none otherwise. A segment the file doesn't list counts as medium, and a bad file stops
   startup. Edit it and redeploy, as with the catalogue.
 - **Every bundle follows the catalogue rules** and keeps the items included by default. A bundle
   that comes out the same as Recommended is left out, so some customers see only one or two.
-- **`comparison`** is a fixed line built from the two bundles, such as "Saves ₹399–₹499 a month:
+- **`comparison`** is a fixed line built from the two bundles, such as "Saves ₹399 a month:
   Biz 5G AirFiber 100 instead of Biz Fibre 100, 1 mobile line instead of 2". It's not written by the
   LLM.
 - **`quote` and `accept` take `bundle`** (default `recommended`). Switching bundle can change which

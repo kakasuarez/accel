@@ -1,10 +1,3 @@
-import { formatRupees } from '@/lib/bot/script';
-
-/** "₹1,499" or "₹1,499–₹2,199" (en dash, no spaces). */
-export function rupeeRange(min: number, max: number): string {
-  return min === max ? formatRupees(min) : `${formatRupees(min)}–${formatRupees(max)}`;
-}
-
 export function plural(n: number, one: string, many = `${one}s`): string {
   return `${n} ${n === 1 ? one : many}`;
 }

@@ -24,7 +24,7 @@ const plainReasons = (recommendation: CustomerRecommendation) => recommendation.
 /** For a Budget or Premium bundle: its name and how it differs from what we recommended. */
 export interface AlternativeBundle {
   label: string;
-  /** The fixed comparison line, e.g. "Saves ₹399–₹499 a month: X instead of Y." */
+  /** The fixed comparison line, e.g. "Saves ₹399 a month: X instead of Y." */
   comparison: string;
 }
 

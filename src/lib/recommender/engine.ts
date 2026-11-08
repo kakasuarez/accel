@@ -2,7 +2,7 @@ import { eligibilityBlock } from "./eligibility";
 import { FIRST_BUSINESS_LINK, PEOPLE_UNITS, buildInsights, rate, type Insights } from "./insights";
 import { forestScorer, frequencyScorer, type ModelOptions, type Scorer } from "./model/scorer";
 import { buildSegmentIndex } from "./segments";
-import { DEFAULT_SENSITIVITY, type Sensitivity } from "./sensitivity";
+import { DEFAULT_SENSITIVITY, quotedPrice, type Sensitivity } from "./sensitivity";
 import type {
   AddOnOption,
   AddOnRecommendation,
@@ -65,8 +65,7 @@ export function priceWithAddOns(recommendation: Recommendation, picked: readonly
 function totalsOf(items: readonly BundleLine[] | readonly (BundleLine | AddOnOption)[]): BundleTotals {
   const sum = (pick: (item: BundleLine | AddOnOption) => number) => items.reduce((total, item) => total + pick(item), 0);
   return {
-    monthlyMin: sum((i) => i.monthlyMin),
-    monthlyMax: sum((i) => i.monthlyMax),
+    monthly: sum((i) => i.monthly),
     setupFee: sum((i) => i.setupFee),
     contractMonths: Math.max(0, ...items.map((i) => i.minContractMonths)),
     installDays: Math.max(0, ...items.map((i) => i.installDays)),
@@ -98,6 +97,8 @@ export function createRecommender(
     assertValid(profile);
     const { segment, inferred } = segments.classify(profile.businessType, profile.employees, profile.sites);
     const scoreOf = (product: Product) => score(product.id, profile, segment);
+    const sensitivityOf = sensitivity.get(segment) ?? DEFAULT_SENSITIVITY;
+    const priceOf = (product: Product) => quotedPrice(product, sensitivityOf);
     const byScore = (a: Product, b: Product) => scoreOf(b) - scoreOf(a) || a.priceMin - b.priceMin;
     const allowed = (product: Product, selected?: ReadonlySet<ProductId>) => !eligibilityBlock(product, profile, segment, selected);
 
@@ -133,8 +134,7 @@ export function createRecommender(
         why,
         support: insights.support(segment, product.id),
         score: scoreOf(product),
-        monthlyMin: quantity * product.priceMin,
-        monthlyMax: quantity * product.priceMax,
+        monthly: quantity * priceOf(product),
         setupFee: quantity * product.setupFee,
         minContractMonths: product.minContractMonths,
         installDays: product.installDays,
@@ -202,8 +202,8 @@ export function createRecommender(
       segmentLabel: insights.segmentLabel(segment),
       lines,
       totals,
-      alternatives: link ? alternativesFor(allowedLinks, link, lines, segment, insights) : [],
-      mobileAlternatives: mobile ? alternativesFor(allowedMobiles, mobile, lines, segment, insights) : [],
+      alternatives: link ? alternativesFor(allowedLinks, link, lines, segment, insights, priceOf) : [],
+      mobileAlternatives: mobile ? alternativesFor(allowedMobiles, mobile, lines, segment, insights, priceOf) : [],
       addOns: [
         ...stated.map((p) => toOption(p, "stated_need")),
         ...modelPicks.map((p) => toOption(p, "model")),
@@ -233,14 +233,21 @@ function isFasterAndDearer(candidate: Product, current: Product): boolean {
 }
 
 /** The other allowed products for a line, priced at the line's current quantity. */
-function alternativesFor(allowedProducts: Product[], current: Product, lines: readonly BundleLine[], segment: Segment, insights: Insights): AlternativeLink[] {
+function alternativesFor(
+  allowedProducts: Product[],
+  current: Product,
+  lines: readonly BundleLine[],
+  segment: Segment,
+  insights: Insights,
+  priceOf: (product: Product) => number,
+): AlternativeLink[] {
   const line = lines.find((l) => l.productId === current.id)!;
   return allowedProducts
     .filter((p) => p.id !== current.id)
     .map((p) => ({
       productId: p.id,
       name: p.name,
-      monthlyMinDelta: line.quantity * (p.priceMin - current.priceMin),
+      monthlyDelta: line.quantity * (priceOf(p) - priceOf(current)),
       support: insights.support(segment, p.id),
     }));
 }
