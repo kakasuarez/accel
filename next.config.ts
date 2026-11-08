@@ -16,7 +16,9 @@ const nextConfig: NextConfig = {
       './node_modules/tesseract.js/package.json',
       './node_modules/tesseract.js/src/**/*',
       './node_modules/tesseract.js-core/package.json',
-      './node_modules/tesseract.js-core/tesseract-core-*lstm*', // OEM.LSTM_ONLY: only the LSTM builds are loaded
+      // getCore picks the build at runtime (SIMD support × OEM); it doesn't always pick the -lstm one, so ship all of them.
+      './node_modules/tesseract.js-core/*.js',
+      './node_modules/tesseract.js-core/*.wasm',
       './node_modules/regenerator-runtime/**/*',
       './node_modules/is-url/**/*',
       './node_modules/bmp-js/**/*',
