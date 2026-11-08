@@ -641,6 +641,112 @@
   color: var(--on-dark);
 }
 
+/* DigiLocker: an alternative to uploading, not connected yet. Choosing it shows a "coming soon" note. */
+.kyc-digilocker {
+  display: grid;
+  gap: var(--sp-md);
+  margin-top: var(--sp-3xl);
+}
+/* Built like an upload slot (thumb, label and hint, action pill) so the two ways in read as one family. */
+.dl-option {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  width: 100%;
+  min-height: 76px;
+  margin: 0;
+  padding: var(--sp-md) var(--sp-lg) var(--sp-md) var(--sp-md);
+  border: 1px solid #c9cacc;
+  border-radius: var(--r-card);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+.dl-option:hover {
+  border-color: var(--ink);
+  background: var(--canvas-soft);
+}
+.dl-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: #f0ecff;
+}
+.dl-mark img {
+  display: block;
+  width: 30px;
+  height: auto;
+}
+.dl-text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.dl-label {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.dl-hint {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.dl-action {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-pill-lg);
+  font-size: 14px;
+  line-height: 20px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.dl-option:hover .dl-action {
+  background: var(--ink);
+  color: var(--on-dark);
+}
+.dl-soon {
+  animation: note-in 0.32s var(--ease);
+}
+@keyframes note-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.kyc-or {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  margin: var(--sp-md) 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.kyc-or::before,
+.kyc-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-strong);
+}
+.kyc-digilocker + .kyc-consent,
+.kyc-digilocker + .kyc-form {
+  margin-top: var(--sp-xl);
+}
+
 /* Consent step: what, why and how, then an explicit tick before any document can be chosen. */
 .kyc-consent {
   display: grid;
@@ -1054,14 +1160,6 @@
   overflow-wrap: anywhere;
 }
 /* Details still to be supplied: visibly unfinished, never mistaken for a real value. */
-.privacy-placeholder {
-  padding: 0 4px;
-  border: 1px dashed var(--ink-soft);
-  border-radius: 4px;
-  background: var(--canvas-soft);
-  font-weight: 600;
-  white-space: nowrap;
-}
 .privacy-back {
   margin: 56px 0 0;
   font-size: 16px;
@@ -1149,8 +1247,12 @@
     animation-duration: 2.4s;
   }
   .kyc-progress li.is-current .kyc-progress-dot::before,
-  .kyc-result.is-approved .kyc-result-mark {
+  .kyc-result.is-approved .kyc-result-mark,
+  .dl-soon {
     animation: none;
+  }
+  .dl-action {
+    transition: none;
   }
 }
 
