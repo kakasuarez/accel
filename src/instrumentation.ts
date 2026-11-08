@@ -1,10 +1,11 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  const { getRecommender } = await import("./lib/recommender");
   const { ensurePrimaryAdmin } = await import("./lib/auth/session");
   const { createLlmClient } = await import("./lib/llm/client");
 
-  getRecommender(); // A bad catalogue stops startup here.
+  // Don't touch the CSVs here: this also runs inside the proxy function, whose bundle doesn't
+  // include them (outputFileTracingIncludes only applies to routes). The recommender is built
+  // lazily on first use, and `npm run build` checks the catalogue up front (scripts/check-data.ts).
   await ensurePrimaryAdmin();
   try {
     const llm = createLlmClient();
