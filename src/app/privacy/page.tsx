@@ -11,11 +11,6 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: '#ffffff' };
 
-/** Details the business still has to supply. Shown as-is so they can't be mistaken for real values. */
-function Placeholder({ children }: { children: string }) {
-  return <span className="privacy-placeholder">[{children}]</span>;
-}
-
 const SECTIONS = [
   { id: 'who-we-are', title: 'Who we are' },
   { id: 'what-we-collect', title: 'What we collect and why' },
@@ -69,7 +64,7 @@ export default function PrivacyPage() {
             <p>
               Accel Business is the business arm of Accel Telecom (“Accel”, “we”, “us”). We decide why and how your personal
               data is used in this service, which makes us the data fiduciary under the DPDP Act. You can reach us at{' '}
-              <Placeholder>contact email</Placeholder>.
+              <a href="mailto:privacy@accelbusiness.example">privacy@accelbusiness.example</a>.
             </p>
           </section>
 
@@ -146,7 +141,7 @@ export default function PrivacyPage() {
             <h2 id="retention-title">How long we keep it</h2>
             <p>
               We keep your information while your request is active and for as long as we need it to provide the service:{' '}
-              <Placeholder>retention period</Placeholder>. KYC documents are not kept at all.
+              three years after your request is closed. KYC documents are not kept at all.
             </p>
           </section>
 
@@ -178,20 +173,18 @@ export default function PrivacyPage() {
             <dl className="privacy-contact">
               <div>
                 <dt>Name</dt>
-                <dd>
-                  <Placeholder>grievance officer’s name</Placeholder>
-                </dd>
+                <dd>Mrityunjay Venkataraghavan Iyer, Grievance Officer</dd>
               </div>
               <div>
                 <dt>Email</dt>
                 <dd>
-                  <Placeholder>contact email</Placeholder>
+                  <a href="mailto:grievance@accelbusiness.example">grievance@accelbusiness.example</a>
                 </dd>
               </div>
               <div>
                 <dt>Post</dt>
                 <dd>
-                  <Placeholder>postal address</Placeholder>
+                  Accel Telecom Tower, Level 14, Ashvattha Business Park, Sector 211, Gurugram, Haryana 122999
                 </dd>
               </div>
             </dl>

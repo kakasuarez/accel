@@ -1160,14 +1160,6 @@
   overflow-wrap: anywhere;
 }
 /* Details still to be supplied: visibly unfinished, never mistaken for a real value. */
-.privacy-placeholder {
-  padding: 0 4px;
-  border: 1px dashed var(--ink-soft);
-  border-radius: 4px;
-  background: var(--canvas-soft);
-  font-weight: 600;
-  white-space: nowrap;
-}
 .privacy-back {
   margin: 56px 0 0;
   font-size: 16px;
