@@ -50,7 +50,18 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
   const [review, setReview] = useState<KycCheck | null>(previous?.decision === 'MANUAL_REVIEW' ? previous : null);
   const [shownFresh, setShownFresh] = useState(false);
   const [error, setError] = useState<{ message: string; toDashboard?: boolean } | null>(null);
+  /**
+   * Consent to the document check, given on the consent step. It lasts for this page visit, so a re-upload after a
+   * rejection or from the review screen doesn't ask again; a fresh page load starts unticked.
+   */
+  const [agreed, setAgreed] = useState(false);
+  const [ticked, setTicked] = useState(false);
+  const [consentError, setConsentError] = useState(false);
+  /** Bumped to move focus: to the consent checkbox (`consent`) or to the first upload slot (`form`). */
+  const [focusTo, setFocusTo] = useState<{ target: 'consent' | 'form'; n: number } | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const consentRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // A customer who said they are GST-registered must upload the GST certificate; the server enforces the same.
   const gstRequired = hasGstin === true;
@@ -83,9 +94,21 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
     setFiles((prev) => ({ ...prev, [slot]: file }));
   };
 
+  const proceed = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticked) {
+      setConsentError(true);
+      setFocusTo((f) => ({ target: 'consent', n: (f?.n ?? 0) + 1 }));
+      return;
+    }
+    setError(null);
+    setAgreed(true);
+    setFocusTo((f) => ({ target: 'form', n: (f?.n ?? 0) + 1 }));
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ready) return;
+    if (!ready || !agreed) return;
     setError(null);
     setStep(0);
     setPhase({ kind: 'checking' });
@@ -94,6 +117,8 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
       const file = files[slot];
       if (file) form.append(slot, file, file.name);
     });
+    // The customer ticked the consent box to get here; the server refuses uploads without it.
+    form.append('consent', 'yes');
     try {
       const check = await api<KycCheck>(`/api/leads/${encodeURIComponent(leadId)}/kyc`, { method: 'POST', body: form });
       // Reading is done; tick off the remaining stages before showing the outcome.
@@ -121,6 +146,14 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
         return;
       }
       setPhase({ kind: 'form' });
+      if (failure?.code === 'consent_required') {
+        // Back to the consent step; the chosen files are kept for when they agree.
+        setAgreed(false);
+        setTicked(false);
+        setError({ message: failure.message });
+        setFocusTo((f) => ({ target: 'consent', n: (f?.n ?? 0) + 1 }));
+        return;
+      }
       setError({
         message: failure?.message ?? 'Something went wrong while checking your documents. Please try again.',
         toDashboard: failure?.code === 'not_ready' || failure?.code === 'closed',
@@ -132,6 +165,13 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
   useEffect(() => {
     if (shownFresh) resultRef.current?.focus();
   }, [phase.kind, rejected, shownFresh]);
+
+  // After the consent step: land on the first upload slot, or back on the checkbox when it still needs ticking.
+  useEffect(() => {
+    if (!focusTo) return;
+    if (focusTo.target === 'consent') consentRef.current?.focus();
+    else formRef.current?.querySelector<HTMLInputElement>('input[type="file"]')?.focus();
+  }, [focusTo]);
 
   if (phase.kind === 'checking') return <Checking step={step} />;
 
@@ -183,7 +223,7 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
           </Link>
           <button
             type="button"
-            className="btn btn-outline"
+            className="btn btn-outline-dark"
             onClick={() => {
               setShownFresh(false);
               setPhase({ kind: 'form' });
@@ -206,101 +246,182 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
         </p>
       )}
 
-      <form className="kyc-form" onSubmit={submit} noValidate aria-describedby="kyc-privacy">
-        <fieldset className="kyc-group">
-          <legend>
-            Business registration{' '}
-            <span className="kyc-need">{gstRequired ? 'GST required, Udyam optional' : 'GST or Udyam, at least one'}</span>
-          </legend>
-          {gstRequired && (
-            <p className="kyc-hint">
-              <InfoIcon /> You told us your business is registered for GST, so we need your GST certificate.
-            </p>
-          )}
-          {hasGstin === false && (
-            <p className="kyc-hint">
-              <InfoIcon /> Not registered for GST? Upload your Udyam certificate.
-            </p>
-          )}
-          <Slot
-            slot="gst_certificate"
-            label="GST certificate"
-            hint={gstRequired ? 'The certificate for your GSTIN, form REG-06.' : 'Or upload your Udyam certificate below.'}
-            required={gstRequired}
-            file={files.gst_certificate}
-            error={slotErrors.gst_certificate}
-            onPick={pick}
-          />
-          <Slot
-            slot="udyam_certificate"
-            label="Udyam certificate"
-            hint={gstRequired ? 'Optional. Add it if you have one.' : 'Or upload your GST certificate above.'}
-            file={files.udyam_certificate}
-            error={slotErrors.udyam_certificate}
-            onPick={pick}
-          />
-        </fieldset>
-
-        <fieldset className="kyc-group">
-          <legend>
-            Signatory and address <span className="kyc-need">Both required</span>
-          </legend>
-          <Slot
-            slot="signatory_id"
-            label="Signatory ID"
-            hint="Photo ID of the person authorised to sign for the business."
-            required
-            file={files.signatory_id}
-            error={slotErrors.signatory_id}
-            onPick={pick}
-          />
-          <Slot
-            slot="address_proof"
-            label="Address proof"
-            hint="A bill for the business address, dated within the last 90 days."
-            required
-            file={files.address_proof}
-            error={slotErrors.address_proof}
-            onPick={pick}
-          />
-        </fieldset>
-
-        <p id="kyc-privacy" className="kyc-privacy">
-          <ShieldIcon />
-          <span>
-            Your documents are checked in memory and are not stored. We keep only the result and the reasons for it.
-          </span>
-        </p>
-
-        {error && (
-          <div className="form-alert" role="alert">
-            <AlertIcon />
-            <span>
-              {error.message}
-              {error.toDashboard && (
-                <>
-                  {' '}
-                  <Link href="/dashboard">Go to your dashboard</Link>
-                </>
-              )}
-            </span>
-          </div>
-        )}
-
-        <div className="kyc-submit">
-          <button type="submit" className="btn btn-primary" disabled={!ready}>
-            {rejected ? 'Check my documents again' : 'Check my documents'}
-          </button>
-          <p className="kyc-missing" aria-live="polite">
-            {ready ? 'Ready. The check can take up to a minute.' : `Still needed: ${missing.join(', ')}.`}
+      {!agreed ? (
+        <form className="kyc-consent" onSubmit={proceed} noValidate aria-labelledby="kyc-consent-title">
+          <h2 id="kyc-consent-title">Before you upload</h2>
+          <dl className="kyc-consent-facts">
+            <div>
+              <dt>What we check</dt>
+              <dd>
+                Your GST certificate, Udyam certificate, a photo ID of the person who signs for the business, and an address
+                proof.
+              </dd>
+            </div>
+            <div>
+              <dt>Why</dt>
+              <dd>To verify your business against the GST and Udyam registries before we install your connection.</dd>
+            </div>
+            <div>
+              <dt>How</dt>
+              <dd>
+                We read your documents in memory with OCR on our own server. The images and the text read from them are never
+                stored. We keep only the decision (approved, under review or rejected) and the reasons for it, with ID numbers
+                masked.
+              </dd>
+            </div>
+          </dl>
+          <p className="kyc-consent-more">
+            Read more, including how to withdraw your consent, in our{' '}
+            <Link href="/privacy" target="_blank" rel="noopener">
+              Privacy Policy<span className="sr-only"> (opens in a new tab)</span>
+            </Link>
+            .
           </p>
-          {review && !rejected && (
-            <button type="button" className="btn btn-outline" onClick={() => setPhase({ kind: 'review' })}>
-              Keep the current review
-            </button>
+
+          <div className={`kyc-agree${consentError ? ' has-error' : ''}`}>
+            <input
+              ref={consentRef}
+              id="kyc-consent"
+              type="checkbox"
+              checked={ticked}
+              onChange={(e) => {
+                setTicked(e.target.checked);
+                if (e.target.checked) setConsentError(false);
+              }}
+              aria-invalid={consentError}
+              aria-describedby={consentError ? 'kyc-consent-err' : undefined}
+            />
+            <label htmlFor="kyc-consent">
+              I agree to Accel Business checking these documents for business verification, as described above and in the
+              Privacy Policy.
+            </label>
+          </div>
+          {consentError && (
+            <p id="kyc-consent-err" className="field-error" role="alert">
+              Tick the box to continue. We can’t check your documents without your agreement.
+            </p>
           )}
-        </div>
-      </form>
+
+          {error && (
+            <div className="form-alert" role="alert">
+              <AlertIcon />
+              <span>{error.message}</span>
+            </div>
+          )}
+
+          <div className="kyc-submit">
+            <button type="submit" className="btn btn-primary">
+              Continue
+              <ArrowIcon />
+            </button>
+            {review && !rejected && (
+              <button type="button" className="btn btn-outline-dark" onClick={() => setPhase({ kind: 'review' })}>
+                Keep the current review
+              </button>
+            )}
+          </div>
+        </form>
+      ) : (
+        <form ref={formRef} className="kyc-form" onSubmit={submit} noValidate aria-describedby="kyc-privacy">
+          <fieldset className="kyc-group">
+            <legend>
+              Business registration{' '}
+              <span className="kyc-need">{gstRequired ? 'GST required, Udyam optional' : 'GST or Udyam, at least one'}</span>
+            </legend>
+            {gstRequired && (
+              <p className="kyc-hint">
+                <InfoIcon /> You told us your business is registered for GST, so we need your GST certificate.
+              </p>
+            )}
+            {hasGstin === false && (
+              <p className="kyc-hint">
+                <InfoIcon /> Not registered for GST? Upload your Udyam certificate.
+              </p>
+            )}
+            <Slot
+              slot="gst_certificate"
+              label="GST certificate"
+              hint={gstRequired ? 'The certificate for your GSTIN, form REG-06.' : 'Or upload your Udyam certificate below.'}
+              required={gstRequired}
+              file={files.gst_certificate}
+              error={slotErrors.gst_certificate}
+              onPick={pick}
+            />
+            <Slot
+              slot="udyam_certificate"
+              label="Udyam certificate"
+              hint={gstRequired ? 'Optional. Add it if you have one.' : 'Or upload your GST certificate above.'}
+              file={files.udyam_certificate}
+              error={slotErrors.udyam_certificate}
+              onPick={pick}
+            />
+          </fieldset>
+
+          <fieldset className="kyc-group">
+            <legend>
+              Signatory and address <span className="kyc-need">Both required</span>
+            </legend>
+            <Slot
+              slot="signatory_id"
+              label="Signatory ID"
+              hint="Photo ID of the person authorised to sign for the business."
+              required
+              file={files.signatory_id}
+              error={slotErrors.signatory_id}
+              onPick={pick}
+            />
+            <Slot
+              slot="address_proof"
+              label="Address proof"
+              hint="A bill for the business address, dated within the last 90 days."
+              required
+              file={files.address_proof}
+              error={slotErrors.address_proof}
+              onPick={pick}
+            />
+          </fieldset>
+
+          <p id="kyc-privacy" className="kyc-privacy">
+            <ShieldIcon />
+            <span>
+              As you agreed, your documents are read in memory and never stored. We keep only the decision and the reasons for
+              it.{' '}
+              <Link href="/privacy" target="_blank" rel="noopener">
+                Privacy Policy<span className="sr-only"> (opens in a new tab)</span>
+              </Link>
+            </span>
+          </p>
+
+          {error && (
+            <div className="form-alert" role="alert">
+              <AlertIcon />
+              <span>
+                {error.message}
+                {error.toDashboard && (
+                  <>
+                    {' '}
+                    <Link href="/dashboard">Go to your dashboard</Link>
+                  </>
+                )}
+              </span>
+            </div>
+          )}
+
+          <div className="kyc-submit">
+            <button type="submit" className="btn btn-primary" disabled={!ready}>
+              {rejected ? 'Check my documents again' : 'Check my documents'}
+            </button>
+            <p className="kyc-missing" aria-live="polite">
+              {ready ? 'Ready. The check can take up to a minute.' : `Still needed: ${missing.join(', ')}.`}
+            </p>
+            {review && !rejected && (
+              <button type="button" className="btn btn-outline-dark" onClick={() => setPhase({ kind: 'review' })}>
+                Keep the current review
+              </button>
+            )}
+          </div>
+        </form>
+      )}
     </>
   );
 }

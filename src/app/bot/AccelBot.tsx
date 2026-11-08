@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccelMark } from '@/components/AccelMark';
 import { api, ApiFailure } from '@/components/api';
+import { ArrowIcon } from '@/components/icons';
 import { ACKNOWLEDGEMENTS, CLOSING_MESSAGE, GREETING, WELCOME_BACK, pickAcknowledgement } from '@/lib/bot/script';
 import { BotExplanation } from './BotExplanation';
 import { BotResult } from './BotResult';
@@ -42,7 +43,8 @@ interface Intro {
   tone: 'greet' | 'ack' | 'unclear';
 }
 
-type Load = { kind: 'loading' } | { kind: 'ready' } | { kind: 'error'; message: string };
+/** `consent`: a brand-new conversation waiting for the privacy note to be accepted; nothing is created yet. */
+type Load = { kind: 'consent' } | { kind: 'loading' } | { kind: 'ready' } | { kind: 'error'; message: string };
 
 const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
 
@@ -72,6 +74,12 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   const currentLeadId = intake?.leadId;
   useEffect(() => setBundleTier('recommended'), [currentLeadId]);
   const [showAllChips, setShowAllChips] = useState(false);
+  /**
+   * The customer has continued past the privacy note on this page. It holds for the rest of the visit,
+   * so "Start over" doesn't ask again; a fresh page load asks again before anything is created or spoken.
+   */
+  const [agreed, setAgreed] = useState(false);
+  const agreedRef = useRef(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const lastAck = useRef<string | undefined>(undefined);
@@ -79,9 +87,13 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   intakeRef.current = intake;
 
   const question = intake?.nextQuestion ?? null;
-  const done = load.kind === 'ready' && !accepted && !!intake && !question;
-  const asking = load.kind === 'ready' && !accepted && !!question;
   const answeredCount = intake ? Object.keys(intake.answers).length : 0;
+  // The note comes before the first question: for a new conversation (not created until the customer continues)
+  // and for a saved one with no answers yet. A conversation with answers resumes straight away.
+  const needsConsent =
+    !agreed && (load.kind === 'consent' || (load.kind === 'ready' && !accepted && !!question && answeredCount === 0));
+  const done = load.kind === 'ready' && !accepted && !!intake && !question;
+  const asking = load.kind === 'ready' && !accepted && !!question && !needsConsent;
 
   // ---------- Loading the conversation ----------
   const loadedFor = useRef<string | null>(null);
@@ -117,6 +129,22 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
     [applyState],
   );
 
+  /** Create the conversation. Only called once the customer has agreed to the privacy note. */
+  const createLead = useCallback(
+    (seq: number) => {
+      api<IntakeState>('/api/leads', { method: 'POST' })
+        .then((state) => {
+          if (seq !== loadSeq.current) return;
+          loadedFor.current = state.leadId;
+          applyState(state, null, { text: GREETING, tone: 'greet' });
+          setLoad({ kind: 'ready' });
+          router.replace(`/bot?lead=${encodeURIComponent(state.leadId)}`, { scroll: false });
+        })
+        .catch((err: Error) => seq === loadSeq.current && setLoad({ kind: 'error', message: err.message }));
+    },
+    [applyState, router],
+  );
+
   useEffect(() => {
     const key = leadId ?? 'new';
     if (loadedFor.current === key) return;
@@ -132,15 +160,9 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
     lastAck.current = undefined;
 
     if (!leadId) {
-      api<IntakeState>('/api/leads', { method: 'POST' })
-        .then((state) => {
-          if (seq !== loadSeq.current) return;
-          loadedFor.current = state.leadId;
-          applyState(state, null, { text: GREETING, tone: 'greet' });
-          setLoad({ kind: 'ready' });
-          router.replace(`/bot?lead=${encodeURIComponent(state.leadId)}`, { scroll: false });
-        })
-        .catch((err: Error) => seq === loadSeq.current && setLoad({ kind: 'error', message: err.message }));
+      // Nothing is created until the customer has seen the privacy note and continued.
+      if (agreedRef.current) createLead(seq);
+      else setLoad({ kind: 'consent' });
       return;
     }
 
@@ -159,7 +181,18 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
           message: err instanceof ApiFailure && err.status === 404 ? 'We couldn’t find that conversation.' : (err as Error).message,
         });
       });
-  }, [leadId, applyState, router]);
+  }, [leadId, applyState, createLead]);
+
+  /** "Let's start": record the agreement, then create the conversation if it doesn't exist yet. */
+  const agree = () => {
+    agreedRef.current = true;
+    setAgreed(true);
+    if (load.kind === 'consent') {
+      const seq = ++loadSeq.current;
+      setLoad({ kind: 'loading' });
+      createLead(seq);
+    }
+  };
 
   // ---------- Speech ----------
   const [voicePause, setVoicePause] = useState<string | null>(null);
@@ -222,14 +255,15 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
   const questionText = question?.question;
   const lines = useMemo<RevealLine[]>(() => {
     if (done) return [{ text: CLOSING_MESSAGE }];
-    if (!questionText) return [];
+    // Nothing is shown or spoken until the customer continues past the privacy note.
+    if (!questionText || needsConsent) return [];
     const out: RevealLine[] = [];
     if (intro) out.push({ text: intro.text, className: intro.tone === 'unclear' ? 'bot-ack is-unclear' : 'bot-ack' });
     out.push({ text: questionText, className: 'bot-question-text' });
     return out;
     // `turn` restarts the line set when the same question is asked again.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done, questionText, intro, turn]);
+  }, [done, questionText, intro, turn, needsConsent]);
 
   const onRevealed = useCallback(() => {
     setRevealed(true);
@@ -362,7 +396,7 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
     ? 'Quote accepted'
     : done
       ? 'Your bundle'
-      : load.kind !== 'ready' || !phase
+      : load.kind !== 'ready' || !phase || needsConsent
         ? ''
         : phase === 'profile'
           ? `${Math.min(answeredCount + 1, PROFILE_TOTAL)} of ${PROFILE_TOTAL}`
@@ -454,6 +488,31 @@ export function AccelBot({ leadId }: { leadId: string | null }) {
               </span>
               <span className="sr-only">Loading your conversation</span>
             </p>
+          </section>
+        )}
+
+        {needsConsent && (
+          <section className="bot-stage bot-state bot-consent" aria-labelledby="bot-consent">
+            <h1 id="bot-consent" className="bot-question">
+              Before we start
+            </h1>
+            <p className="bot-state-body">
+              Your answers are used to recommend a bundle and prepare your quote. If you answer by voice, your speech is
+              turned into text by our speech provider or by your browser.
+            </p>
+            <p className="bot-consent-agree">
+              By continuing, you agree to our{' '}
+              <Link href="/privacy" target="_blank" rel="noopener">
+                Privacy Policy<span className="sr-only"> (opens in a new tab)</span>
+              </Link>
+              .
+            </p>
+            <div className="bundle-actions">
+              <button type="button" className="btn btn-primary" onClick={agree}>
+                Let’s start
+                <ArrowIcon />
+              </button>
+            </div>
           </section>
         )}
 

@@ -262,7 +262,7 @@ export default function Home() {
                 <li><Link href={BOT_HREF}>Accel Bot</Link></li>
                 <li><a href="tel:121">Call 121 (24×7)</a></li>
                 <li><a href="#get-started">KYC help</a></li>
-                <li><a href="#support">Privacy & DPDP</a></li>
+                <li><Link href="/privacy">Privacy & DPDP</Link></li>
               </ul>
             </div>
           </div>

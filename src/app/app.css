@@ -641,6 +641,101 @@
   color: var(--on-dark);
 }
 
+/* Consent step: what, why and how, then an explicit tick before any document can be chosen. */
+.kyc-consent {
+  display: grid;
+  gap: var(--sp-xl);
+  justify-items: start;
+  margin-top: var(--sp-3xl);
+  padding: var(--sp-3xl);
+  background: var(--canvas-soft);
+  border-radius: var(--r-card);
+}
+.kyc-consent h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: 1.15;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.kyc-consent-facts {
+  display: grid;
+  gap: var(--sp-lg);
+  width: 100%;
+  margin: 0;
+}
+.kyc-consent-facts > div {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr);
+  gap: var(--sp-lg);
+  padding-top: var(--sp-lg);
+  border-top: 1px solid var(--line-strong);
+}
+.kyc-consent-facts dt {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+}
+.kyc-consent-facts dd {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.kyc-consent-more {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.kyc-consent a,
+.kyc-privacy a {
+  color: var(--ink);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.kyc-agree {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: flex-start;
+  width: 100%;
+  padding: var(--sp-lg);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-card);
+  background: var(--canvas);
+}
+.kyc-agree.has-error {
+  border-color: #c40000;
+}
+.kyc-agree input {
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.kyc-agree label {
+  flex: 1;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kyc-consent .field-error {
+  margin-top: calc(-1 * var(--sp-md));
+}
+.kyc-consent .form-alert {
+  width: 100%;
+  background: var(--canvas);
+}
+.kyc-consent .kyc-submit {
+  width: 100%;
+}
+
 .kyc-privacy {
   display: flex;
   gap: var(--sp-md);
@@ -841,6 +936,160 @@
   }
 }
 
+/* ---------- Privacy policy (public, Read mode) ---------- */
+.privacy {
+  --measure: 68ch;
+}
+.privacy-updated {
+  margin: var(--sp-lg) 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.privacy-short {
+  margin-top: var(--sp-3xl);
+  padding: var(--sp-2xl);
+  background: var(--canvas-soft);
+  border-radius: var(--r-card);
+}
+.privacy-short h2,
+.privacy-toc h2 {
+  margin: 0 0 var(--sp-md);
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 700;
+}
+.privacy-short ul {
+  display: grid;
+  gap: var(--sp-sm);
+  margin: 0;
+  padding-left: 1.2em;
+  max-width: var(--measure);
+  font-size: 17px;
+  line-height: 26px;
+}
+.privacy-short li::marker {
+  color: var(--primary);
+}
+.privacy-toc {
+  margin-top: var(--sp-3xl);
+  padding-bottom: var(--sp-2xl);
+  border-bottom: 1px solid var(--line);
+}
+.privacy-toc ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 0 var(--sp-2xl);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.privacy-toc a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 22px;
+  text-decoration: underline;
+  text-decoration-color: var(--mute);
+  text-underline-offset: 4px;
+}
+.privacy-toc a:hover {
+  text-decoration-color: currentColor;
+}
+.privacy-body section {
+  max-width: var(--measure);
+  padding-top: 48px;
+  scroll-margin-top: 72px;
+}
+.privacy-body h2 {
+  margin: 0 0 var(--sp-md);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.privacy-body h3 {
+  margin: var(--sp-2xl) 0 var(--sp-xs);
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+}
+.privacy-body p,
+.privacy-body ul {
+  margin: 0 0 var(--sp-md);
+  font-size: 17px;
+  line-height: 28px;
+  text-wrap: pretty;
+}
+.privacy-body ul {
+  display: grid;
+  gap: var(--sp-sm);
+  padding-left: 1.2em;
+}
+.privacy-body li::marker {
+  color: var(--ink-soft);
+}
+.privacy-contact {
+  display: grid;
+  margin: var(--sp-lg) 0 0;
+  border-top: 1px solid var(--line);
+}
+.privacy-contact > div {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: var(--sp-lg);
+  padding: var(--sp-md) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 17px;
+  line-height: 26px;
+}
+.privacy-contact dt {
+  color: var(--ink-soft);
+}
+.privacy-contact dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+/* Details still to be supplied: visibly unfinished, never mistaken for a real value. */
+.privacy-placeholder {
+  padding: 0 4px;
+  border: 1px dashed var(--ink-soft);
+  border-radius: 4px;
+  background: var(--canvas-soft);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.privacy-back {
+  margin: 56px 0 0;
+  font-size: 16px;
+}
+.privacy-back a {
+  color: var(--ink);
+  font-weight: 600;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Footer (public app pages) ---------- */
+.app-footer {
+  background: var(--canvas-soft);
+  border-top: 1px solid var(--line-strong);
+}
+.app-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-sm) var(--sp-2xl);
+  max-width: var(--app-max);
+  margin: 0 auto;
+  padding: var(--sp-2xl) var(--sp-xl);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+
 /* ---------- Small screens ---------- */
 @media (max-width: 599px) {
   .app-header-inner {
@@ -876,8 +1125,22 @@
   .summary-facts {
     grid-template-columns: 1fr 1fr;
   }
-  .kyc-rejected {
+  .kyc-rejected,
+  .kyc-consent {
     padding: var(--sp-xl);
+  }
+  .kyc-consent-facts > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .privacy-short {
+    padding: var(--sp-xl);
+  }
+  .privacy-body section {
+    padding-top: 40px;
+  }
+  .app-footer-inner {
+    padding: var(--sp-xl) var(--sp-lg);
   }
 }
 
