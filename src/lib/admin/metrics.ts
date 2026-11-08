@@ -23,6 +23,12 @@ export interface LeadSummary {
   kyc: { decision: KycDecision; at: Date } | null;
   /** The first KYC attempt, the same as `kyc` when there was only one. */
   firstKyc: { decision: KycDecision; at: Date } | null;
+  /** The newest stage change, close or KYC check: when anyone last moved the lead. */
+  lastActivityAt: Date;
+  /** From the customer's answers. Null when they didn't say. */
+  profile: { businessType: string | null; city: string | null; hasGstin: boolean | null; currentInternet: string | null };
+  /** Name and phone are only collected when the quote is accepted. Email is the account's. */
+  contact: { business: string | null; name: string | null; phone: string | null; email: string | null };
 }
 
 export const PERIODS = [7, 30, 90] as const;

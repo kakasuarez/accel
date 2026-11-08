@@ -1,24 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { adminMetrics, parsePeriod, type LeadSummary } from "../src/lib/admin/metrics";
-
-const NOW = new Date("2026-11-08T12:00:00Z");
-const daysAgo = (n: number) => new Date(NOW.getTime() - n * 24 * 60 * 60 * 1000);
-
-const lead = (over: Partial<LeadSummary>): LeadSummary => ({
-  id: Math.random().toString(36),
-  createdAt: daysAgo(1),
-  stage: "Needs assessed",
-  status: "open",
-  closeReason: null,
-  closedAt: null,
-  segment: "Micro retail & services",
-  bundle: null,
-  monthly: null,
-  reached: { "Needs assessed": daysAgo(1) },
-  kyc: null,
-  firstKyc: null,
-  ...over,
-});
+import { adminMetrics, parsePeriod } from "../src/lib/admin/metrics";
+import { daysAgo, lead, NOW } from "./admin-fixtures";
 
 const activated = (createdDaysAgo: number, monthly: number) =>
   lead({

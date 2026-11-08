@@ -4,8 +4,9 @@ import { AppHeader } from '@/components/AppHeader';
 import { SignOutButton } from '@/components/SignOutButton';
 import { loadAdminMetrics } from '@/lib/admin/data';
 import { parsePeriod } from '@/lib/admin/metrics';
+import { STALL_DAYS } from '@/lib/admin/propensity';
 import { currentUser } from '@/lib/auth/session';
-import { BarList, Funnel, PeriodFilter, Section, TargetKpis, VolumeRow } from './AdminParts';
+import { BarList, CallTable, compactRupees, Funnel, PeriodFilter, Section, TargetKpis, VolumeRow } from './AdminParts';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,20 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
         <Section id="segments" title="Leads by segment" sub="Leads created in this period, and how many of them were activated.">
           <BarList rows={m.segments} label="Leads by segment" />
+        </Section>
+
+        <Section
+          id="calls"
+          title="Leads to call"
+          sub={`Open leads the advisor couldn’t close: no movement for ${STALL_DAYS} days or more, as of today (the period doesn’t apply). ${m.calls.total.toLocaleString('en-IN')} in all, worth ${compactRupees(m.calls.monthlyAtStake)} a month in accepted quotes.`}
+        >
+          <BarList rows={m.calls.byStage} label="Stalled leads by stage" />
+          <h3 className="admin-h3 calls-h3">Call first</h3>
+          <p className="admin-sub">
+            Chance to activate starts from how often leads at the same stage activated in the old sales-led process, adjusted for segment, GSTIN and current internet, and lowered the longer a lead sits idle or if KYC was rejected.
+            High is 40% or more, Medium 20% or more.
+          </p>
+          <CallTable leads={m.calls.top} />
         </Section>
 
         <Section id="closed" title="Closed leads" sub={`${m.closedTotal.toLocaleString('en-IN')} closed in this period.`}>

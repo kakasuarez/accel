@@ -1385,3 +1385,154 @@
 .app:has(.dash.admin) .app-header-inner {
   max-width: 1120px;
 }
+
+/* Call list: a table on wide screens, one card per lead on phones. */
+.calls-h3 {
+  margin-top: var(--sp-2xl);
+}
+.calls {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 20px;
+}
+.calls th {
+  padding: 0 var(--sp-md) var(--sp-sm) 0;
+  text-align: left;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.57px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line-strong);
+}
+.calls td {
+  padding: var(--sp-md) var(--sp-md) var(--sp-md) 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.calls th:last-child,
+.calls td:last-child {
+  padding-right: 0;
+}
+.calls .calls-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.calls-score {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-sm);
+}
+.calls-score strong {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.calls-band {
+  padding: 0 8px;
+  border-radius: var(--r-pill-md);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 700;
+  background: var(--canvas-soft);
+  color: var(--ink-soft);
+}
+.calls-band.is-high {
+  background: var(--ink);
+  color: var(--on-dark, #fff);
+}
+.calls-band.is-medium {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  background: var(--canvas);
+}
+.calls-meter {
+  display: block;
+  width: 96px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--canvas-soft);
+  overflow: hidden;
+}
+.calls-meter span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+.calls-business {
+  display: block;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.calls-contact {
+  display: block;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.calls-contact a {
+  color: var(--ink);
+  font-weight: 600;
+}
+.calls-reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+.calls-reasons [aria-hidden] {
+  display: inline-block;
+  width: 1.4em;
+  font-size: 10px;
+  color: var(--ink);
+}
+@media (max-width: 760px) {
+  .calls thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .calls,
+  .calls tbody,
+  .calls tr,
+  .calls td {
+    display: block;
+  }
+  .calls tr {
+    padding: var(--sp-lg) 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--sp-sm) var(--sp-md);
+  }
+  .calls td {
+    padding: 0;
+    border: 0;
+  }
+  .calls td[data-label="Lead"],
+  .calls td[data-label="Why"] {
+    grid-column: 1 / -1;
+  }
+  .calls td[data-label="Lead"] {
+    grid-row: 1;
+  }
+  .calls .calls-num {
+    text-align: right;
+  }
+}
+@media (forced-colors: active) {
+  .calls-meter span {
+    background: CanvasText;
+  }
+}

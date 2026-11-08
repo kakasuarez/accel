@@ -3,11 +3,12 @@ import { formatRupees } from '@/lib/bot/script';
 import { AlertIcon, CheckIcon } from '@/components/icons';
 import type { Kpi as KpiType } from '@/lib/admin/kpis';
 import { PERIODS, type Compared, type FunnelStep, type Period, type Row } from '@/lib/admin/metrics';
+import type { CallLead } from '@/lib/admin/propensity';
 
 const percent = (n: number) => `${Math.round(n * 100)}%`;
 
 /** "₹4.19 L", "₹1.03 Cr": big amounts in lakh and crore, so they fit a tile. Smaller ones in full. */
-function compactRupees(amount: number): string {
+export function compactRupees(amount: number): string {
   if (Math.abs(amount) >= 1e7) return `₹${(amount / 1e7).toFixed(2)} Cr`;
   if (Math.abs(amount) >= 1e5) return `₹${(amount / 1e5).toFixed(2)} L`;
   return formatRupees(amount);
@@ -179,5 +180,65 @@ export function Funnel({ steps }: { steps: readonly FunnelStep[] }) {
         detail: s.fromPrevious === null ? 'All new leads' : `${percent(s.fromPrevious)} of the step before`,
       }))}
     />
+  );
+}
+
+/** Leads the advisor couldn't close, best to call first. The score is printed as a number and a word, the bar is extra. */
+export function CallTable({ leads }: { leads: readonly CallLead[] }) {
+  if (leads.length === 0) return <p className="admin-empty">No stalled leads. The advisor is keeping up.</p>;
+  return (
+    <table className="calls">
+      <thead>
+        <tr>
+          <th scope="col">Chance to activate</th>
+          <th scope="col">Lead</th>
+          <th scope="col">Stuck at</th>
+          <th scope="col" className="calls-num">A month</th>
+          <th scope="col">Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        {leads.map((lead) => (
+          <tr key={lead.id}>
+            <td data-label="Chance to activate">
+              <span className="calls-score">
+                <strong>{percent(lead.score)}</strong>
+                <span className={`calls-band is-${lead.band.toLowerCase()}`}>{lead.band}</span>
+              </span>
+              <span className="calls-meter" aria-hidden="true">
+                <span style={{ width: `${Math.max(2, lead.score * 100)}%` }} />
+              </span>
+            </td>
+            <td data-label="Lead">
+              <span className="calls-business">{lead.business}</span>
+              <span className="calls-contact">
+                {lead.contactName && <>{lead.contactName} · </>}
+                {lead.phone ? <a href={`tel:${lead.phone.replace(/\s/g, '')}`}>{lead.phone}</a> : <>No phone yet{lead.email && <> · {lead.email}</>}</>}
+              </span>
+            </td>
+            <td data-label="Stuck at">
+              {lead.stage}
+              <span className="calls-contact">
+                {lead.idleDays} {lead.idleDays === 1 ? 'day' : 'days'} idle
+              </span>
+            </td>
+            <td data-label="A month" className="calls-num">
+              {lead.monthly === null ? '—' : formatRupees(lead.monthly)}
+            </td>
+            <td data-label="Why">
+              <ul className="calls-reasons">
+                {lead.reasons.map((r) => (
+                  <li key={r.label}>
+                    <span aria-hidden="true">{r.effect === 'up' ? '▲' : '▼'}</span>
+                    <span className="sr-only">{r.effect === 'up' ? 'Raises: ' : 'Lowers: '}</span>
+                    {r.label}
+                  </li>
+                ))}
+              </ul>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

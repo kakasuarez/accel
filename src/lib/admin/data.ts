@@ -1,12 +1,28 @@
 import 'server-only';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { db } from '../db';
 import type { Decision } from '../kyc/types';
 import { recommendationFor } from '../leads/quote';
 import type { AcceptedQuote, LeadRow } from '../leads/repository';
 import type { LeadStage } from '../leads/stages';
 import { getQuestions } from '../questions';
-import { getRecommender } from '../recommender';
+import { getRecommender, parseLeads } from '../recommender';
 import { adminMetrics, type AdminMetrics, type LeadSummary, type Period } from './metrics';
+import { callList, trainPropensity, type CallList, type PropensityModel } from './propensity';
+
+export type AdminData = AdminMetrics & { calls: CallList };
+
+// On globalThis, like the recommender, so it's trained once per cold start.
+const cache = globalThis as { __accelPropensity?: PropensityModel };
+function propensityModel(): PropensityModel {
+  const file = resolve(process.env.ACCEL_DATA_DIR ?? process.cwd(), 'training_leads.csv');
+  cache.__accelPropensity ??= trainPropensity(parseLeads(readFileSync(/* turbopackIgnore: true */ file, 'utf8')));
+  return cache.__accelPropensity;
+}
+
+const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value.trim() : null);
+const later = (a: Date, b: Date | undefined) => (b && b > a ? b : a);
 
 interface EventRow {
   lead_id: string;
@@ -29,9 +45,10 @@ const monthlyOf = (quote: AcceptedQuote | null) => {
 };
 
 /** Three queries, then everything is worked out in memory: fine for thousands of leads. */
-export async function loadAdminMetrics(days: Period, now = new Date()): Promise<AdminMetrics> {
+export async function loadAdminMetrics(days: Period, now = new Date()): Promise<AdminData> {
   const sql = db();
-  const leads = await sql<LeadRow[]>`select * from leads where stage is not null`;
+  const leads = await sql<(LeadRow & { email: string | null })[]>`
+    select l.*, u.email from leads l left join auth.users u on u.id = l.user_id where l.stage is not null`;
   const events = await sql<EventRow[]>`
     select e.lead_id, e.stage, e.status, e.created_at from lead_events e
     join leads l on l.id = e.lead_id where l.stage is not null order by e.id`;
@@ -53,10 +70,14 @@ export async function loadAdminMetrics(days: Period, now = new Date()): Promise<
   const summaries = leads.map((lead): LeadSummary => {
     const reached: LeadSummary['reached'] = {};
     let closedAt: Date | null = null;
+    let lastActivityAt = new Date(lead.created_at);
     for (const event of eventsByLead.get(lead.id) ?? []) {
-      if (event.stage && !reached[event.stage]) reached[event.stage] = new Date(event.created_at);
-      if (event.status === 'closed' && !closedAt) closedAt = new Date(event.created_at);
+      const at = new Date(event.created_at);
+      if (event.stage && !reached[event.stage]) reached[event.stage] = at;
+      if (event.status === 'closed' && !closedAt) closedAt = at;
+      lastActivityAt = later(lastActivityAt, at);
     }
+    const kyc = toCheck(latestKyc.get(lead.id));
     return {
       id: lead.id,
       createdAt: new Date(lead.created_at),
@@ -68,11 +89,19 @@ export async function loadAdminMetrics(days: Period, now = new Date()): Promise<
       bundle: lead.quote ? (lead.quote.bundle ?? 'unrecorded') : null,
       monthly: monthlyOf(lead.quote),
       reached,
-      kyc: toCheck(latestKyc.get(lead.id)),
+      kyc,
       firstKyc: toCheck(firstKyc.get(lead.id)),
+      lastActivityAt: later(lastActivityAt, kyc?.at),
+      profile: {
+        businessType: text(lead.answers.businessType),
+        city: text(lead.answers.city),
+        hasGstin: typeof lead.answers.hasGstin === 'boolean' ? lead.answers.hasGstin : null,
+        currentInternet: text(lead.answers.currentInternet),
+      },
+      contact: { business: text(lead.business_name), name: text(lead.contact_name), phone: text(lead.phone), email: lead.email },
     };
   });
-  return adminMetrics(summaries, now, days);
+  return { ...adminMetrics(summaries, now, days), calls: callList(propensityModel(), summaries, now) };
 
   function segmentLabel(lead: LeadRow): string | null {
     try {

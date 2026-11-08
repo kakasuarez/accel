@@ -147,7 +147,25 @@ Below them: volume (new leads, activations, monthly revenue won, open pipeline),
 bundles accepted, leads by segment, KYC results and closed leads by reason and stage. Leads that never
 finished the profile are left out. Quotes accepted before single prices count at their minimum price.
 
+**Leads to call** lists the open leads the advisor couldn't close: no stage change, close or KYC check
+for 3 days or more. It ignores the period and is always as of today. Each one gets a chance to activate
+(`src/lib/admin/propensity.ts`), and the top 12 are listed with phone, monthly value and the reasons
+behind the score. The score is meant to be simple enough to explain on a call:
+
+1. Base rate: how often a lead at that stage activated in `training_leads.csv` (19% from needs
+   assessed, 43% from an accepted quote, 63% after KYC).
+2. Profile: the odds are multiplied by how segment, GSTIN and current internet did in those leads
+   compared with the average, smoothed so that small groups count less. They're treated as independent,
+   which overstates leads that are strong on all three. That's fine for ranking.
+3. Judgement calls: the odds halve for every 14 idle days past the 3-day line, and halve again if the
+   latest KYC check was rejected. The old leads have no dates or KYC results to learn these from.
+
+High is 40% or more and Medium is 20% or more. The score ranks leads; it isn't calibrated. Retrain it on
+the app's own leads once enough of them have settled.
+
 **Demo data:** `npm run seed:demo` adds about 460 made-up leads (real profiles from
 `training_leads.csv`, quotes from the real recommender) over the last 180 days, all owned by
 `demo-data@accel.example`. Running it again replaces them; `npm run seed:demo -- --remove` deletes that
-account and, with it, all of its leads, events and KYC checks.
+account and, with it, all of its leads, events and KYC checks. Demo outcomes lean on the same profile
+signals as the call score (and leads without a GSTIN fail KYC more often), so the call list's order
+means something.

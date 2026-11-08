@@ -13,6 +13,7 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+import { profileLift, trainPropensity } from "../src/lib/admin/propensity";
 import { db } from "../src/lib/db";
 import { REASONS } from "../src/lib/kyc/reasons";
 import type { Decision, DocType } from "../src/lib/kyc/types";
@@ -100,6 +101,7 @@ async function main() {
   const recommender = loadRecommender();
   const questions = buildQuestions(recommender);
   const samples = parseLeads(readFileSync("training_leads.csv", "utf8"));
+  const propensity = trainPropensity(samples);
   const now = Date.now();
 
   const leads: Record<string, unknown>[] = [];
@@ -125,13 +127,16 @@ async function main() {
     const options = bundleOptions(recommender, questions, answers);
     if (!options) throw new Error(`Couldn't build a quote for sample ${sample.id}`);
     const sensitivity = recommender.priceSensitivity(options[0]!.recommendation.segment);
+    // Profiles that did well in the old process do well here too, so the call list's ranking means something.
+    const lift = Math.sqrt(profileLift(propensity, { segment: sample.segmentLabel, hasGstin: p.hasGstin, currentInternet: p.currentInternet ?? null }));
+    const likelier = (base: number) => Math.min(0.97, base * lift);
 
     const timeline: { stage: LeadStage; at: number }[] = [{ stage: "Needs assessed", at: createdAt + between(5, 25) * 60_000 }];
     let quote: AcceptedQuote | null = null;
     // KYC attempts, oldest first. A failed first check is often fixed with better documents a day or two later.
     let attempts: { decision: Decision; at: number }[] = [];
 
-    if (chance(0.58)) {
+    if (chance(likelier(0.58))) {
       const weights: Record<BundleTier, number> =
         sensitivity === "high" ? { recommended: 5, budget: 4, premium: 1 } : sensitivity === "low" ? { recommended: 5, budget: 1, premium: 3 } : { recommended: 6, budget: 2, premium: 2 };
       const offered = Object.fromEntries(options.map((o) => [o.tier, weights[o.tier]])) as Record<BundleTier, number>;
@@ -143,14 +148,14 @@ async function main() {
       timeline.push({ stage: "Quote accepted", at: timeline[0]!.at + between(0.02, 3) * DAY });
 
       if (chance(0.88)) {
-        attempts.push({ decision: weighted<Decision>({ APPROVE: 70, MANUAL_REVIEW: 17, REJECT: 13 }), at: timeline[1]!.at + between(0.1, 4) * DAY });
+        attempts.push({ decision: weighted<Decision>({ APPROVE: 70, MANUAL_REVIEW: 17, REJECT: p.hasGstin ? 10 : 30 }), at: timeline[1]!.at + between(0.1, 4) * DAY });
         if (attempts[0]!.decision !== "APPROVE" && chance(0.55)) {
           attempts.push({ decision: weighted<Decision>({ APPROVE: 85, MANUAL_REVIEW: 10, REJECT: 5 }), at: attempts[0]!.at + between(0.5, 3) * DAY });
         }
         const approved = attempts.find((a) => a.decision === "APPROVE");
         if (approved) {
           timeline.push({ stage: "KYC complete", at: approved.at });
-          if (chance(0.9)) timeline.push({ stage: "Activated", at: approved.at + between(2, Math.max(3, option.recommendation.totals.installDays + 3)) * DAY });
+          if (chance(likelier(0.9))) timeline.push({ stage: "Activated", at: approved.at + between(2, Math.max(3, option.recommendation.totals.installDays + 3)) * DAY });
         }
       }
     }
