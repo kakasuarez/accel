@@ -1,0 +1,53 @@
+<!-- DigiLocker mark (the symbol from the official logo), MeitY, Government of India. Source: digilocker.gov.in via https://commons.wikimedia.org/wiki/File:DigiLocker.svg -->
+<svg width="56" height="52" viewBox="0 0 55.92 51.84" xmlns="http://www.w3.org/2000/svg">
+  <defs
+     id="defs9">
+    <style
+       id="style2">.cls-1{fill:#5e5ba8;}.cls-2{fill:#5c57a6;}.cls-3{fill:#868383;}.cls-4{fill:#fff;}.cls-5{opacity:0.6;}.cls-6{fill:url(#linear-gradient);}</style>
+  </defs>
+  <title
+     id="title11">DigiLocker</title>
+  <g
+     id="Layer_2"
+     data-name="Layer 2">
+    <g
+       id="Layer_1-2"
+       data-name="Layer 1">
+      <path
+         class="cls-1"
+         d="M32.56,18.75V0H15.2a3.35,3.35,0,0,0-3.34,3.34V48.5a3.35,3.35,0,0,0,3.34,3.34H52.58a3.35,3.35,0,0,0,3.34-3.34V18.75Z"
+         id="path13"
+         style="fill:#6334fa;fill-opacity:1" />
+      <path
+         class="cls-1"
+         d="M9,44.89a9,9,0,0,1-4.07-17,11.8,11.8,0,0,1,21.76-6A9.47,9.47,0,0,1,30,21.24a9.33,9.33,0,0,1,8.93,6.55,9,9,0,0,1,5,8.09,9,9,0,0,1-7.69,8.92v.09H9Z"
+         id="path93"
+         style="fill:#6334ff;fill-opacity:1" />
+      <path
+         class="cls-4"
+         d="M37.79,28.72a8.06,8.06,0,0,0-11.64-5.24A10.52,10.52,0,0,0,6.22,28.16c0,.17,0,.35,0,.52A7.72,7.72,0,0,0,9,43.6H34.94a7.72,7.72,0,0,0,2.85-14.88Z"
+         id="path95" />
+      <polygon
+         class="cls-5"
+         points="35.14 16.59 55.92 16.59 35.14 0 35.14 16.59"
+         id="polygon97" />
+      <polygon
+         class="cls-1"
+         points="35.14 16.59 55.92 16.59 35.14 0 35.14 16.59"
+         id="polygon99"
+         style="fill:#6334ff;fill-opacity:1" />
+      <circle
+         class="cls-1"
+         cx="19.91"
+         cy="30.9"
+         r="1.91"
+         id="circle101"
+         style="fill:#6334fa;fill-opacity:1" />
+      <polygon
+         class="cls-1"
+         points="20.46 31.6 19.35 31.6 18.06 36.93 21.76 36.93 20.46 31.6"
+         id="polygon103"
+         style="fill:#6334fa;fill-opacity:1" />
+    </g>
+  </g>
+  </svg>

@@ -246,6 +246,8 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
         </p>
       )}
 
+      <DigiLocker />
+
       {!agreed ? (
         <form className="kyc-consent" onSubmit={proceed} noValidate aria-labelledby="kyc-consent-title">
           <h2 id="kyc-consent-title">Before you upload</h2>
@@ -426,6 +428,41 @@ export function KycForm({ leadId, hasGstin, previous }: Props) {
   );
 }
 
+/**
+ * Verifying through DigiLocker isn't connected yet. The option is shown so owners know it's on the way; choosing it
+ * says so and points them to the upload, which works today.
+ */
+function DigiLocker() {
+  const [asked, setAsked] = useState(false);
+  return (
+    <div className="kyc-digilocker">
+      <button type="button" className="dl-option" onClick={() => setAsked(true)} aria-describedby="kyc-dl-note">
+        <span className="dl-mark" aria-hidden="true">
+          {/* DigiLocker's own symbol, from its official logo. The label names the service, so the mark is decorative. */}
+          <img src="/brands/digilocker-mark.svg" alt="" width={30} height={28} />
+        </span>
+        <span className="dl-text">
+          <span className="dl-label">Verify with DigiLocker</span>
+          <span className="dl-hint">Share your documents from your DigiLocker account, with no photos to take.</span>
+        </span>
+        <span className="dl-action" aria-hidden="true">
+          Connect
+        </span>
+      </button>
+      {/* Always in the page, so screen readers announce the note when it appears. */}
+      <div id="kyc-dl-note" role="status">
+        {asked && (
+          <p className="kyc-hint dl-soon">
+            <ClockIcon /> DigiLocker verification is coming soon. For now, upload your documents below.
+          </p>
+        )}
+      </div>
+      <p className="kyc-or">
+        <span>Or upload your documents</span>
+      </p>
+    </div>
+  );
+}
 
 function Rejected({ check, fresh, innerRef }: { check: KycCheck; fresh: boolean; innerRef: React.Ref<HTMLDivElement> }) {
   const blocking = check.findings.filter((f) => f.severity === 'REJECT');
