@@ -41,3 +41,6 @@ desktop.ini
 *.log
 .vscode/
 .idea/
+
+# Submission decks and judging notes (local only)
+ppt/
