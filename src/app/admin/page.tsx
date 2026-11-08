@@ -38,7 +38,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           <PeriodFilter days={days} />
         </div>
 
-        <Section id="kpis" title="Key metrics" sub="Targets for the digital journey. “Before” is the old sales-led process. Conversion is activations in the period over leads or accepted quotes in the period.">
+        <Section id="kpis" title="Key metrics" sub="Targets for the digital journey. “Before” is the old sales-led process. Quoted to activated is activations in the period over businesses quoted in the period.">
           <TargetKpis kpis={m.kpis} days={days} />
         </Section>
 

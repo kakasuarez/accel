@@ -156,15 +156,14 @@ to quote plus 10–14 to activate).
 
 | KPI | How it's measured | Before | Target |
 |---|---|---|---|
-| Lead to activation | Activations in the period ÷ leads whose needs were assessed in the period | 18.6% | ≥ 30% |
-| Time to activate | Median days from needs assessed to activated, for activations in the period | ~16 days | ≤ 7 days |
-| Accepted quotes activated | Activations in the period ÷ quotes accepted in the period | 42.7% | ≥ 75% |
+| Quoted to activated | Activations in the period ÷ businesses quoted (needs assessed) in the period | 18.6% | ≥ 30% |
+| Time to activation | Median days from quote (needs assessed) to activated, for activations in the period | ~16 days | ≤ 7 days |
+| Cost per activation | Acquisition spend ÷ activations. **Placeholder data**: spend isn't recorded, so it assumes ₹600 per business quoted | ₹8,200 (made up) | ≤ ₹2,500 (made up) |
 | KYC approved first time | Share of businesses whose first KYC check in the period was approved | none (paper) | ≥ 80% |
+| 6-month churn | Not measured: there isn't enough history after activation yet | 15.2% | ≤ 10% |
 
-Conversion is a flow, not a cohort: following one period's leads to their outcome makes recent periods
-look better or worse than they are, since wins and losses settle at different speeds. Cost of
-acquisition and 6-month churn aren't shown, because the app doesn't yet record costs or anything after
-activation.
+Quoted to activated is a flow, not a cohort: following one period's leads to their outcome makes recent
+periods look better or worse than they are, since wins and losses settle at different speeds.
 
 Below them: volume (new leads, activations, monthly revenue won, open pipeline), the stage funnel,
 bundles accepted, leads by segment, KYC results and closed leads by reason and stage. Leads that never

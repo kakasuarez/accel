@@ -56,15 +56,24 @@ export function Kpi({ label, value, exact, change, note }: { label: string; valu
   );
 }
 
-const formatKpi = (unit: KpiType['unit'], n: number) => (unit === 'percent' ? percent(n) : `${n.toFixed(1)} days`);
+const formatKpi = (unit: KpiType['unit'], n: number) => (unit === 'percent' ? percent(n) : unit === 'rupees' ? compactRupees(Math.round(n)) : `${n.toFixed(1)} days`);
 
 /** "▲ 4 pts vs previous 30 days" for rates, "▼ 1.5 days" for times. */
 function KpiChange({ kpi, days }: { kpi: KpiType; days: Period }) {
   const { current, previous } = kpi;
   if (current.value === null || previous.value === null) return null;
   const diff = current.value - previous.value;
-  const size = kpi.unit === 'percent' ? Math.round(Math.abs(diff) * 100) : Math.round(Math.abs(diff) * 10) / 10;
-  const text = size === 0 ? 'No change' : `${diff > 0 ? '▲' : '▼'} ${size} ${kpi.unit === 'percent' ? 'pts' : size === 1 ? 'day' : 'days'}`;
+  const arrow = diff > 0 ? '▲' : '▼';
+  let text: string;
+  if (kpi.unit === 'percent') {
+    const pts = Math.round(Math.abs(diff) * 100);
+    text = pts === 0 ? 'No change' : `${arrow} ${pts} pts`;
+  } else if (kpi.unit === 'rupees') {
+    text = Math.round(diff) === 0 ? 'No change' : `${arrow} ${compactRupees(Math.round(Math.abs(diff)))}`;
+  } else {
+    const size = Math.round(Math.abs(diff) * 10) / 10;
+    text = size === 0 ? 'No change' : `${arrow} ${size} ${size === 1 ? 'day' : 'days'}`;
+  }
   return (
     <span className="kpi-change">
       {text} <span>vs previous {days} days</span>
@@ -89,12 +98,15 @@ export function TargetKpis({ kpis, days }: { kpis: readonly KpiType[]; days: Per
                   {kpi.onTarget ? 'On target' : 'Off target'}
                 </span>
               )}
-              <span className="kpi-target">
-                Target {comparator} {formatKpi(kpi.unit, kpi.target)}
-                {kpi.baseline !== null && <> · Before: {formatKpi(kpi.unit, kpi.baseline)}</>}
-              </span>
+              {(kpi.target !== null || kpi.baseline !== null) && (
+                <span className="kpi-target">
+                  {kpi.target !== null && <>Target {comparator} {formatKpi(kpi.unit, kpi.target)}</>}
+                  {kpi.target !== null && kpi.baseline !== null && ' · '}
+                  {kpi.baseline !== null && <>Before: {formatKpi(kpi.unit, kpi.baseline)}</>}
+                </span>
+              )}
               <KpiChange kpi={kpi} days={days} />
-              <span className="kpi-note">{kpi.current.value === null ? 'Nothing to measure in this period yet' : kpi.basis}</span>
+              <span className="kpi-note">{kpi.current.value === null && kpi.id !== 'churn6Months' ? 'Nothing to measure in this period yet' : kpi.basis}</span>
             </dd>
           </div>
         );
